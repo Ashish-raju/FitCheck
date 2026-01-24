@@ -1,0 +1,5 @@
+$ErrorActionPreference = "Stop"
+Set-Location "c:\Users\VudumudiAshishRamaRa\Downloads\Agents Engne 1.0 4\Agents Engne 1.0\FirewallHost\android"
+Write-Host "Resuming Build (AssembleDebug)..."
+cmd /c "gradlew.bat assembleDebug --no-daemon > build_log_resume.txt 2>&1"
+Write-Host "Resume Complete"

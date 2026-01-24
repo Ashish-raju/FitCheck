@@ -1,0 +1,165 @@
+{
+    "pieces": {
+        "t1": {
+            "id": "t1",
+            "category": "top",
+            "warmth": 2,
+            "formality": 3,
+            "color": "Navy",
+            "status": "clean"
+        },
+        "t2": {
+            "id": "t2",
+            "category": "top",
+            "warmth": 1,
+            "formality": 1,
+            "color": "White Tee",
+            "status": "clean"
+        },
+        "t3": {
+            "id": "t3",
+            "category": "top",
+            "warmth": 4,
+            "formality": 4,
+            "color": "Charcoal Sweater",
+            "status": "clean"
+        },
+        "t4": {
+            "id": "t4",
+            "category": "top",
+            "warmth": 2,
+            "formality": 2,
+            "color": "Olive Henley",
+            "status": "clean"
+        },
+        "t5": {
+            "id": "t5",
+            "category": "top",
+            "warmth": 3,
+            "formality": 5,
+            "color": "Black Dress Shirt",
+            "status": "clean"
+        },
+        "b1": {
+            "id": "b1",
+            "category": "bottom",
+            "warmth": 2,
+            "formality": 2,
+            "color": "Blue Jeans",
+            "status": "clean"
+        },
+        "b2": {
+            "id": "b2",
+            "category": "bottom",
+            "warmth": 3,
+            "formality": 4,
+            "color": "Grey Chinos",
+            "status": "clean"
+        },
+        "b3": {
+            "id": "b3",
+            "category": "bottom",
+            "warmth": 1,
+            "formality": 1,
+            "color": "Black Shorts",
+            "status": "clean"
+        },
+        "b4": {
+            "id": "b4",
+            "category": "bottom",
+            "warmth": 3,
+            "formality": 3,
+            "color": "Dark Indigo Denim",
+            "status": "clean"
+        },
+        "b5": {
+            "id": "b5",
+            "category": "bottom",
+            "warmth": 3,
+            "formality": 5,
+            "color": "Black Slacks",
+            "status": "clean"
+        },
+        "s1": {
+            "id": "s1",
+            "category": "shoes",
+            "warmth": 2,
+            "formality": 2,
+            "color": "White Sneakers",
+            "status": "clean"
+        },
+        "s2": {
+            "id": "s2",
+            "category": "shoes",
+            "warmth": 3,
+            "formality": 4,
+            "color": "Brown Loafers",
+            "status": "clean"
+        },
+        "s3": {
+            "id": "s3",
+            "category": "shoes",
+            "warmth": 4,
+            "formality": 3,
+            "color": "Black Boots",
+            "status": "clean"
+        },
+        "s4": {
+            "id": "s4",
+            "category": "shoes",
+            "warmth": 1,
+            "formality": 1,
+            "color": "Canvas Low-tops",
+            "status": "clean"
+        },
+        "s5": {
+            "id": "s5",
+            "category": "shoes",
+            "warmth": 3,
+            "formality": 5,
+            "color": "Oxford Dress Shoes",
+            "status": "clean"
+        },
+        "o1": {
+            "id": "o1",
+            "category": "outerwear",
+            "warmth": 5,
+            "formality": 3,
+            "color": "Heavy Parka",
+            "status": "clean"
+        },
+        "o2": {
+            "id": "o2",
+            "category": "outerwear",
+            "warmth": 3,
+            "formality": 4,
+            "color": "Wool Topcoat",
+            "status": "clean"
+        },
+        "o3": {
+            "id": "o3",
+            "category": "outerwear",
+            "warmth": 2,
+            "formality": 2,
+            "color": "Denim Jacket",
+            "status": "clean"
+        },
+        "o4": {
+            "id": "o4",
+            "category": "outerwear",
+            "warmth": 4,
+            "formality": 3,
+            "color": "Leather Jacket",
+            "status": "clean"
+        },
+        "o5": {
+            "id": "o5",
+            "category": "outerwear",
+            "warmth": 2,
+            "formality": 4,
+            "color": "Navy Blazer",
+            "status": "clean"
+        }
+    },
+    "outfits": {}
+}
