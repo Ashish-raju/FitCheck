@@ -13,8 +13,9 @@ import { InventoryStore } from '../../state/inventory/inventoryStore';
 import { WardrobeDetailModal } from './WardrobeDetailModal';
 import { Image } from 'expo-image';
 import { WardrobeItemCard } from '../components/WardrobeItemCard';
-import { Gesture, GestureDetector, Directions } from 'react-native-gesture-handler';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { runOnJS, FadeIn, FadeOut, SlideInRight, SlideInLeft, Easing } from 'react-native-reanimated';
+import { t } from '../../src/copy';
 
 const { width } = Dimensions.get('window');
 const GUTTER = 20;
@@ -55,21 +56,25 @@ const CategoryTab = memo(({
 // Item card logic migrated to WardrobeItemCard component
 
 // Stat Card Component
-const StatCard = memo(({ label, value }: { label: string, value: string | number }) => (
+const StatCard = ({ label, value }: { label: string, value: string | number | React.ReactNode }) => (
     <View style={styles.statCard}>
         <Text style={styles.statLabel}>{label}</Text>
-        <Text style={styles.statValue}>{value}</Text>
+        {typeof value === 'string' || typeof value === 'number' ? (
+            <Text style={styles.statValue}>{value}</Text>
+        ) : (
+            value
+        )}
     </View>
-));
+);
 
 // Empty State Component
 const EmptyState = memo(({ category, onAdd }: { category: string; onAdd: () => void }) => (
     <View style={styles.emptyState}>
         <Text style={styles.emptyTitle}>
-            {category === 'All' ? 'Your collection is empty' : `No ${category.toLowerCase()} yet`}
+            {category === 'All' ? t('wardrobe.empty.default') : t('wardrobe.empty.category', { category: category.toLowerCase() })}
         </Text>
         <TouchableOpacity style={styles.emptyButton} onPress={onAdd}>
-            <Text style={styles.emptyButtonText}>+ Add Item</Text>
+            <Text style={styles.emptyButtonText}>{t('wardrobe.addButton')}</Text>
         </TouchableOpacity>
     </View>
 ));
@@ -112,12 +117,21 @@ export const WardrobeScreen: React.FC = () => {
 
     // Stats
     const stats = useMemo(() => {
-        const totalItems = Object.values(inventoryData.pieces).filter(p => p.status !== 'Ghost').length;
-        // Mocking estimated value for now as it's not in the store, 
-        // using count * 120 as a placeholder or just a static value as per reference vibe if preferred
+        const allPieces = Object.values(inventoryData.pieces).filter(p => p.status !== 'Ghost');
+        const totalItems = allPieces.length;
+
+        // Count items in current tab
+        const currentCount = activeWardrobeTab === 'All'
+            ? totalItems
+            : allPieces.filter(p => p.category === activeWardrobeTab).length;
+
+        // Mocking estimated value for now
         const estValue = `$${(totalItems * 124.50).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
-        return { totalItems, estValue };
-    }, [inventoryData]);
+
+        console.log(`[WardrobeScreen] Stats: ${currentCount}/${totalItems} (Tab: ${activeWardrobeTab})`);
+
+        return { totalItems, currentCount, estValue };
+    }, [inventoryData, activeWardrobeTab]);
 
     // Handlers
     const refreshInventory = useCallback(() => {
@@ -166,13 +180,28 @@ export const WardrobeScreen: React.FC = () => {
     const renderHeader = useCallback(() => (
         <View style={styles.header}>
             <View style={styles.titleSection}>
-                <Text style={styles.vaultLabel}>STYLE VAULT</Text>
-                <Text style={styles.title}>Your Collection.</Text>
+                <Text style={styles.vaultLabel}>{t('wardrobe.title')}</Text>
+                <Text style={styles.title}>{t('wardrobe.subtitle')}</Text>
             </View>
 
             <View style={styles.statsRow}>
-                <StatCard label="TOTAL ITEMS" value={stats.totalItems} />
-                <StatCard label="EST. VALUE" value={stats.estValue} />
+                <StatCard
+                    label={t('wardrobe.totalItems')}
+                    value={
+                        activeWardrobeTab === 'All' ? (
+                            stats.totalItems.toString()
+                        ) : (
+                            <Text style={styles.statValue}>
+                                {stats.currentCount.toString().padStart(3, '0')}
+                                <Text style={{ fontSize: 16 }}>/</Text>
+                                <Text style={{ color: 'rgba(255, 255, 255, 0.3)', fontSize: 16 }}>
+                                    {stats.totalItems.toString()}
+                                </Text>
+                            </Text>
+                        )
+                    }
+                />
+                <StatCard label={t('wardrobe.estValue')} value={stats.estValue} />
             </View>
 
             <View style={styles.tabsWrapper}>
@@ -211,19 +240,36 @@ export const WardrobeScreen: React.FC = () => {
         }
     }, [activeWardrobeTab, handleTabPress]);
 
-    const swipeLeft = Gesture.Fling()
-        .direction(Directions.LEFT)
-        .onEnd(() => {
-            runOnJS(handleSwipe)(1);
-        });
+    // Track if we've already triggered haptic for this gesture
+    const hasTriggeredHaptic = React.useRef(false);
 
-    const swipeRight = Gesture.Fling()
-        .direction(Directions.RIGHT)
-        .onEnd(() => {
-            runOnJS(handleSwipe)(-1);
-        });
+    const panGesture = Gesture.Pan()
+        .activeOffsetX([-15, 15]) // Horizontal threshold - only activate when swiping horizontally
+        .failOffsetY([-10, 10]) // Fail if vertical movement is too large
+        .onStart(() => {
+            hasTriggeredHaptic.current = false;
+        })
+        .onUpdate((event) => {
+            // Trigger haptic feedback when user swipes far enough
+            const threshold = 50;
+            if (!hasTriggeredHaptic.current && Math.abs(event.translationX) > threshold) {
+                runOnJS(Haptics.impactAsync)(Haptics.ImpactFeedbackStyle.Light);
+                hasTriggeredHaptic.current = true;
+            }
+        })
+        .onEnd((event) => {
+            // Determine swipe direction based on velocity and translation
+            const threshold = 50;
+            const velocityThreshold = 500;
 
-    const composedGesture = Gesture.Simultaneous(swipeLeft, swipeRight);
+            if (event.translationX < -threshold || event.velocityX < -velocityThreshold) {
+                // Swiped left -> go to next tab (right direction)
+                runOnJS(handleSwipe)(1);
+            } else if (event.translationX > threshold || event.velocityX > velocityThreshold) {
+                // Swiped right -> go to previous tab (left direction)
+                runOnJS(handleSwipe)(-1);
+            }
+        });
 
     // Render item
     const ITEM_HEIGHT = ITEM_SIZE / 0.92;
@@ -245,28 +291,25 @@ export const WardrobeScreen: React.FC = () => {
     ), [handlePress]);
 
     return (
-        <GestureDetector gesture={composedGesture}>
+        <GestureDetector gesture={panGesture}>
             <View style={styles.container}>
+                {renderHeader()}
                 <Animated.View
-                    key={activeWardrobeTab}
-                    entering={direction === 'right'
-                        ? SlideInRight.duration(250).easing(Easing.out(Easing.quad))
-                        : SlideInLeft.duration(250).easing(Easing.out(Easing.quad))
-                    }
-                    exiting={FadeOut.duration(150)}
+                    entering={FadeIn.duration(150)}
                     style={{ flex: 1 }}
                 >
                     <FlashList
                         data={pieces}
                         keyExtractor={(item) => item.id}
                         numColumns={2}
-                        ListHeaderComponent={renderHeader}
                         renderItem={renderItem}
                         // @ts-ignore - estimatedItemSize is a valid prop for FlashList
                         estimatedItemSize={(ITEM_SIZE / 0.92) + 20}
                         contentContainerStyle={styles.listContent}
                         columnWrapperStyle={{ justifyContent: 'space-between' }}
                         ListEmptyComponent={<EmptyState category={activeWardrobeTab} onAdd={handleAddItem} />}
+                        // Add some performance props for FlashList
+                        drawDistance={width}
                     />
                 </Animated.View>
 

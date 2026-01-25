@@ -60,7 +60,7 @@ export const WardrobeItemCard: React.FC<WardrobeItemCardProps> = memo(({
                                 source={typeof item.imageUri === 'string' ? { uri: item.imageUri } : item.imageUri}
                                 style={styles.image}
                                 contentFit="contain"
-                                transition={200}
+                                transition={50}
                             />
                         ) : (
                             <View style={[styles.image, { backgroundColor: item.color || '#333' }]} />
