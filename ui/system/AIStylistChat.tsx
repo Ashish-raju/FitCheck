@@ -6,6 +6,7 @@ import { SPACING } from '../tokens/spacing.tokens';
 import { ritualMachine } from '../state/ritualMachine';
 import { RitualHeader } from '../primitives/RitualHeader';
 import { GlassCard } from '../primitives/GlassCard';
+import { t } from '../../src/copy';
 
 interface Message {
     id: string;
@@ -77,11 +78,11 @@ export const AIStylistChat: React.FC = () => {
                         style={styles.input}
                         value={input}
                         onChangeText={setInput}
-                        placeholder="Calibrate style..."
+                        placeholder={t('chat.placeholder')}
                         placeholderTextColor="rgba(255,255,255,0.2)"
                     />
                     <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
-                        <Text style={styles.sendText}>SEND</Text>
+                        <Text style={styles.sendText}>{t('chat.send').toUpperCase()}</Text>
                     </TouchableOpacity>
                 </View>
             </View>

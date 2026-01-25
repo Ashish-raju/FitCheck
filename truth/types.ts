@@ -14,7 +14,9 @@ export interface Piece {
     formality: number; // 1-5
     color: string;
     imageUri?: string | number; // string for URI, number for require()
-    processedImageUri?: string; // Background removed
+    processedImageUri?: string; // Background removed + white background
+    thumbnailUri?: string; // Small thumbnail for lists/previews
+    transparentUri?: string; // Raw transparent PNG from remove.bg
     status: PieceStatus;
     currentUses: number;
     maxUses?: number; // Override for universal threshold
@@ -34,6 +36,14 @@ export interface Piece {
     season?: ("spring" | "summer" | "fall" | "winter")[];
     price?: number;
     notes?: string;
+
+    // Image processing metadata
+    processingMetadata?: {
+        processingTimeMs: number;
+        width: number;
+        height: number;
+        fileSize: number;
+    };
 }
 
 export interface Outfit {

@@ -12,6 +12,7 @@ import Animated, {
 import { COLORS, MATERIAL } from '../tokens/color.tokens';
 import { TYPOGRAPHY } from '../tokens';
 import { MOTION } from '../tokens/motion.tokens';
+import { t } from '../../src/copy';
 
 import { ritualMachine } from '../state/ritualMachine';
 
@@ -114,13 +115,13 @@ export const SplashSequence: React.FC = () => {
                 </View>
 
                 <Animated.View style={textStyle}>
-                    <Text style={styles.title}>FIT CHECK</Text>
+                    <Text style={styles.title}>{t('global.appName')}</Text>
                 </Animated.View>
 
                 <Animated.View style={[styles.separator, lineStyle]} />
 
                 <Animated.View style={subTextStyle}>
-                    <Text style={styles.subtitle}>Your Personal Stylist, Every Day.</Text>
+                    <Text style={styles.subtitle}>{t('onboarding.tagline')}</Text>
                 </Animated.View>
             </Animated.View>
         </View>

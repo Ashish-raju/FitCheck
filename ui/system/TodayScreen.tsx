@@ -11,6 +11,7 @@ import * as Haptics from 'expo-haptics';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { SmartImage } from '../primitives/SmartImage';
 import { PieceID, OutfitID } from '../../truth/types';
+import { t } from '../../src/copy';
 
 import { ritualMachine } from '../state/ritualMachine';
 import { useRitualState } from '../state/ritualProvider';
@@ -117,8 +118,8 @@ export const TodayScreen: React.FC = () => {
         ] as any
     }));
 
-    const timeGreeting = "Evening, Ash.";
-    const vibe = "Something elegant for tonight?";
+    const timeGreeting = t('home.greeting.evening', { name: 'Ash' });
+    const vibe = t('home.vibe');
 
     return (
         <View style={styles.container}>
@@ -152,7 +153,7 @@ export const TodayScreen: React.FC = () => {
                     {/* Layer 1: Context Card (Top Square) */}
                     <View style={styles.topSquareCard}>
                         <View style={styles.brandBadge}>
-                            <Text style={styles.brandText}>FW-26</Text>
+                            <Text style={styles.brandText}>{t('home.seasonBadge')}</Text>
                         </View>
                         <SmartImage
                             source={{ uri: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1000&auto=format&fit=crop' }} // Obsidian Top
@@ -163,16 +164,16 @@ export const TodayScreen: React.FC = () => {
 
                     {/* Layer 2: Detail Pill (Bottom) */}
                     <View style={styles.detailPill}>
-                        <Text style={styles.pillLabel}>CASUAL SHARP</Text>
+                        <Text style={styles.pillLabel}>{t('home.styleTag')}</Text>
                         <View style={styles.pillDot} />
-                        <Text style={styles.pillValue}>12°C</Text>
+                        <Text style={styles.pillValue}>{t('home.weather', { temp: 12 })}</Text>
                     </View>
                 </TouchableOpacity>
 
                 {/* 2) IDENTITY SECTION */}
                 <View style={styles.identityContainer}>
-                    <Text style={styles.identityLabel}>IDENTITY: SECURE CHANNEL</Text>
-                    <Text style={styles.identityId}>USER: ASHISH_RAMA // AUTH_VERIFIED</Text>
+                    <Text style={styles.identityLabel}>{t('home.identitySecure')}</Text>
+                    <Text style={styles.identityId}>{t('home.userAuth', { userId: 'ASHISH_RAMA' })}</Text>
                 </View>
 
                 {/* 3) REVEAL ACTION SECTION */}
@@ -190,7 +191,7 @@ export const TodayScreen: React.FC = () => {
                                 end={{ x: 0, y: 1 }}
                                 style={styles.buttonGradient}
                             >
-                                <Text style={styles.buttonText}>REVEAL OUTFIT</Text>
+                                <Text style={styles.buttonText}>{t('home.revealButton')}</Text>
                             </LinearGradient>
                             <View style={styles.buttonEdge} />
                         </TouchableOpacity>
@@ -200,11 +201,11 @@ export const TodayScreen: React.FC = () => {
                 {/* Secondary Actions / Stats */}
                 <View style={styles.quickActions}>
                     <View style={styles.miniCard}>
-                        <Text style={styles.miniCardLabel}>STREAK</Text>
-                        <Text style={styles.miniCardValue}>3 Days 🔥</Text>
+                        <Text style={styles.miniCardLabel}>{t('home.streakLabel')}</Text>
+                        <Text style={styles.miniCardValue}>{t('ritual.streak.days', { count: 3 })} 🔥</Text>
                     </View>
                     <View style={styles.miniCard}>
-                        <Text style={styles.miniCardLabel}>LOGGED</Text>
+                        <Text style={styles.miniCardLabel}>{t('home.loggedLabel')}</Text>
                         <Text style={styles.miniCardValue}>Yesterday</Text>
                     </View>
                 </View>

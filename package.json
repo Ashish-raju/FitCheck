@@ -6,7 +6,15 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "test": "jest --coverage",
+    "test:watch": "jest --watch",
+    "test:unit": "jest tests/unit",
+    "test:integration": "jest tests/integration",
+    "test:perf": "jest tests/perf --maxWorkers=1",
+    "test:all": "jest --coverage --maxWorkers=50%",
+    "test:reliability": "jest tests/reliability/runReliability.test.ts",
+    "test:reliability:small": "cross-env RELIABILITY_SMALL=true jest tests/reliability/runReliability.test.ts"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",
@@ -42,7 +50,12 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
-    "babel-preset-expo": "^54.0.10"
+    "@jest/globals": "^30.2.0",
+    "@types/jest": "^30.0.0",
+    "babel-preset-expo": "^54.0.10",
+    "cross-env": "^10.1.0",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.6"
   },
   "private": true
 }

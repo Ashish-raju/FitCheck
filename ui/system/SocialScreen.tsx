@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { COLORS, MATERIAL } from '../tokens/color.tokens';
 import { TYPOGRAPHY } from '../tokens';
+import { t } from '../../src/copy';
 
 export const SocialScreen: React.FC = () => {
     return (
@@ -10,7 +11,7 @@ export const SocialScreen: React.FC = () => {
                 <Text style={styles.headerTitle}>Circle</Text>
             </View>
             <View style={styles.content}>
-                <Text style={styles.placeholder}>Friends feed coming in v1.1</Text>
+                <Text style={styles.placeholder}>{t('social.comingSoon')}</Text>
             </View>
         </View>
     );

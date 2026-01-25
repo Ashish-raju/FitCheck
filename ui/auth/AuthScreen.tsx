@@ -5,6 +5,7 @@ import { TYPOGRAPHY } from '../tokens';
 import { SPACING } from '../tokens/spacing.tokens';
 import { useAuth } from '../../context/auth/AuthProvider';
 import * as Haptics from 'expo-haptics';
+import { t } from '../../src/copy';
 
 export const AuthScreen: React.FC = () => {
     const { signIn, signUp } = useAuth();
@@ -17,13 +18,13 @@ export const AuthScreen: React.FC = () => {
 
     const handleSubmit = async () => {
         if (!email || !password) {
-            setError('Please fill in all fields');
+            setError(t('errors.validation.requiredFields'));
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
             return;
         }
 
         if (mode === 'signup' && !displayName) {
-            setError('Please enter your name');
+            setError(t('errors.validation.nameRequired'));
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
             return;
         }
@@ -39,7 +40,7 @@ export const AuthScreen: React.FC = () => {
             }
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         } catch (err: any) {
-            setError(err.message || 'Authentication failed');
+            setError(err.message || t('errors.auth.failed'));
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
         } finally {
             setLoading(false);
@@ -62,21 +63,21 @@ export const AuthScreen: React.FC = () => {
                 keyboardShouldPersistTaps="handled"
             >
                 <View style={styles.header}>
-                    <Text style={styles.logo}>FIT CHECK</Text>
+                    <Text style={styles.logo}>{t('global.appName')}</Text>
                     <Text style={styles.tagline}>
-                        {mode === 'signin' ? 'Welcome back' : 'Create your wardrobe'}
+                        {mode === 'signin' ? t('auth.welcomeBack') : t('auth.createAccount')}
                     </Text>
                 </View>
 
                 <View style={styles.form}>
                     {mode === 'signup' && (
                         <View style={styles.inputContainer}>
-                            <Text style={styles.label}>NAME</Text>
+                            <Text style={styles.label}>{t('auth.nameLabel')}</Text>
                             <TextInput
                                 style={styles.input}
                                 value={displayName}
                                 onChangeText={setDisplayName}
-                                placeholder="Your name"
+                                placeholder={t('auth.namePlaceholder')}
                                 placeholderTextColor={MATERIAL.TEXT_MUTED}
                                 autoCapitalize="words"
                                 editable={!loading}
@@ -85,12 +86,12 @@ export const AuthScreen: React.FC = () => {
                     )}
 
                     <View style={styles.inputContainer}>
-                        <Text style={styles.label}>EMAIL</Text>
+                        <Text style={styles.label}>{t('auth.emailLabel')}</Text>
                         <TextInput
                             style={styles.input}
                             value={email}
                             onChangeText={setEmail}
-                            placeholder="you@example.com"
+                            placeholder={t('auth.emailPlaceholder')}
                             placeholderTextColor={MATERIAL.TEXT_MUTED}
                             keyboardType="email-address"
                             autoCapitalize="none"
@@ -100,12 +101,12 @@ export const AuthScreen: React.FC = () => {
                     </View>
 
                     <View style={styles.inputContainer}>
-                        <Text style={styles.label}>PASSWORD</Text>
+                        <Text style={styles.label}>{t('auth.passwordLabel')}</Text>
                         <TextInput
                             style={styles.input}
                             value={password}
                             onChangeText={setPassword}
-                            placeholder="••••••••"
+                            placeholder={t('auth.passwordPlaceholder')}
                             placeholderTextColor={MATERIAL.TEXT_MUTED}
                             secureTextEntry
                             autoCapitalize="none"
@@ -129,7 +130,7 @@ export const AuthScreen: React.FC = () => {
                             <ActivityIndicator color={MATERIAL.TEXT_MAIN} />
                         ) : (
                             <Text style={styles.submitText}>
-                                {mode === 'signin' ? 'SIGN IN' : 'CREATE ACCOUNT'}
+                                {mode === 'signin' ? t('auth.signInButton') : t('auth.createAccountButton')}
                             </Text>
                         )}
                     </TouchableOpacity>
@@ -141,15 +142,15 @@ export const AuthScreen: React.FC = () => {
                     >
                         <Text style={styles.toggleText}>
                             {mode === 'signin'
-                                ? "Don't have an account? Sign up"
-                                : 'Already have an account? Sign in'}
+                                ? t('auth.noAccount')
+                                : t('auth.hasAccount')}
                         </Text>
                     </TouchableOpacity>
                 </View>
 
                 <View style={styles.footer}>
                     <Text style={styles.footerText}>
-                        By continuing, you agree to our Terms of Service and Privacy Policy
+                        {t('auth.legal')}
                     </Text>
                 </View>
             </ScrollView>

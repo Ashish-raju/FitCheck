@@ -18,6 +18,7 @@ import { CameraScreen } from '../system/CameraScreen';
 import { ItemPreviewScreen } from '../system/ItemPreviewScreen';
 import { SocialScreen } from '../system/SocialScreen';
 import { AIStylistChat } from '../system/AIStylistChat';
+import { SegmentationCorrectionScreen } from '../vision/SegmentationCorrectionScreen';
 
 // Define Route Params
 export type RootStackParamList = {
@@ -35,6 +36,7 @@ export type RootStackParamList = {
     ItemPreview: undefined; // Item Preview Screen
     Social: undefined; // FriendsFeed
     AIStylist: undefined;
+    SegmentationCorrection: { imageUri: string; maskUri: string; onConfirm: (uri: string) => void; onCancel: () => void };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -115,6 +117,11 @@ export const AppStack: React.FC = () => {
                 name="AIStylist"
                 component={AIStylistChat}
                 options={{ animation: 'slide_from_bottom' }}
+            />
+            <Stack.Screen
+                name="SegmentationCorrection"
+                component={SegmentationCorrectionScreen}
+                options={{ animation: 'slide_from_bottom', presentation: 'modal' }}
             />
         </Stack.Navigator>
     );

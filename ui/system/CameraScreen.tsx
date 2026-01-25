@@ -1,20 +1,40 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, Alert } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { COLORS, MATERIAL } from '../tokens/color.tokens';
 import { TYPOGRAPHY } from '../tokens';
 import { SPACING } from '../tokens/spacing.tokens';
 import { ritualMachine } from '../state/ritualMachine';
-import { useIsFocused } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
-import { GarmentIngestionService } from '../../system/ingestion/GarmentIngestionService';
+// import { GarmentIngestionService } from '../../system/ingestion/GarmentIngestionService';
+
+type ProcessingState = 'idle' | 'preparing' | 'removingBackground' | 'finishing' | 'saving';
+
+// Helper function to get user-friendly processing messages
+const getProcessingMessage = (state: ProcessingState): string => {
+    switch (state) {
+        case 'preparing':
+            return 'PREPARING IMAGE...';
+        case 'removingBackground':
+            return 'REMOVING BACKGROUND...';
+        case 'finishing':
+            return 'FINALIZING...';
+        case 'saving':
+            return 'SAVING TO CLOUD...';
+        default:
+            return 'PROCESSING...';
+    }
+};
 
 export const CameraScreen: React.FC = () => {
     const [permission, requestPermission] = useCameraPermissions();
     const [isProcessing, setIsProcessing] = useState(false);
+    const [processingState, setProcessingState] = useState<ProcessingState>('idle');
     const scanAnim = React.useRef(new Animated.Value(0)).current;
     const shutterFlash = React.useRef(new Animated.Value(0)).current;
     const cameraRef = React.useRef<CameraView>(null);
+    const navigation = useNavigation<any>();
 
     // Lifecycle Guards
     const isFocused = useIsFocused();
@@ -67,6 +87,7 @@ export const CameraScreen: React.FC = () => {
             let capturedUri: string | undefined;
 
             // 1. Capture Logic
+            setProcessingState('preparing');
             const photo = await cameraRef.current.takePictureAsync({
                 quality: 0.7,
                 base64: false,
@@ -77,11 +98,20 @@ export const CameraScreen: React.FC = () => {
             if (!capturedUri) throw new Error("Failed to capture image URI");
             if (!isMounted.current) return;
 
-            // 2. Mockable Ingestion with TIMEOUT Guard
-            // If Ingestion/AI takes too long, we fail gracefully rather than hanging forever.
-            const ingestionPromise = GarmentIngestionService.getInstance().createDraftItem(capturedUri);
+            // 2. Process with Image Engine (with progress tracking)
+            const { GarmentIngestionService } = require('../../system/ingestion/GarmentIngestionService');
+            const ingestionPromise = GarmentIngestionService.getInstance().createDraftItem(
+                capturedUri,
+                (progress: ProcessingState) => {
+                    if (isMounted.current) {
+                        setProcessingState(progress);
+                    }
+                }
+            );
+
+            // Timeout increased to 20s for image processing
             const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error("Analysis Timed Out")), 8000)
+                setTimeout(() => reject(new Error("Processing timed out. Please try again.")), 20000)
             );
 
             const draftItem = await Promise.race([ingestionPromise, timeoutPromise]);
@@ -90,24 +120,72 @@ export const CameraScreen: React.FC = () => {
 
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
-            // Navigate safely
+            // Navigate safely to preview
             setTimeout(() => {
                 if (isMounted.current) {
-                    ritualMachine.toItemPreview(draftItem);
+                    const confidence = draftItem.processingMetadata?.confidenceScore ?? 1;
+
+                    if (confidence < 0.8) {
+                        // Low confidence - Segmentation Correction
+                        navigation.navigate('SegmentationCorrection', {
+                            imageUri: capturedUri,
+                            maskUri: draftItem.transparentUri,
+                            onConfirm: (_newMaskUri: string) => {
+                                // In a full implementation, we would re-composite here.
+                                // For now, proceed to preview.
+                                ritualMachine.toItemPreview(draftItem);
+                            },
+                            onCancel: () => {
+                                // User skipped correction
+                                ritualMachine.toItemPreview(draftItem);
+                            }
+                        });
+                    } else {
+                        ritualMachine.toItemPreview(draftItem);
+                    }
                 }
             }, 100);
 
-        } catch (error) {
+        } catch (error: any) {
             console.error('[CameraScreen] Capture/Ingestion Failed:', error);
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
 
-            // Alert user if needed, or just reset
+            // Handle specific errors with user-friendly messages
             if (isMounted.current) {
-                // Optional: Show toast/alert here
+                let errorMessage = 'Failed to process image. Please try again.';
+
+                // Check for specific error messages from the processing engine
+                if (error.message?.includes('unknown_foreground') ||
+                    error.message?.includes('Could not identify foreground')) {
+                    errorMessage = 'No clothing item detected. Please capture a clear photo of a garment.';
+                } else if (error.message?.includes('rate limit') || error.message?.includes('Too many requests')) {
+                    errorMessage = 'Too many requests. Please wait a moment and try again.';
+                } else if (error.message?.includes('too large') || error.message?.includes('Image is too large')) {
+                    errorMessage = 'Image is too large. Try capturing from a slightly farther distance.';
+                } else if (error.message?.includes('timed out') || error.message?.includes('Timed Out')) {
+                    errorMessage = 'Processing took too long. Please try again with better lighting.';
+                } else if (error.message?.includes('Network') || error.message?.includes('network')) {
+                    errorMessage = 'Network error. Please check your connection and try again.';
+                }
+
+                // Show alert with error message
+                Alert.alert(
+                    error.message?.includes('No clothing') || error.message?.includes('unknown_foreground')
+                        ? 'No Cloth Found'
+                        : 'Processing Failed',
+                    errorMessage,
+                    [
+                        {
+                            text: 'Try Again',
+                            style: 'default',
+                        },
+                    ]
+                );
             }
         } finally {
             if (isMounted.current) {
                 setIsProcessing(false);
+                setProcessingState('idle');
             }
         }
     };
@@ -166,7 +244,7 @@ export const CameraScreen: React.FC = () => {
                             )}
                         </View>
                         <Text style={styles.guideText}>
-                            {isProcessing ? "ANALYZING STRUCTURE..." : "ALIGN GARMENT"}
+                            {isProcessing ? getProcessingMessage(processingState) : "ALIGN GARMENT"}
                         </Text>
                     </View>
 

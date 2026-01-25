@@ -6,6 +6,7 @@ import { SPACING } from '../tokens/spacing.tokens';
 import { SmartImage } from '../primitives/SmartImage';
 import { ShiningBorder } from '../primitives/ShiningBorder';
 import { LinearGradient } from 'expo-linear-gradient';
+import { t } from '../../src/copy';
 
 import type { Outfit } from '../../truth/types';
 
@@ -21,8 +22,8 @@ export const CandidateStage: React.FC<CandidateStageProps> = React.memo(({ outfi
     const { pieces, score } = outfit;
 
     // Derived metadata
-    const weatherTag = "OPTIMIZED FOR 12°C // CLEAR";
-    const editorialDescription = "A precise configuration of technical shells and obsidian bases, calibrated for high-performance urban navigation.";
+    const weatherTag = t('ritual.weatherOptimized', { temp: 12, condition: 'CLEAR' });
+    const editorialDescription = t('ritual.description');
 
     // Render Logic
     // If priority is LOW (Buffer card), we skip the heavy breakdown list to save frame time on mount.
@@ -42,7 +43,7 @@ export const CandidateStage: React.FC<CandidateStageProps> = React.memo(({ outfi
                 <View style={[styles.heroGrid, { height: 400 }]}>
                     <View style={styles.bentoTall}>
                         <SmartImage source={typeof pieces[0].imageUri === 'number' ? pieces[0].imageUri : { uri: pieces[0].imageUri }} style={styles.fullImage} contentFit="cover" priority={priority} />
-                        <View style={styles.bentoLabel}><Text style={styles.bentoLabelText}>PRIMARY</Text></View>
+                        <View style={styles.bentoLabel}><Text style={styles.bentoLabelText}>{t('ritual.labels.primary')}</Text></View>
                         <LinearGradient colors={['transparent', 'rgba(0,0,0,0.4)']} style={styles.cardGradient} />
                     </View>
                 </View>
@@ -56,13 +57,13 @@ export const CandidateStage: React.FC<CandidateStageProps> = React.memo(({ outfi
                     <View style={styles.gridMainCol}>
                         <View style={styles.bentoTall}>
                             <SmartImage source={typeof pieces[0].imageUri === 'number' ? pieces[0].imageUri : { uri: pieces[0].imageUri }} style={styles.fullImage} contentFit="cover" priority={priority} />
-                            <View style={styles.bentoLabel}><Text style={styles.bentoLabelText}>PRIMARY</Text></View>
+                            <View style={styles.bentoLabel}><Text style={styles.bentoLabelText}>{t('ritual.labels.primary')}</Text></View>
                         </View>
                     </View>
                     <View style={styles.gridSideCol}>
                         <View style={styles.bentoTall}>
                             <SmartImage source={typeof pieces[1].imageUri === 'number' ? pieces[1].imageUri : { uri: pieces[1].imageUri }} style={styles.fullImage} contentFit="cover" />
-                            <View style={styles.bentoLabel}><Text style={styles.bentoLabelText}>BASE</Text></View>
+                            <View style={styles.bentoLabel}><Text style={styles.bentoLabelText}>{t('ritual.labels.base')}</Text></View>
                         </View>
                     </View>
                 </View>
@@ -86,9 +87,7 @@ export const CandidateStage: React.FC<CandidateStageProps> = React.memo(({ outfi
                         <View style={styles.bentoDetail}>
                             <SmartImage source={typeof pieces[2].imageUri === 'number' ? pieces[2].imageUri : { uri: pieces[2].imageUri }} style={styles.fullImage} contentFit="cover" />
                             <View style={styles.gridPill}>
-                                <Text style={styles.pillLabel}>{(score * 100).toFixed(0)}%</Text>
-                                <View style={styles.pillDot} />
-                                <Text style={styles.pillValue}>MATCH</Text>
+                                <Text style={styles.pillLabel}>{t('ritual.matchScore', { score: (score * 100).toFixed(0) })}</Text>
                             </View>
                         </View>
                     </View>
@@ -103,7 +102,7 @@ export const CandidateStage: React.FC<CandidateStageProps> = React.memo(({ outfi
                     <View style={styles.gridMainCol}>
                         <View style={styles.bentoTall}>
                             <SmartImage source={typeof pieces[0].imageUri === 'number' ? pieces[0].imageUri : { uri: pieces[0].imageUri }} style={styles.fullImage} contentFit="cover" priority={priority} />
-                            <View style={styles.bentoLabel}><Text style={styles.bentoLabelText}>PRIMARY</Text></View>
+                            <View style={styles.bentoLabel}><Text style={styles.bentoLabelText}>{t('ritual.labels.primary')}</Text></View>
                         </View>
                         <View style={styles.bentoSmall}>
                             <SmartImage source={typeof pieces[3].imageUri === 'number' ? pieces[3].imageUri : { uri: pieces[3].imageUri }} style={styles.fullImage} contentFit="cover" />
@@ -127,7 +126,7 @@ export const CandidateStage: React.FC<CandidateStageProps> = React.memo(({ outfi
                 <View style={styles.gridMainCol}>
                     <View style={styles.bentoTall}>
                         <SmartImage source={typeof pieces[0].imageUri === 'number' ? pieces[0].imageUri : { uri: pieces[0].imageUri }} style={styles.fullImage} contentFit="cover" priority={priority} />
-                        <View style={styles.bentoLabel}><Text style={styles.bentoLabelText}>PRIMARY</Text></View>
+                        <View style={styles.bentoLabel}><Text style={styles.bentoLabelText}>{t('ritual.labels.primary')}</Text></View>
                     </View>
                     <View style={styles.bentoSmall}>
                         <SmartImage source={typeof pieces[4].imageUri === 'number' ? pieces[4].imageUri : { uri: pieces[4].imageUri }} style={styles.fullImage} contentFit="cover" />
@@ -137,7 +136,7 @@ export const CandidateStage: React.FC<CandidateStageProps> = React.memo(({ outfi
                     <View style={styles.bentoSquare}>
                         <SmartImage source={typeof pieces[1].imageUri === 'number' ? pieces[1].imageUri : { uri: pieces[1].imageUri }} style={styles.fullImage} contentFit="cover" />
                         <View style={styles.brandBadge}>
-                            <Text style={styles.brandText}>FW-26</Text>
+                            <Text style={styles.brandText}>{t('home.seasonBadge')}</Text>
                         </View>
                     </View>
                     <View style={styles.bentoSquare}>
@@ -180,7 +179,7 @@ export const CandidateStage: React.FC<CandidateStageProps> = React.memo(({ outfi
                 {/* 4) ITEM BREAKDOWN - Lazy Load */}
                 {showDetails && (
                     <View style={styles.breakdownSection}>
-                        <Text style={styles.sectionTitle}>COMPONENT ANALYSIS</Text>
+                        <Text style={styles.sectionTitle}>{t('ritual.componentAnalysis')}</Text>
                         {pieces.map((piece: any, index: number) => (
                             <ShiningBorder
                                 key={`${piece.id}_list_${index}`}
@@ -210,7 +209,7 @@ export const CandidateStage: React.FC<CandidateStageProps> = React.memo(({ outfi
                 {/* Identity Footer - Lazy Load */}
                 {showDetails && (
                     <View style={styles.identitySection}>
-                        <Text style={styles.identityLabel}>IDENTITY: AUTH_REQUIRED</Text>
+                        <Text style={styles.identityLabel}>{t('global.identityLabel')}</Text>
                         <Text style={styles.identityId}>{userId} // SECURE_SYNC</Text>
                     </View>
                 )}

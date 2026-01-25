@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { COLORS, MATERIAL } from '../tokens/color.tokens';
 import { TYPOGRAPHY } from '../tokens';
+import { t } from '../../src/copy';
 
 export const InsightsScreen: React.FC = () => {
     return (
@@ -10,7 +11,7 @@ export const InsightsScreen: React.FC = () => {
                 <Text style={styles.headerTitle}>Style DNA</Text>
             </View>
             <View style={styles.content}>
-                <Text style={styles.placeholder}>Analytics coming soon</Text>
+                <Text style={styles.placeholder}>{t('insights.comingSoon')}</Text>
             </View>
         </View>
     );
