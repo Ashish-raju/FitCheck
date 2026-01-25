@@ -34,6 +34,11 @@ export const ShiningBorder: React.FC<ShiningBorderProps> = ({
     const pulse = useSharedValue(1);
 
     useEffect(() => {
+        if (!isAnimated) {
+            pulse.value = 1; // Static visibility
+            return;
+        }
+
         pulse.value = withRepeat(
             withTiming(0.4, {
                 duration: 2500,
@@ -42,7 +47,7 @@ export const ShiningBorder: React.FC<ShiningBorderProps> = ({
             -1,
             true
         );
-    }, []);
+    }, [isAnimated]);
 
     const pulseStyle = useAnimatedStyle(() => ({
         opacity: pulse.value,

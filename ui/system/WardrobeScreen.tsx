@@ -14,7 +14,7 @@ import { WardrobeDetailModal } from './WardrobeDetailModal';
 import { Image } from 'expo-image';
 import { WardrobeItemCard } from '../components/WardrobeItemCard';
 import { Gesture, GestureDetector, Directions } from 'react-native-gesture-handler';
-import { runOnJS } from 'react-native-reanimated';
+import Animated, { runOnJS, FadeIn, FadeOut, SlideInRight, SlideInLeft, Easing } from 'react-native-reanimated';
 
 const { width } = Dimensions.get('window');
 const GUTTER = 20;
@@ -79,6 +79,10 @@ export const WardrobeScreen: React.FC = () => {
     const [selectedPiece, setSelectedPiece] = React.useState<Piece | null>(null);
     const [isLoading, setIsLoading] = React.useState(true); // Start true to prevent empty flash
 
+    // Animation State
+    const [direction, setDirection] = React.useState<'left' | 'right'>('right');
+    const prevTabRef = React.useRef(activeWardrobeTab);
+
     const store = InventoryStore.getInstance();
     const [inventoryData, setInventoryData] = React.useState(store.getInventory());
 
@@ -128,9 +132,13 @@ export const WardrobeScreen: React.FC = () => {
     );
 
     const handleTabPress = useCallback((tab: string) => {
+        const oldIndex = CATEGORIES.indexOf(activeWardrobeTab as any);
+        const newIndex = CATEGORIES.indexOf(tab as any);
+        setDirection(newIndex > oldIndex ? 'right' : 'left');
+
         Haptics.selectionAsync();
         ritualMachine.setWardrobeTab(tab);
-    }, []);
+    }, [activeWardrobeTab]);
 
     const handlePress = useCallback((piece: Piece) => {
         setSelectedPiece(piece);
@@ -239,18 +247,28 @@ export const WardrobeScreen: React.FC = () => {
     return (
         <GestureDetector gesture={composedGesture}>
             <View style={styles.container}>
-                <FlashList
-                    data={pieces}
-                    keyExtractor={(item) => item.id}
-                    numColumns={2}
-                    ListHeaderComponent={renderHeader}
-                    renderItem={renderItem}
-                    // @ts-ignore - estimatedItemSize is a valid prop for FlashList
-                    estimatedItemSize={(ITEM_SIZE / 0.92) + 20}
-                    contentContainerStyle={styles.listContent}
-                    columnWrapperStyle={{ justifyContent: 'space-between' }}
-                    ListEmptyComponent={<EmptyState category={activeWardrobeTab} onAdd={handleAddItem} />}
-                />
+                <Animated.View
+                    key={activeWardrobeTab}
+                    entering={direction === 'right'
+                        ? SlideInRight.duration(250).easing(Easing.out(Easing.quad))
+                        : SlideInLeft.duration(250).easing(Easing.out(Easing.quad))
+                    }
+                    exiting={FadeOut.duration(150)}
+                    style={{ flex: 1 }}
+                >
+                    <FlashList
+                        data={pieces}
+                        keyExtractor={(item) => item.id}
+                        numColumns={2}
+                        ListHeaderComponent={renderHeader}
+                        renderItem={renderItem}
+                        // @ts-ignore - estimatedItemSize is a valid prop for FlashList
+                        estimatedItemSize={(ITEM_SIZE / 0.92) + 20}
+                        contentContainerStyle={styles.listContent}
+                        columnWrapperStyle={{ justifyContent: 'space-between' }}
+                        ListEmptyComponent={<EmptyState category={activeWardrobeTab} onAdd={handleAddItem} />}
+                    />
+                </Animated.View>
 
                 {/* Floating Add Button */}
                 <TouchableOpacity
@@ -270,18 +288,6 @@ export const WardrobeScreen: React.FC = () => {
                     onFavorite={handleFavorite}
                     onEdit={() => { }}
                 />
-
-                {/* Bulk Action Sheet */}
-                {/* Bulk Action Sheet - TODO: Implement Selection Mode
-                {isSelectionMode && (
-                    <BulkActionSheet
-                        count={selectedIds.length}
-                        onClear={() => { setIsSelectionMode(false); setSelectedIds([]); }}
-                        onDelete={handleBulkDelete}
-                        onArchive={handleBulkArchive}
-                    />
-                )}
-                */}
             </View>
         </GestureDetector>
     );

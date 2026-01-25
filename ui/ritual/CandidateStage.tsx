@@ -14,30 +14,20 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 interface CandidateStageProps {
     outfit: Outfit;
     userId: string;
+    priority?: 'low' | 'normal' | 'high';
 }
 
-export const CandidateStage: React.FC<CandidateStageProps> = ({ outfit, userId }) => {
+export const CandidateStage: React.FC<CandidateStageProps> = React.memo(({ outfit, userId, priority = 'normal' }) => {
     const { pieces, score } = outfit;
-
-    // DEBUG: Log outfit data on mount
-    React.useEffect(() => {
-        console.log('[CandidateStage] Rendering outfit:', {
-            outfitId: outfit.id,
-            pieceCount: pieces.length,
-            pieces: pieces.map(p => ({
-                id: p.id,
-                name: p.name,
-                category: p.category,
-                imageUri: typeof p.imageUri === 'string'
-                    ? p.imageUri.substring(0, 60) + '...'
-                    : `require(${p.imageUri})`
-            }))
-        });
-    }, [outfit.id]);
 
     // Derived metadata
     const weatherTag = "OPTIMIZED FOR 12°C // CLEAR";
     const editorialDescription = "A precise configuration of technical shells and obsidian bases, calibrated for high-performance urban navigation.";
+
+    // Render Logic
+    // If priority is LOW (Buffer card), we skip the heavy breakdown list to save frame time on mount.
+    // We only render the hero grid.
+    const showDetails = priority !== 'low';
 
     // -------------------------------------------------------------------------
     // DYNAMIC BENTO GRID LOGIC (1-5 ITEMS)
@@ -51,7 +41,7 @@ export const CandidateStage: React.FC<CandidateStageProps> = ({ outfit, userId }
             return (
                 <View style={[styles.heroGrid, { height: 400 }]}>
                     <View style={styles.bentoTall}>
-                        <SmartImage source={typeof pieces[0].imageUri === 'number' ? pieces[0].imageUri : { uri: pieces[0].imageUri }} style={styles.fullImage} contentFit="cover" />
+                        <SmartImage source={typeof pieces[0].imageUri === 'number' ? pieces[0].imageUri : { uri: pieces[0].imageUri }} style={styles.fullImage} contentFit="cover" priority={priority} />
                         <View style={styles.bentoLabel}><Text style={styles.bentoLabelText}>PRIMARY</Text></View>
                         <LinearGradient colors={['transparent', 'rgba(0,0,0,0.4)']} style={styles.cardGradient} />
                     </View>
@@ -65,7 +55,7 @@ export const CandidateStage: React.FC<CandidateStageProps> = ({ outfit, userId }
                 <View style={styles.heroGrid}>
                     <View style={styles.gridMainCol}>
                         <View style={styles.bentoTall}>
-                            <SmartImage source={typeof pieces[0].imageUri === 'number' ? pieces[0].imageUri : { uri: pieces[0].imageUri }} style={styles.fullImage} contentFit="cover" />
+                            <SmartImage source={typeof pieces[0].imageUri === 'number' ? pieces[0].imageUri : { uri: pieces[0].imageUri }} style={styles.fullImage} contentFit="cover" priority={priority} />
                             <View style={styles.bentoLabel}><Text style={styles.bentoLabelText}>PRIMARY</Text></View>
                         </View>
                     </View>
@@ -85,7 +75,7 @@ export const CandidateStage: React.FC<CandidateStageProps> = ({ outfit, userId }
                 <View style={styles.heroGrid}>
                     <View style={styles.gridMainCol}>
                         <View style={styles.bentoTall}>
-                            <SmartImage source={typeof pieces[0].imageUri === 'number' ? pieces[0].imageUri : { uri: pieces[0].imageUri }} style={styles.fullImage} contentFit="cover" />
+                            <SmartImage source={typeof pieces[0].imageUri === 'number' ? pieces[0].imageUri : { uri: pieces[0].imageUri }} style={styles.fullImage} contentFit="cover" priority={priority} />
                             <View style={styles.bentoLabel}><Text style={styles.bentoLabelText}>PRIMARY</Text></View>
                         </View>
                     </View>
@@ -112,7 +102,7 @@ export const CandidateStage: React.FC<CandidateStageProps> = ({ outfit, userId }
                 <View style={styles.heroGrid}>
                     <View style={styles.gridMainCol}>
                         <View style={styles.bentoTall}>
-                            <SmartImage source={typeof pieces[0].imageUri === 'number' ? pieces[0].imageUri : { uri: pieces[0].imageUri }} style={styles.fullImage} contentFit="cover" />
+                            <SmartImage source={typeof pieces[0].imageUri === 'number' ? pieces[0].imageUri : { uri: pieces[0].imageUri }} style={styles.fullImage} contentFit="cover" priority={priority} />
                             <View style={styles.bentoLabel}><Text style={styles.bentoLabelText}>PRIMARY</Text></View>
                         </View>
                         <View style={styles.bentoSmall}>
@@ -136,7 +126,7 @@ export const CandidateStage: React.FC<CandidateStageProps> = ({ outfit, userId }
             <View style={styles.heroGrid}>
                 <View style={styles.gridMainCol}>
                     <View style={styles.bentoTall}>
-                        <SmartImage source={typeof pieces[0].imageUri === 'number' ? pieces[0].imageUri : { uri: pieces[0].imageUri }} style={styles.fullImage} contentFit="cover" />
+                        <SmartImage source={typeof pieces[0].imageUri === 'number' ? pieces[0].imageUri : { uri: pieces[0].imageUri }} style={styles.fullImage} contentFit="cover" priority={priority} />
                         <View style={styles.bentoLabel}><Text style={styles.bentoLabelText}>PRIMARY</Text></View>
                     </View>
                     <View style={styles.bentoSmall}>
@@ -166,60 +156,68 @@ export const CandidateStage: React.FC<CandidateStageProps> = ({ outfit, userId }
             <ScrollView
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
+                // Optimize: Disable scroll on low priority to avoid gesture conflicts/overhead
+                scrollEnabled={showDetails}
             >
-                {/* 1) CONTEXT HEADER (Moved Above Grid) */}
+                {/* 1) CONTEXT HEADER */}
                 <View style={styles.headerSection}>
                     <Text style={styles.kicker}>{weatherTag}</Text>
                     <Text style={styles.title}>Obsidian{'\n'}Command</Text>
                 </View>
 
-                {/* 2) HERO BENTO GRID */}
+                {/* 2) HERO BENTO GRID - Always Render */}
                 {renderBentoGrid()}
 
-                {/* 3) DESCRIPTION */}
-                <View style={styles.descriptionSection}>
-                    <Text style={styles.descriptionText}>
-                        {editorialDescription}
-                    </Text>
-                </View>
+                {/* 3) DESCRIPTION - Lazy Load */}
+                {showDetails && (
+                    <View style={styles.descriptionSection}>
+                        <Text style={styles.descriptionText}>
+                            {editorialDescription}
+                        </Text>
+                    </View>
+                )}
 
-                {/* 4) ITEM BREAKDOWN */}
-                <View style={styles.breakdownSection}>
-                    <Text style={styles.sectionTitle}>COMPONENT ANALYSIS</Text>
-                    {pieces.map((piece: any, index: number) => (
-                        <ShiningBorder
-                            key={`${piece.id}_list_${index}`}
-                            style={styles.itemCardWrapper}
-                            borderWidth={1}
-                            // DUAL BEAM: Restoring user's preferred light source config
-                            colors={['transparent', '#FFFFFF', 'transparent', '#FFFFFF', 'transparent']}
-                            locations={[0.1, 0.25, 0.5, 0.75, 0.9]}
-                            hiddenCorners={['top-right', 'bottom-left']}
-                        >
-                            <View style={styles.itemCardContent}>
-                                <SmartImage
-                                    source={typeof piece.imageUri === 'number' ? piece.imageUri : { uri: piece.imageUri }}
-                                    style={styles.itemThumb}
-                                    contentFit="contain"
-                                />
-                                <View style={styles.itemInfo}>
-                                    <Text style={styles.itemCategory}>{piece.category?.toUpperCase() || 'ITEM'}</Text>
-                                    <Text style={styles.itemName}>{piece.name || `${piece.color} ${piece.category}`}</Text>
+                {/* 4) ITEM BREAKDOWN - Lazy Load */}
+                {showDetails && (
+                    <View style={styles.breakdownSection}>
+                        <Text style={styles.sectionTitle}>COMPONENT ANALYSIS</Text>
+                        {pieces.map((piece: any, index: number) => (
+                            <ShiningBorder
+                                key={`${piece.id}_list_${index}`}
+                                style={styles.itemCardWrapper}
+                                borderWidth={1}
+                                // DUAL BEAM: Restoring user's preferred light source config
+                                colors={['transparent', '#FFFFFF', 'transparent', '#FFFFFF', 'transparent']}
+                                locations={[0.1, 0.25, 0.5, 0.75, 0.9]}
+                                hiddenCorners={['top-right', 'bottom-left']}
+                            >
+                                <View style={styles.itemCardContent}>
+                                    <SmartImage
+                                        source={typeof piece.imageUri === 'number' ? piece.imageUri : { uri: piece.imageUri }}
+                                        style={styles.itemThumb}
+                                        contentFit="contain"
+                                    />
+                                    <View style={styles.itemInfo}>
+                                        <Text style={styles.itemCategory}>{piece.category?.toUpperCase() || 'ITEM'}</Text>
+                                        <Text style={styles.itemName}>{piece.name || `${piece.color} ${piece.category}`}</Text>
+                                    </View>
                                 </View>
-                            </View>
-                        </ShiningBorder>
-                    ))}
-                </View>
+                            </ShiningBorder>
+                        ))}
+                    </View>
+                )}
 
-                {/* Identity Footer */}
-                <View style={styles.identitySection}>
-                    <Text style={styles.identityLabel}>IDENTITY: AUTH_REQUIRED</Text>
-                    <Text style={styles.identityId}>{userId} // SECURE_SYNC</Text>
-                </View>
+                {/* Identity Footer - Lazy Load */}
+                {showDetails && (
+                    <View style={styles.identitySection}>
+                        <Text style={styles.identityLabel}>IDENTITY: AUTH_REQUIRED</Text>
+                        <Text style={styles.identityId}>{userId} // SECURE_SYNC</Text>
+                    </View>
+                )}
             </ScrollView>
         </View>
     );
-};
+});
 
 const styles = StyleSheet.create({
     container: {
@@ -419,6 +417,7 @@ const styles = StyleSheet.create({
         flex: 1,
         marginLeft: 12,
         justifyContent: 'center',
+        alignItems: 'flex-start',
     },
     itemCategory: {
         fontFamily: TYPOGRAPHY.STACKS.PRIMARY,

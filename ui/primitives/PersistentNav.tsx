@@ -20,7 +20,7 @@ export const PersistentNav: React.FC<PersistentNavProps> = ({ activeRouteName })
     const navigation = useNavigation<NavigationProp>();
 
     // Hide if in immersive screens
-    const HIDDEN_ROUTES = ['Ritual', 'Seal', 'Camera', 'Void', 'Splash', 'Intro', 'Onboarding', 'RitualDeck'];
+    const HIDDEN_ROUTES = ['Ritual', 'Seal', 'Camera', 'Void', 'Splash', 'Intro', 'Onboarding', 'RitualDeck', 'ItemPreview'];
     if (HIDDEN_ROUTES.includes(activeRouteName)) {
         return null;
     }

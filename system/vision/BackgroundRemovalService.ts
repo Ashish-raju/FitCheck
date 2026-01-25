@@ -1,5 +1,5 @@
 import { Platform } from 'react-native';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 
 // In a real production app, this should be in an environment variable.
 // For this prototype, we are using the key provided by the user.
@@ -59,6 +59,10 @@ export class BackgroundRemovalService {
 
             if (!response.ok) {
                 const errorText = await response.text();
+                if (response.status === 400 && errorText.includes('unknown_foreground')) {
+                    console.warn('[BackgroundRemovalService] Could not identify foreground. Using original image.');
+                    return null; // Caller should handle null by using original
+                }
                 console.error('[BackgroundRemovalService] API Error:', response.status, errorText);
                 return null;
             }
@@ -85,7 +89,7 @@ export class BackgroundRemovalService {
 
                     try {
                         await FileSystem.writeAsStringAsync(fileUri, base64Content, {
-                            encoding: FileSystem.EncodingType.Base64,
+                            encoding: 'base64',
                         });
                         console.log('[BackgroundRemovalService] Saved processed image:', fileUri);
                         resolve(fileUri);

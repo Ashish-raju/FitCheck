@@ -27,6 +27,7 @@ export const SmartImage: React.FC<SmartImageProps> = ({
         return <View style={[style, styles.placeholder]} />;
     }
 
+    // Android: explicit downscaling prevents OOM/Stutter on large bitmaps
     return (
         <ExpoImage
             source={source}
@@ -35,6 +36,7 @@ export const SmartImage: React.FC<SmartImageProps> = ({
             transition={transition}
             cachePolicy="memory-disk"
             priority={priority}
+            allowDownscaling={true}
         />
     );
 };

@@ -194,6 +194,12 @@ export class RitualMachine {
         this.emit();
     }
 
+    public vetoRitual(rejectedOutfitId: string) {
+        console.log(`[RitualMachine] VETOED outfit: ${rejectedOutfitId}`);
+        // Optionally record rejection statistics here
+        this.emit();
+    }
+
     public triggerSafety() {
         console.log('[RitualMachine] ALERT: Routing to SAFETY');
         this.state = {

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, TextInput, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { Gesture, GestureDetector, Directions } from 'react-native-gesture-handler';
+import Animated, { FadeIn, FadeOut, SlideInLeft, SlideInRight, runOnJS } from 'react-native-reanimated';
 import { useRitualState } from '../state/ritualProvider';
 import { ritualMachine } from '../state/ritualMachine';
 import { WardrobeItemCard } from '../components/WardrobeItemCard';
@@ -19,16 +21,37 @@ export const ItemPreviewScreen: React.FC = () => {
     const [isSaving, setIsSaving] = useState(false);
     const [name, setName] = useState(draftItem?.name || '');
     const [category, setCategory] = useState(draftItem?.category || 'Top');
+    const [price, setPrice] = useState('');
 
     const CATEGORIES: any[] = ['Top', 'Bottom', 'Shoes', 'Outerwear', 'Accessory'];
 
-    if (!draftItem) {
-        // Fallback if no draft item - navigate back to wardrobe
-        React.useEffect(() => {
+    // Animation Logic
+    const [direction, setDirection] = React.useState<'left' | 'right'>('right');
+
+    const changeCategory = React.useCallback((dir: 1 | -1) => {
+        const currentIndex = CATEGORIES.indexOf(category);
+        let nextIndex = currentIndex + dir;
+
+        // Loop
+        if (nextIndex >= CATEGORIES.length) nextIndex = 0;
+        if (nextIndex < 0) nextIndex = CATEGORIES.length - 1;
+
+        setDirection(dir === 1 ? 'right' : 'left');
+        setCategory(CATEGORIES[nextIndex]);
+        Haptics.selectionAsync();
+    }, [category]);
+
+    const swipeLeft = Gesture.Fling().direction(Directions.LEFT).onEnd(() => runOnJS(changeCategory)(1));
+    const swipeRight = Gesture.Fling().direction(Directions.RIGHT).onEnd(() => runOnJS(changeCategory)(-1));
+    const composedGesture = Gesture.Simultaneous(swipeLeft, swipeRight);
+
+    React.useEffect(() => {
+        if (!draftItem) {
             ritualMachine.toWardrobe();
-        }, []);
-        return null;
-    }
+        }
+    }, [draftItem]);
+
+    if (!draftItem) return null;
 
     const handleAddToWardrobe = async () => {
         if (isSaving) return;
@@ -42,6 +65,7 @@ export const ItemPreviewScreen: React.FC = () => {
                 ...draftItem,
                 name: name || `${draftItem.color || ''} ${category}`.trim() || 'New Item',
                 category: category,
+                price: price ? parseFloat(price) : undefined,
             };
             await InventoryStore.getInstance().addPiece(finalPiece);
 
@@ -71,7 +95,7 @@ export const ItemPreviewScreen: React.FC = () => {
 
     return (
         <View style={styles.container}>
-            {/* Header */}
+            {/* Header - Fixed at Top */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={handleCancel} style={styles.closeButton}>
                     <Text style={styles.closeText}>✕</Text>
@@ -83,74 +107,104 @@ export const ItemPreviewScreen: React.FC = () => {
                 <View style={styles.closeButton} />
             </View>
 
-            {/* Preview Card - REUSED COMPONENT */}
-            <View style={styles.previewContainer}>
-                <WardrobeItemCard
-                    item={{
-                        id: draftItem.id,
-                        name: name || `${draftItem.color || ''} ${category}`.trim() || 'Untitled Item',
-                        category: category.toUpperCase(),
-                        imageUri: draftItem.imageUri,
-                        color: draftItem.color,
-                        brand: draftItem.brand,
-                        wornCount: 0
-                    }}
-                    onPress={() => { }}
-                    width={CARD_WIDTH}
-                    height={CARD_HEIGHT}
-                />
-            </View>
-
-            {/* Item Details */}
-            <View style={styles.detailsContainer}>
-                <TouchableOpacity
-                    style={styles.detailRow}
-                    onPress={() => {
-                        const currentIndex = CATEGORIES.indexOf(category);
-                        const nextIndex = (currentIndex + 1) % CATEGORIES.length;
-                        setCategory(CATEGORIES[nextIndex]);
-                        Haptics.selectionAsync();
-                    }}
+            <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                style={{ flex: 1 }}
+            >
+                <ScrollView
+                    contentContainerStyle={styles.scrollContent}
+                    showsVerticalScrollIndicator={false}
                 >
-                    <Text style={styles.detailLabel}>CATEGORY (TAP TO CHANGE)</Text>
-                    <Text style={styles.detailValue}>{category.toUpperCase()}</Text>
-                </TouchableOpacity>
-                <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>COLOR</Text>
-                    <Text style={styles.detailValue}>{draftItem.color || 'Unknown'}</Text>
-                </View>
-            </View>
+                    {/* Preview Card - REUSED COMPONENT */}
+                    <View style={styles.previewContainer}>
+                        <GestureDetector gesture={composedGesture}>
+                            <Animated.View
+                                key={category}
+                                entering={direction === 'right' ? SlideInRight.springify().damping(20) : SlideInLeft.springify().damping(20)}
+                                exiting={FadeOut.duration(100)}
+                            >
+                                <WardrobeItemCard
+                                    item={{
+                                        id: draftItem.id,
+                                        name: name || `${draftItem.color || ''} ${category}`.trim() || 'Untitled Item',
+                                        category: category.toUpperCase(),
+                                        imageUri: draftItem.imageUri,
+                                        color: draftItem.color,
+                                        brand: draftItem.brand,
+                                        wornCount: 0
+                                    }}
+                                    onPress={() => { }}
+                                    width={CARD_WIDTH}
+                                    height={CARD_HEIGHT}
+                                />
+                            </Animated.View>
+                        </GestureDetector>
+                    </View>
 
-            {/* Action Buttons */}
-            <View style={styles.actionsContainer}>
-                <TouchableOpacity
-                    style={[styles.primaryButton, isSaving && styles.buttonDisabled]}
-                    onPress={handleAddToWardrobe}
-                    disabled={isSaving}
-                    activeOpacity={0.8}
-                >
-                    <Text style={styles.primaryButtonText}>
-                        {isSaving ? 'ADDING...' : 'ADD TO WARDROBE'}
-                    </Text>
-                </TouchableOpacity>
+                    {/* Item Details */}
+                    <View style={styles.detailsContainer}>
+                        <TouchableOpacity
+                            style={styles.detailRow}
+                            onPress={() => {
+                                const currentIndex = CATEGORIES.indexOf(category);
+                                const nextIndex = (currentIndex + 1) % CATEGORIES.length;
+                                setCategory(CATEGORIES[nextIndex]);
+                                Haptics.selectionAsync();
+                            }}
+                        >
+                            <Text style={styles.detailLabel}>CATEGORY (TAP TO CHANGE)</Text>
+                            <Text style={styles.detailValue}>{category.toUpperCase()}</Text>
+                        </TouchableOpacity>
+                        <View style={styles.detailRow}>
+                            <Text style={styles.detailLabel}>COLOR</Text>
+                            <Text style={styles.detailValue}>{draftItem.color || 'Unknown'}</Text>
+                        </View>
+                        <View style={styles.detailRow}>
+                            <Text style={styles.detailLabel}>PRICE</Text>
+                            <TextInput
+                                style={styles.priceInput}
+                                value={price}
+                                onChangeText={setPrice}
+                                placeholder="0.00"
+                                placeholderTextColor={COLORS.ASH_GRAY}
+                                keyboardType="numeric"
+                                returnKeyType="done"
+                            />
+                        </View>
+                    </View>
 
-                <View style={styles.secondaryActions}>
-                    <TouchableOpacity
-                        style={styles.secondaryButton}
-                        onPress={handleRetake}
-                        activeOpacity={0.7}
-                    >
-                        <Text style={styles.secondaryButtonText}>Retake Photo</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={styles.secondaryButton}
-                        onPress={handleCancel}
-                        activeOpacity={0.7}
-                    >
-                        <Text style={styles.secondaryButtonText}>Cancel</Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
+                    {/* Action Buttons */}
+                    <View style={styles.actionsContainer}>
+                        <TouchableOpacity
+                            style={[styles.primaryButton, isSaving && styles.buttonDisabled]}
+                            onPress={handleAddToWardrobe}
+                            disabled={isSaving}
+                            activeOpacity={0.8}
+                        >
+                            <Text style={styles.primaryButtonText}>
+                                {isSaving ? 'ADDING...' : 'ADD TO WARDROBE'}
+                            </Text>
+                        </TouchableOpacity>
+
+                        <View style={styles.secondaryActions}>
+                            <TouchableOpacity
+                                style={styles.secondaryButton}
+                                onPress={handleRetake}
+                                activeOpacity={0.7}
+                            >
+                                <Text style={styles.secondaryButtonText}>Retake Photo</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={styles.secondaryButton}
+                                onPress={handleCancel}
+                                activeOpacity={0.7}
+                            >
+                                <Text style={styles.secondaryButtonText}>Cancel</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </ScrollView>
+            </KeyboardAvoidingView>
         </View>
     );
 };
@@ -159,6 +213,10 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: 'transparent',
+    },
+    scrollContent: {
+        flexGrow: 1,
+        paddingBottom: 40,
     },
     header: {
         flexDirection: 'row',
@@ -271,5 +329,14 @@ const styles = StyleSheet.create({
         fontSize: 13,
         fontWeight: '600',
         color: COLORS.RITUAL_WHITE,
+    },
+    priceInput: {
+        fontFamily: TYPOGRAPHY.STACKS.PRIMARY,
+        fontSize: 14,
+        fontWeight: '500',
+        color: COLORS.RITUAL_WHITE,
+        minWidth: 60,
+        textAlign: 'right',
+        padding: 0,
     },
 });

@@ -5,6 +5,7 @@ import { COLORS, MATERIAL } from '../tokens/color.tokens';
 import { TYPOGRAPHY } from '../tokens';
 import { SPACING } from '../tokens/spacing.tokens';
 import { ritualMachine } from '../state/ritualMachine';
+import { useIsFocused } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import { GarmentIngestionService } from '../../system/ingestion/GarmentIngestionService';
 
@@ -15,9 +16,20 @@ export const CameraScreen: React.FC = () => {
     const shutterFlash = React.useRef(new Animated.Value(0)).current;
     const cameraRef = React.useRef<CameraView>(null);
 
+    // Lifecycle Guards
+    const isFocused = useIsFocused();
+    const isMounted = React.useRef(true);
+
+    React.useEffect(() => {
+        isMounted.current = true;
+        return () => {
+            isMounted.current = false;
+        };
+    }, []);
+
     React.useEffect(() => {
         let hapticInterval: any;
-        if (isProcessing) {
+        if (isProcessing && isFocused) {
             hapticInterval = setInterval(() => {
                 Haptics.selectionAsync();
             }, 300);
@@ -33,12 +45,17 @@ export const CameraScreen: React.FC = () => {
             if (hapticInterval) clearInterval(hapticInterval);
         }
         return () => hapticInterval && clearInterval(hapticInterval);
-    }, [isProcessing]);
+    }, [isProcessing, isFocused]);
 
     const takePicture = async () => {
         if (isProcessing) return;
+        if (!cameraRef.current) return;
 
-        // Shutter Flash
+        // Prevent double triggers
+        setIsProcessing(true);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+
+        // Flash Animation
         shutterFlash.setValue(1);
         Animated.timing(shutterFlash, {
             toValue: 0,
@@ -46,41 +63,59 @@ export const CameraScreen: React.FC = () => {
             useNativeDriver: true,
         }).start();
 
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-        setIsProcessing(true);
-
         try {
-            let capturedUri = 'mock_uri_' + Date.now();
+            let capturedUri: string | undefined;
 
-            if (cameraRef.current) {
-                const photo = await cameraRef.current.takePictureAsync({
-                    quality: 0.7,
-                    base64: false,
-                    exif: false
-                });
-                if (photo) capturedUri = photo.uri;
-            }
+            // 1. Capture Logic
+            const photo = await cameraRef.current.takePictureAsync({
+                quality: 0.7,
+                base64: false,
+                exif: false
+            });
+            capturedUri = photo?.uri;
 
-            // Create draft item for preview (don't save yet)
-            const draftItem = await GarmentIngestionService.getInstance().createDraftItem(capturedUri);
+            if (!capturedUri) throw new Error("Failed to capture image URI");
+            if (!isMounted.current) return;
+
+            // 2. Mockable Ingestion with TIMEOUT Guard
+            // If Ingestion/AI takes too long, we fail gracefully rather than hanging forever.
+            const ingestionPromise = GarmentIngestionService.getInstance().createDraftItem(capturedUri);
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error("Analysis Timed Out")), 8000)
+            );
+
+            const draftItem = await Promise.race([ingestionPromise, timeoutPromise]);
+
+            if (!isMounted.current) return;
 
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
-            // Navigate to preview with draft item
+            // Navigate safely
             setTimeout(() => {
-                ritualMachine.toItemPreview(draftItem);
-            }, 300);
+                if (isMounted.current) {
+                    ritualMachine.toItemPreview(draftItem);
+                }
+            }, 100);
 
         } catch (error) {
-            console.error('[CameraScreen] Capture Failed:', error);
+            console.error('[CameraScreen] Capture/Ingestion Failed:', error);
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+
+            // Alert user if needed, or just reset
+            if (isMounted.current) {
+                // Optional: Show toast/alert here
+            }
         } finally {
-            setIsProcessing(false);
+            if (isMounted.current) {
+                setIsProcessing(false);
+            }
         }
     };
 
+    // If we don't have permission info yet, render empty
     if (!permission) return <View style={styles.container} />;
 
+    // STRICT Permission Gate
     if (!permission.granted) {
         return (
             <View style={styles.container}>
@@ -88,8 +123,16 @@ export const CameraScreen: React.FC = () => {
                 <TouchableOpacity onPress={requestPermission} style={styles.grantButton}>
                     <Text style={styles.grantText}>GRANT ACCESS</Text>
                 </TouchableOpacity>
+                <TouchableOpacity onPress={() => ritualMachine.toWardrobe()} style={{ marginTop: 20 }}>
+                    <Text style={[styles.closeText, { fontSize: 16 }]}>Cancel</Text>
+                </TouchableOpacity>
             </View>
         );
+    }
+
+    // Unmount camera when not focused to prevent background resource usage / freezes
+    if (!isFocused) {
+        return <View style={styles.container} />;
     }
 
     return (
@@ -123,7 +166,7 @@ export const CameraScreen: React.FC = () => {
                             )}
                         </View>
                         <Text style={styles.guideText}>
-                            {isProcessing ? "ANALYZING FABRIC..." : "PLACE GARMENT IN FRAME"}
+                            {isProcessing ? "ANALYZING STRUCTURE..." : "ALIGN GARMENT"}
                         </Text>
                     </View>
 
