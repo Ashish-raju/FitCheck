@@ -1,0 +1,2402 @@
+[
+  {
+    "id": "shirts_1",
+    "category": "Top",
+    "name": "Uniqlo Top 1",
+    "brand": "Uniqlo",
+    "price": 178,
+    "imageUri": "file:///assets/mock-data/images/shirt_white_minimalist_1769291380313.png",
+    "status": "Clean",
+    "warmth": 2,
+    "formality": 3,
+    "color": "Black",
+    "styleTags": [
+      "Minimalist"
+    ],
+    "dateAdded": 1767009145018
+  },
+  {
+    "id": "shirts_2",
+    "category": "Top",
+    "name": "Acne Studios Top 2",
+    "brand": "Acne Studios",
+    "price": 237,
+    "imageUri": "file:///assets/mock-data/images/shirt_black_tshirt_1769291392637.png",
+    "status": "Clean",
+    "warmth": 1,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Workwear"
+    ],
+    "dateAdded": 1766517081363
+  },
+  {
+    "id": "shirts_3",
+    "category": "Top",
+    "name": "Common Projects Top 3",
+    "brand": "Common Projects",
+    "price": 211,
+    "imageUri": "file:///assets/mock-data/images/shirt_blue_oxford_1769291405660.png",
+    "status": "Clean",
+    "warmth": 3,
+    "formality": 1,
+    "color": "Black",
+    "styleTags": [
+      "Streetwear"
+    ],
+    "dateAdded": 1766217681518
+  },
+  {
+    "id": "shirts_4",
+    "category": "Top",
+    "name": "A.P.C. Top 4",
+    "brand": "A.P.C.",
+    "price": 69,
+    "imageUri": "file:///assets/mock-data/images/shirt_patterned_casual_1769291418890.png",
+    "status": "Clean",
+    "warmth": 2,
+    "formality": 4,
+    "color": "Black",
+    "styleTags": [
+      "Formal"
+    ],
+    "dateAdded": 1767616259140
+  },
+  {
+    "id": "shirts_5",
+    "category": "Top",
+    "name": "Theory Top 5",
+    "brand": "Theory",
+    "price": 175,
+    "imageUri": "file:///assets/mock-data/images/shirt_flannel_streetwear_1769291433914.png",
+    "status": "Clean",
+    "warmth": 5,
+    "formality": 3,
+    "color": "Black",
+    "styleTags": [
+      "Casual"
+    ],
+    "dateAdded": 1761296517488
+  },
+  {
+    "id": "shirts_6",
+    "category": "Top",
+    "name": "Nike Top 6",
+    "brand": "Nike",
+    "price": 145,
+    "imageUri": "file:///assets/mock-data/images/shirt_white_minimalist_1769291380313.png",
+    "status": "Clean",
+    "warmth": 2,
+    "formality": 5,
+    "color": "Black",
+    "styleTags": [
+      "Avant-Garde"
+    ],
+    "dateAdded": 1762845342139
+  },
+  {
+    "id": "shirts_7",
+    "category": "Top",
+    "name": "Adidas Top 7",
+    "brand": "Adidas",
+    "price": 245,
+    "imageUri": "file:///assets/mock-data/images/shirt_black_tshirt_1769291392637.png",
+    "status": "Clean",
+    "warmth": 1,
+    "formality": 4,
+    "color": "Black",
+    "styleTags": [
+      "Vintage"
+    ],
+    "dateAdded": 1765494480566
+  },
+  {
+    "id": "shirts_8",
+    "category": "Top",
+    "name": "Clarks Top 8",
+    "brand": "Clarks",
+    "price": 187,
+    "imageUri": "file:///assets/mock-data/images/shirt_blue_oxford_1769291405660.png",
+    "status": "Clean",
+    "warmth": 4,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Minimalist"
+    ],
+    "dateAdded": 1767894310051
+  },
+  {
+    "id": "shirts_9",
+    "category": "Top",
+    "name": "Birkenstock Top 9",
+    "brand": "Birkenstock",
+    "price": 221,
+    "imageUri": "file:///assets/mock-data/images/shirt_patterned_casual_1769291418890.png",
+    "status": "Clean",
+    "warmth": 2,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Workwear"
+    ],
+    "dateAdded": 1767115814385
+  },
+  {
+    "id": "shirts_10",
+    "category": "Top",
+    "name": "Zara Top 10",
+    "brand": "Zara",
+    "price": 170,
+    "imageUri": "file:///assets/mock-data/images/shirt_flannel_streetwear_1769291433914.png",
+    "status": "Clean",
+    "warmth": 5,
+    "formality": 4,
+    "color": "Black",
+    "styleTags": [
+      "Streetwear"
+    ],
+    "dateAdded": 1759673463413
+  },
+  {
+    "id": "shirts_11",
+    "category": "Top",
+    "name": "Uniqlo Top 11",
+    "brand": "Uniqlo",
+    "price": 179,
+    "imageUri": "file:///assets/mock-data/images/shirt_white_minimalist_1769291380313.png",
+    "status": "Clean",
+    "warmth": 4,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Formal"
+    ],
+    "dateAdded": 1767849708028
+  },
+  {
+    "id": "shirts_12",
+    "category": "Top",
+    "name": "Acne Studios Top 12",
+    "brand": "Acne Studios",
+    "price": 145,
+    "imageUri": "file:///assets/mock-data/images/shirt_black_tshirt_1769291392637.png",
+    "status": "Clean",
+    "warmth": 2,
+    "formality": 3,
+    "color": "Black",
+    "styleTags": [
+      "Casual"
+    ],
+    "dateAdded": 1763885841895
+  },
+  {
+    "id": "shirts_13",
+    "category": "Top",
+    "name": "Common Projects Top 13",
+    "brand": "Common Projects",
+    "price": 186,
+    "imageUri": "file:///assets/mock-data/images/shirt_blue_oxford_1769291405660.png",
+    "status": "Clean",
+    "warmth": 1,
+    "formality": 3,
+    "color": "Black",
+    "styleTags": [
+      "Avant-Garde"
+    ],
+    "dateAdded": 1759433619642
+  },
+  {
+    "id": "shirts_14",
+    "category": "Top",
+    "name": "A.P.C. Top 14",
+    "brand": "A.P.C.",
+    "price": 243,
+    "imageUri": "file:///assets/mock-data/images/shirt_patterned_casual_1769291418890.png",
+    "status": "Clean",
+    "warmth": 1,
+    "formality": 5,
+    "color": "Black",
+    "styleTags": [
+      "Vintage"
+    ],
+    "dateAdded": 1764777937605
+  },
+  {
+    "id": "shirts_15",
+    "category": "Top",
+    "name": "Theory Top 15",
+    "brand": "Theory",
+    "price": 51,
+    "imageUri": "file:///assets/mock-data/images/shirt_flannel_streetwear_1769291433914.png",
+    "status": "Clean",
+    "warmth": 1,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Minimalist"
+    ],
+    "dateAdded": 1763284227091
+  },
+  {
+    "id": "shirts_16",
+    "category": "Top",
+    "name": "Nike Top 16",
+    "brand": "Nike",
+    "price": 147,
+    "imageUri": "file:///assets/mock-data/images/shirt_white_minimalist_1769291380313.png",
+    "status": "Clean",
+    "warmth": 4,
+    "formality": 1,
+    "color": "Black",
+    "styleTags": [
+      "Workwear"
+    ],
+    "dateAdded": 1762535334741
+  },
+  {
+    "id": "shirts_17",
+    "category": "Top",
+    "name": "Adidas Top 17",
+    "brand": "Adidas",
+    "price": 157,
+    "imageUri": "file:///assets/mock-data/images/shirt_black_tshirt_1769291392637.png",
+    "status": "Clean",
+    "warmth": 1,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Streetwear"
+    ],
+    "dateAdded": 1769198169354
+  },
+  {
+    "id": "shirts_18",
+    "category": "Top",
+    "name": "Clarks Top 18",
+    "brand": "Clarks",
+    "price": 122,
+    "imageUri": "file:///assets/mock-data/images/shirt_blue_oxford_1769291405660.png",
+    "status": "Clean",
+    "warmth": 5,
+    "formality": 5,
+    "color": "Black",
+    "styleTags": [
+      "Formal"
+    ],
+    "dateAdded": 1759915342629
+  },
+  {
+    "id": "shirts_19",
+    "category": "Top",
+    "name": "Birkenstock Top 19",
+    "brand": "Birkenstock",
+    "price": 209,
+    "imageUri": "file:///assets/mock-data/images/shirt_patterned_casual_1769291418890.png",
+    "status": "Clean",
+    "warmth": 5,
+    "formality": 4,
+    "color": "Black",
+    "styleTags": [
+      "Casual"
+    ],
+    "dateAdded": 1764721084864
+  },
+  {
+    "id": "shirts_20",
+    "category": "Top",
+    "name": "Zara Top 20",
+    "brand": "Zara",
+    "price": 123,
+    "imageUri": "file:///assets/mock-data/images/shirt_flannel_streetwear_1769291433914.png",
+    "status": "Clean",
+    "warmth": 5,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Avant-Garde"
+    ],
+    "dateAdded": 1765247423153
+  },
+  {
+    "id": "shirts_21",
+    "category": "Top",
+    "name": "Uniqlo Top 21",
+    "brand": "Uniqlo",
+    "price": 218,
+    "imageUri": "file:///assets/mock-data/images/shirt_white_minimalist_1769291380313.png",
+    "status": "Clean",
+    "warmth": 2,
+    "formality": 3,
+    "color": "Black",
+    "styleTags": [
+      "Vintage"
+    ],
+    "dateAdded": 1763517963073
+  },
+  {
+    "id": "shirts_22",
+    "category": "Top",
+    "name": "Acne Studios Top 22",
+    "brand": "Acne Studios",
+    "price": 247,
+    "imageUri": "file:///assets/mock-data/images/shirt_black_tshirt_1769291392637.png",
+    "status": "Clean",
+    "warmth": 5,
+    "formality": 5,
+    "color": "Black",
+    "styleTags": [
+      "Minimalist"
+    ],
+    "dateAdded": 1765800984899
+  },
+  {
+    "id": "shirts_23",
+    "category": "Top",
+    "name": "Common Projects Top 23",
+    "brand": "Common Projects",
+    "price": 130,
+    "imageUri": "file:///assets/mock-data/images/shirt_blue_oxford_1769291405660.png",
+    "status": "Clean",
+    "warmth": 2,
+    "formality": 3,
+    "color": "Black",
+    "styleTags": [
+      "Workwear"
+    ],
+    "dateAdded": 1759324653039
+  },
+  {
+    "id": "shirts_24",
+    "category": "Top",
+    "name": "A.P.C. Top 24",
+    "brand": "A.P.C.",
+    "price": 171,
+    "imageUri": "file:///assets/mock-data/images/shirt_patterned_casual_1769291418890.png",
+    "status": "Clean",
+    "warmth": 3,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Streetwear"
+    ],
+    "dateAdded": 1762327768335
+  },
+  {
+    "id": "shirts_25",
+    "category": "Top",
+    "name": "Theory Top 25",
+    "brand": "Theory",
+    "price": 63,
+    "imageUri": "file:///assets/mock-data/images/shirt_flannel_streetwear_1769291433914.png",
+    "status": "Clean",
+    "warmth": 2,
+    "formality": 4,
+    "color": "Black",
+    "styleTags": [
+      "Formal"
+    ],
+    "dateAdded": 1767094724668
+  },
+  {
+    "id": "shirts_26",
+    "category": "Top",
+    "name": "Nike Top 26",
+    "brand": "Nike",
+    "price": 180,
+    "imageUri": "file:///assets/mock-data/images/shirt_white_minimalist_1769291380313.png",
+    "status": "Clean",
+    "warmth": 4,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Casual"
+    ],
+    "dateAdded": 1762182473835
+  },
+  {
+    "id": "shirts_27",
+    "category": "Top",
+    "name": "Adidas Top 27",
+    "brand": "Adidas",
+    "price": 174,
+    "imageUri": "file:///assets/mock-data/images/shirt_black_tshirt_1769291392637.png",
+    "status": "Clean",
+    "warmth": 4,
+    "formality": 3,
+    "color": "Black",
+    "styleTags": [
+      "Avant-Garde"
+    ],
+    "dateAdded": 1766313357972
+  },
+  {
+    "id": "shirts_28",
+    "category": "Top",
+    "name": "Clarks Top 28",
+    "brand": "Clarks",
+    "price": 113,
+    "imageUri": "file:///assets/mock-data/images/shirt_blue_oxford_1769291405660.png",
+    "status": "Clean",
+    "warmth": 3,
+    "formality": 4,
+    "color": "Black",
+    "styleTags": [
+      "Vintage"
+    ],
+    "dateAdded": 1768991326387
+  },
+  {
+    "id": "shirts_29",
+    "category": "Top",
+    "name": "Birkenstock Top 29",
+    "brand": "Birkenstock",
+    "price": 93,
+    "imageUri": "file:///assets/mock-data/images/shirt_patterned_casual_1769291418890.png",
+    "status": "Clean",
+    "warmth": 2,
+    "formality": 3,
+    "color": "Black",
+    "styleTags": [
+      "Minimalist"
+    ],
+    "dateAdded": 1760840246701
+  },
+  {
+    "id": "shirts_30",
+    "category": "Top",
+    "name": "Zara Top 30",
+    "brand": "Zara",
+    "price": 103,
+    "imageUri": "file:///assets/mock-data/images/shirt_flannel_streetwear_1769291433914.png",
+    "status": "Clean",
+    "warmth": 3,
+    "formality": 3,
+    "color": "Black",
+    "styleTags": [
+      "Workwear"
+    ],
+    "dateAdded": 1760823901810
+  },
+  {
+    "id": "shirts_31",
+    "category": "Top",
+    "name": "Uniqlo Top 31",
+    "brand": "Uniqlo",
+    "price": 181,
+    "imageUri": "file:///assets/mock-data/images/shirt_white_minimalist_1769291380313.png",
+    "status": "Clean",
+    "warmth": 3,
+    "formality": 5,
+    "color": "Black",
+    "styleTags": [
+      "Streetwear"
+    ],
+    "dateAdded": 1762252315309
+  },
+  {
+    "id": "shirts_32",
+    "category": "Top",
+    "name": "Acne Studios Top 32",
+    "brand": "Acne Studios",
+    "price": 113,
+    "imageUri": "file:///assets/mock-data/images/shirt_black_tshirt_1769291392637.png",
+    "status": "Clean",
+    "warmth": 2,
+    "formality": 4,
+    "color": "Black",
+    "styleTags": [
+      "Formal"
+    ],
+    "dateAdded": 1761358943902
+  },
+  {
+    "id": "shirts_33",
+    "category": "Top",
+    "name": "Common Projects Top 33",
+    "brand": "Common Projects",
+    "price": 81,
+    "imageUri": "file:///assets/mock-data/images/shirt_blue_oxford_1769291405660.png",
+    "status": "Clean",
+    "warmth": 3,
+    "formality": 4,
+    "color": "Black",
+    "styleTags": [
+      "Casual"
+    ],
+    "dateAdded": 1763566977695
+  },
+  {
+    "id": "shirts_34",
+    "category": "Top",
+    "name": "A.P.C. Top 34",
+    "brand": "A.P.C.",
+    "price": 142,
+    "imageUri": "file:///assets/mock-data/images/shirt_patterned_casual_1769291418890.png",
+    "status": "Clean",
+    "warmth": 3,
+    "formality": 4,
+    "color": "Black",
+    "styleTags": [
+      "Avant-Garde"
+    ],
+    "dateAdded": 1768743573687
+  },
+  {
+    "id": "shirts_35",
+    "category": "Top",
+    "name": "Theory Top 35",
+    "brand": "Theory",
+    "price": 175,
+    "imageUri": "file:///assets/mock-data/images/shirt_flannel_streetwear_1769291433914.png",
+    "status": "Clean",
+    "warmth": 1,
+    "formality": 1,
+    "color": "Black",
+    "styleTags": [
+      "Vintage"
+    ],
+    "dateAdded": 1762660543219
+  },
+  {
+    "id": "shirts_36",
+    "category": "Top",
+    "name": "Nike Top 36",
+    "brand": "Nike",
+    "price": 236,
+    "imageUri": "file:///assets/mock-data/images/shirt_white_minimalist_1769291380313.png",
+    "status": "Clean",
+    "warmth": 1,
+    "formality": 3,
+    "color": "Black",
+    "styleTags": [
+      "Minimalist"
+    ],
+    "dateAdded": 1765069350373
+  },
+  {
+    "id": "shirts_37",
+    "category": "Top",
+    "name": "Adidas Top 37",
+    "brand": "Adidas",
+    "price": 57,
+    "imageUri": "file:///assets/mock-data/images/shirt_black_tshirt_1769291392637.png",
+    "status": "Clean",
+    "warmth": 5,
+    "formality": 3,
+    "color": "Black",
+    "styleTags": [
+      "Workwear"
+    ],
+    "dateAdded": 1767454380236
+  },
+  {
+    "id": "shirts_38",
+    "category": "Top",
+    "name": "Clarks Top 38",
+    "brand": "Clarks",
+    "price": 139,
+    "imageUri": "file:///assets/mock-data/images/shirt_blue_oxford_1769291405660.png",
+    "status": "Clean",
+    "warmth": 2,
+    "formality": 1,
+    "color": "Black",
+    "styleTags": [
+      "Streetwear"
+    ],
+    "dateAdded": 1768755807468
+  },
+  {
+    "id": "shirts_39",
+    "category": "Top",
+    "name": "Birkenstock Top 39",
+    "brand": "Birkenstock",
+    "price": 73,
+    "imageUri": "file:///assets/mock-data/images/shirt_patterned_casual_1769291418890.png",
+    "status": "Clean",
+    "warmth": 1,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Formal"
+    ],
+    "dateAdded": 1763942125151
+  },
+  {
+    "id": "shirts_40",
+    "category": "Top",
+    "name": "Zara Top 40",
+    "brand": "Zara",
+    "price": 107,
+    "imageUri": "file:///assets/mock-data/images/shirt_flannel_streetwear_1769291433914.png",
+    "status": "Clean",
+    "warmth": 2,
+    "formality": 4,
+    "color": "Black",
+    "styleTags": [
+      "Casual"
+    ],
+    "dateAdded": 1767060095538
+  },
+  {
+    "id": "shirts_41",
+    "category": "Top",
+    "name": "Uniqlo Top 41",
+    "brand": "Uniqlo",
+    "price": 110,
+    "imageUri": "file:///assets/mock-data/images/shirt_white_minimalist_1769291380313.png",
+    "status": "Clean",
+    "warmth": 3,
+    "formality": 1,
+    "color": "Black",
+    "styleTags": [
+      "Avant-Garde"
+    ],
+    "dateAdded": 1768217319847
+  },
+  {
+    "id": "shirts_42",
+    "category": "Top",
+    "name": "Acne Studios Top 42",
+    "brand": "Acne Studios",
+    "price": 122,
+    "imageUri": "file:///assets/mock-data/images/shirt_black_tshirt_1769291392637.png",
+    "status": "Clean",
+    "warmth": 1,
+    "formality": 5,
+    "color": "Black",
+    "styleTags": [
+      "Vintage"
+    ],
+    "dateAdded": 1763568745425
+  },
+  {
+    "id": "shirts_43",
+    "category": "Top",
+    "name": "Common Projects Top 43",
+    "brand": "Common Projects",
+    "price": 88,
+    "imageUri": "file:///assets/mock-data/images/shirt_blue_oxford_1769291405660.png",
+    "status": "Clean",
+    "warmth": 1,
+    "formality": 4,
+    "color": "Black",
+    "styleTags": [
+      "Minimalist"
+    ],
+    "dateAdded": 1761369547926
+  },
+  {
+    "id": "shirts_44",
+    "category": "Top",
+    "name": "A.P.C. Top 44",
+    "brand": "A.P.C.",
+    "price": 191,
+    "imageUri": "file:///assets/mock-data/images/shirt_patterned_casual_1769291418890.png",
+    "status": "Clean",
+    "warmth": 5,
+    "formality": 4,
+    "color": "Black",
+    "styleTags": [
+      "Workwear"
+    ],
+    "dateAdded": 1767397874218
+  },
+  {
+    "id": "shirts_45",
+    "category": "Top",
+    "name": "Theory Top 45",
+    "brand": "Theory",
+    "price": 241,
+    "imageUri": "file:///assets/mock-data/images/shirt_flannel_streetwear_1769291433914.png",
+    "status": "Clean",
+    "warmth": 5,
+    "formality": 4,
+    "color": "Black",
+    "styleTags": [
+      "Streetwear"
+    ],
+    "dateAdded": 1762382946672
+  },
+  {
+    "id": "shirts_46",
+    "category": "Top",
+    "name": "Nike Top 46",
+    "brand": "Nike",
+    "price": 227,
+    "imageUri": "file:///assets/mock-data/images/shirt_white_minimalist_1769291380313.png",
+    "status": "Clean",
+    "warmth": 1,
+    "formality": 4,
+    "color": "Black",
+    "styleTags": [
+      "Formal"
+    ],
+    "dateAdded": 1765934167071
+  },
+  {
+    "id": "shirts_47",
+    "category": "Top",
+    "name": "Adidas Top 47",
+    "brand": "Adidas",
+    "price": 222,
+    "imageUri": "file:///assets/mock-data/images/shirt_black_tshirt_1769291392637.png",
+    "status": "Clean",
+    "warmth": 1,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Casual"
+    ],
+    "dateAdded": 1767295614535
+  },
+  {
+    "id": "shirts_48",
+    "category": "Top",
+    "name": "Clarks Top 48",
+    "brand": "Clarks",
+    "price": 241,
+    "imageUri": "file:///assets/mock-data/images/shirt_blue_oxford_1769291405660.png",
+    "status": "Clean",
+    "warmth": 4,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Avant-Garde"
+    ],
+    "dateAdded": 1766006156641
+  },
+  {
+    "id": "shirts_49",
+    "category": "Top",
+    "name": "Birkenstock Top 49",
+    "brand": "Birkenstock",
+    "price": 69,
+    "imageUri": "file:///assets/mock-data/images/shirt_patterned_casual_1769291418890.png",
+    "status": "Clean",
+    "warmth": 2,
+    "formality": 4,
+    "color": "Black",
+    "styleTags": [
+      "Vintage"
+    ],
+    "dateAdded": 1761811185703
+  },
+  {
+    "id": "shirts_50",
+    "category": "Top",
+    "name": "Zara Top 50",
+    "brand": "Zara",
+    "price": 130,
+    "imageUri": "file:///assets/mock-data/images/shirt_flannel_streetwear_1769291433914.png",
+    "status": "Clean",
+    "warmth": 5,
+    "formality": 5,
+    "color": "Black",
+    "styleTags": [
+      "Minimalist"
+    ],
+    "dateAdded": 1769013637400
+  },
+  {
+    "id": "pants_1",
+    "category": "Bottom",
+    "name": "Uniqlo Bottom 1",
+    "brand": "Uniqlo",
+    "price": 241,
+    "imageUri": "file:///assets/mock-data/images/pants_black_cropped_1769291818202.png",
+    "status": "Clean",
+    "warmth": 2,
+    "formality": 1,
+    "color": "Black",
+    "styleTags": [
+      "Minimalist"
+    ],
+    "dateAdded": 1761474778144
+  },
+  {
+    "id": "pants_2",
+    "category": "Bottom",
+    "name": "Acne Studios Bottom 2",
+    "brand": "Acne Studios",
+    "price": 234,
+    "imageUri": "file:///assets/mock-data/images/pants_beige_chinos_1769291832497.png",
+    "status": "Clean",
+    "warmth": 5,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Workwear"
+    ],
+    "dateAdded": 1762065739682
+  },
+  {
+    "id": "pants_3",
+    "category": "Bottom",
+    "name": "Common Projects Bottom 3",
+    "brand": "Common Projects",
+    "price": 201,
+    "imageUri": "file:///assets/mock-data/images/pants_grey_wool_1769291853652.png",
+    "status": "Clean",
+    "warmth": 3,
+    "formality": 3,
+    "color": "Black",
+    "styleTags": [
+      "Streetwear"
+    ],
+    "dateAdded": 1766294108312
+  },
+  {
+    "id": "pants_4",
+    "category": "Bottom",
+    "name": "A.P.C. Bottom 4",
+    "brand": "A.P.C.",
+    "price": 244,
+    "imageUri": "file:///assets/mock-data/images/pants_denim_indigo_1769291869436.png",
+    "status": "Clean",
+    "warmth": 4,
+    "formality": 1,
+    "color": "Black",
+    "styleTags": [
+      "Formal"
+    ],
+    "dateAdded": 1767991438116
+  },
+  {
+    "id": "pants_5",
+    "category": "Bottom",
+    "name": "Theory Bottom 5",
+    "brand": "Theory",
+    "price": 152,
+    "imageUri": "file:///assets/mock-data/images/pants_olive_cargo_1769291882181.png",
+    "status": "Clean",
+    "warmth": 3,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Casual"
+    ],
+    "dateAdded": 1761759953528
+  },
+  {
+    "id": "pants_6",
+    "category": "Bottom",
+    "name": "Nike Bottom 6",
+    "brand": "Nike",
+    "price": 194,
+    "imageUri": "file:///assets/mock-data/images/pants_black_cropped_1769291818202.png",
+    "status": "Clean",
+    "warmth": 5,
+    "formality": 4,
+    "color": "Black",
+    "styleTags": [
+      "Avant-Garde"
+    ],
+    "dateAdded": 1763243457278
+  },
+  {
+    "id": "pants_7",
+    "category": "Bottom",
+    "name": "Adidas Bottom 7",
+    "brand": "Adidas",
+    "price": 201,
+    "imageUri": "file:///assets/mock-data/images/pants_beige_chinos_1769291832497.png",
+    "status": "Clean",
+    "warmth": 3,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Vintage"
+    ],
+    "dateAdded": 1760265318618
+  },
+  {
+    "id": "pants_8",
+    "category": "Bottom",
+    "name": "Clarks Bottom 8",
+    "brand": "Clarks",
+    "price": 71,
+    "imageUri": "file:///assets/mock-data/images/pants_grey_wool_1769291853652.png",
+    "status": "Clean",
+    "warmth": 4,
+    "formality": 4,
+    "color": "Black",
+    "styleTags": [
+      "Minimalist"
+    ],
+    "dateAdded": 1767060700635
+  },
+  {
+    "id": "pants_9",
+    "category": "Bottom",
+    "name": "Birkenstock Bottom 9",
+    "brand": "Birkenstock",
+    "price": 184,
+    "imageUri": "file:///assets/mock-data/images/pants_denim_indigo_1769291869436.png",
+    "status": "Clean",
+    "warmth": 5,
+    "formality": 4,
+    "color": "Black",
+    "styleTags": [
+      "Workwear"
+    ],
+    "dateAdded": 1761769347818
+  },
+  {
+    "id": "pants_10",
+    "category": "Bottom",
+    "name": "Zara Bottom 10",
+    "brand": "Zara",
+    "price": 147,
+    "imageUri": "file:///assets/mock-data/images/pants_olive_cargo_1769291882181.png",
+    "status": "Clean",
+    "warmth": 2,
+    "formality": 5,
+    "color": "Black",
+    "styleTags": [
+      "Streetwear"
+    ],
+    "dateAdded": 1766846528374
+  },
+  {
+    "id": "pants_11",
+    "category": "Bottom",
+    "name": "Uniqlo Bottom 11",
+    "brand": "Uniqlo",
+    "price": 226,
+    "imageUri": "file:///assets/mock-data/images/pants_black_cropped_1769291818202.png",
+    "status": "Clean",
+    "warmth": 2,
+    "formality": 1,
+    "color": "Black",
+    "styleTags": [
+      "Formal"
+    ],
+    "dateAdded": 1764206330013
+  },
+  {
+    "id": "pants_12",
+    "category": "Bottom",
+    "name": "Acne Studios Bottom 12",
+    "brand": "Acne Studios",
+    "price": 91,
+    "imageUri": "file:///assets/mock-data/images/pants_beige_chinos_1769291832497.png",
+    "status": "Clean",
+    "warmth": 2,
+    "formality": 5,
+    "color": "Black",
+    "styleTags": [
+      "Casual"
+    ],
+    "dateAdded": 1759550596233
+  },
+  {
+    "id": "pants_13",
+    "category": "Bottom",
+    "name": "Common Projects Bottom 13",
+    "brand": "Common Projects",
+    "price": 90,
+    "imageUri": "file:///assets/mock-data/images/pants_grey_wool_1769291853652.png",
+    "status": "Clean",
+    "warmth": 5,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Avant-Garde"
+    ],
+    "dateAdded": 1767713727208
+  },
+  {
+    "id": "pants_14",
+    "category": "Bottom",
+    "name": "A.P.C. Bottom 14",
+    "brand": "A.P.C.",
+    "price": 121,
+    "imageUri": "file:///assets/mock-data/images/pants_denim_indigo_1769291869436.png",
+    "status": "Clean",
+    "warmth": 5,
+    "formality": 4,
+    "color": "Black",
+    "styleTags": [
+      "Vintage"
+    ],
+    "dateAdded": 1767248443164
+  },
+  {
+    "id": "pants_15",
+    "category": "Bottom",
+    "name": "Theory Bottom 15",
+    "brand": "Theory",
+    "price": 235,
+    "imageUri": "file:///assets/mock-data/images/pants_olive_cargo_1769291882181.png",
+    "status": "Clean",
+    "warmth": 3,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Minimalist"
+    ],
+    "dateAdded": 1763636650137
+  },
+  {
+    "id": "pants_16",
+    "category": "Bottom",
+    "name": "Nike Bottom 16",
+    "brand": "Nike",
+    "price": 63,
+    "imageUri": "file:///assets/mock-data/images/pants_black_cropped_1769291818202.png",
+    "status": "Clean",
+    "warmth": 4,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Workwear"
+    ],
+    "dateAdded": 1759569102158
+  },
+  {
+    "id": "pants_17",
+    "category": "Bottom",
+    "name": "Adidas Bottom 17",
+    "brand": "Adidas",
+    "price": 185,
+    "imageUri": "file:///assets/mock-data/images/pants_beige_chinos_1769291832497.png",
+    "status": "Clean",
+    "warmth": 2,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Streetwear"
+    ],
+    "dateAdded": 1767715376308
+  },
+  {
+    "id": "pants_18",
+    "category": "Bottom",
+    "name": "Clarks Bottom 18",
+    "brand": "Clarks",
+    "price": 151,
+    "imageUri": "file:///assets/mock-data/images/pants_grey_wool_1769291853652.png",
+    "status": "Clean",
+    "warmth": 1,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Formal"
+    ],
+    "dateAdded": 1765709968594
+  },
+  {
+    "id": "pants_19",
+    "category": "Bottom",
+    "name": "Birkenstock Bottom 19",
+    "brand": "Birkenstock",
+    "price": 154,
+    "imageUri": "file:///assets/mock-data/images/pants_denim_indigo_1769291869436.png",
+    "status": "Clean",
+    "warmth": 2,
+    "formality": 1,
+    "color": "Black",
+    "styleTags": [
+      "Casual"
+    ],
+    "dateAdded": 1759722155784
+  },
+  {
+    "id": "pants_20",
+    "category": "Bottom",
+    "name": "Zara Bottom 20",
+    "brand": "Zara",
+    "price": 81,
+    "imageUri": "file:///assets/mock-data/images/pants_olive_cargo_1769291882181.png",
+    "status": "Clean",
+    "warmth": 4,
+    "formality": 3,
+    "color": "Black",
+    "styleTags": [
+      "Avant-Garde"
+    ],
+    "dateAdded": 1763043079074
+  },
+  {
+    "id": "pants_21",
+    "category": "Bottom",
+    "name": "Uniqlo Bottom 21",
+    "brand": "Uniqlo",
+    "price": 199,
+    "imageUri": "file:///assets/mock-data/images/pants_black_cropped_1769291818202.png",
+    "status": "Clean",
+    "warmth": 4,
+    "formality": 5,
+    "color": "Black",
+    "styleTags": [
+      "Vintage"
+    ],
+    "dateAdded": 1765382288479
+  },
+  {
+    "id": "pants_22",
+    "category": "Bottom",
+    "name": "Acne Studios Bottom 22",
+    "brand": "Acne Studios",
+    "price": 56,
+    "imageUri": "file:///assets/mock-data/images/pants_beige_chinos_1769291832497.png",
+    "status": "Clean",
+    "warmth": 1,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Minimalist"
+    ],
+    "dateAdded": 1767400659127
+  },
+  {
+    "id": "pants_23",
+    "category": "Bottom",
+    "name": "Common Projects Bottom 23",
+    "brand": "Common Projects",
+    "price": 82,
+    "imageUri": "file:///assets/mock-data/images/pants_grey_wool_1769291853652.png",
+    "status": "Clean",
+    "warmth": 4,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Workwear"
+    ],
+    "dateAdded": 1760665018387
+  },
+  {
+    "id": "pants_24",
+    "category": "Bottom",
+    "name": "A.P.C. Bottom 24",
+    "brand": "A.P.C.",
+    "price": 80,
+    "imageUri": "file:///assets/mock-data/images/pants_denim_indigo_1769291869436.png",
+    "status": "Clean",
+    "warmth": 4,
+    "formality": 5,
+    "color": "Black",
+    "styleTags": [
+      "Streetwear"
+    ],
+    "dateAdded": 1763359165339
+  },
+  {
+    "id": "pants_25",
+    "category": "Bottom",
+    "name": "Theory Bottom 25",
+    "brand": "Theory",
+    "price": 183,
+    "imageUri": "file:///assets/mock-data/images/pants_olive_cargo_1769291882181.png",
+    "status": "Clean",
+    "warmth": 1,
+    "formality": 3,
+    "color": "Black",
+    "styleTags": [
+      "Formal"
+    ],
+    "dateAdded": 1759696164947
+  },
+  {
+    "id": "pants_26",
+    "category": "Bottom",
+    "name": "Nike Bottom 26",
+    "brand": "Nike",
+    "price": 197,
+    "imageUri": "file:///assets/mock-data/images/pants_black_cropped_1769291818202.png",
+    "status": "Clean",
+    "warmth": 3,
+    "formality": 3,
+    "color": "Black",
+    "styleTags": [
+      "Casual"
+    ],
+    "dateAdded": 1763539998162
+  },
+  {
+    "id": "pants_27",
+    "category": "Bottom",
+    "name": "Adidas Bottom 27",
+    "brand": "Adidas",
+    "price": 125,
+    "imageUri": "file:///assets/mock-data/images/pants_beige_chinos_1769291832497.png",
+    "status": "Clean",
+    "warmth": 3,
+    "formality": 5,
+    "color": "Black",
+    "styleTags": [
+      "Avant-Garde"
+    ],
+    "dateAdded": 1760328163753
+  },
+  {
+    "id": "pants_28",
+    "category": "Bottom",
+    "name": "Clarks Bottom 28",
+    "brand": "Clarks",
+    "price": 208,
+    "imageUri": "file:///assets/mock-data/images/pants_grey_wool_1769291853652.png",
+    "status": "Clean",
+    "warmth": 1,
+    "formality": 4,
+    "color": "Black",
+    "styleTags": [
+      "Vintage"
+    ],
+    "dateAdded": 1766357243455
+  },
+  {
+    "id": "pants_29",
+    "category": "Bottom",
+    "name": "Birkenstock Bottom 29",
+    "brand": "Birkenstock",
+    "price": 248,
+    "imageUri": "file:///assets/mock-data/images/pants_denim_indigo_1769291869436.png",
+    "status": "Clean",
+    "warmth": 2,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Minimalist"
+    ],
+    "dateAdded": 1762134631369
+  },
+  {
+    "id": "pants_30",
+    "category": "Bottom",
+    "name": "Zara Bottom 30",
+    "brand": "Zara",
+    "price": 119,
+    "imageUri": "file:///assets/mock-data/images/pants_olive_cargo_1769291882181.png",
+    "status": "Clean",
+    "warmth": 2,
+    "formality": 5,
+    "color": "Black",
+    "styleTags": [
+      "Workwear"
+    ],
+    "dateAdded": 1765063538849
+  },
+  {
+    "id": "pants_31",
+    "category": "Bottom",
+    "name": "Uniqlo Bottom 31",
+    "brand": "Uniqlo",
+    "price": 178,
+    "imageUri": "file:///assets/mock-data/images/pants_black_cropped_1769291818202.png",
+    "status": "Clean",
+    "warmth": 1,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Streetwear"
+    ],
+    "dateAdded": 1763853121163
+  },
+  {
+    "id": "pants_32",
+    "category": "Bottom",
+    "name": "Acne Studios Bottom 32",
+    "brand": "Acne Studios",
+    "price": 177,
+    "imageUri": "file:///assets/mock-data/images/pants_beige_chinos_1769291832497.png",
+    "status": "Clean",
+    "warmth": 3,
+    "formality": 3,
+    "color": "Black",
+    "styleTags": [
+      "Formal"
+    ],
+    "dateAdded": 1764112164421
+  },
+  {
+    "id": "pants_33",
+    "category": "Bottom",
+    "name": "Common Projects Bottom 33",
+    "brand": "Common Projects",
+    "price": 148,
+    "imageUri": "file:///assets/mock-data/images/pants_grey_wool_1769291853652.png",
+    "status": "Clean",
+    "warmth": 2,
+    "formality": 3,
+    "color": "Black",
+    "styleTags": [
+      "Casual"
+    ],
+    "dateAdded": 1764680777422
+  },
+  {
+    "id": "pants_34",
+    "category": "Bottom",
+    "name": "A.P.C. Bottom 34",
+    "brand": "A.P.C.",
+    "price": 84,
+    "imageUri": "file:///assets/mock-data/images/pants_denim_indigo_1769291869436.png",
+    "status": "Clean",
+    "warmth": 3,
+    "formality": 1,
+    "color": "Black",
+    "styleTags": [
+      "Avant-Garde"
+    ],
+    "dateAdded": 1763627303995
+  },
+  {
+    "id": "pants_35",
+    "category": "Bottom",
+    "name": "Theory Bottom 35",
+    "brand": "Theory",
+    "price": 133,
+    "imageUri": "file:///assets/mock-data/images/pants_olive_cargo_1769291882181.png",
+    "status": "Clean",
+    "warmth": 1,
+    "formality": 3,
+    "color": "Black",
+    "styleTags": [
+      "Vintage"
+    ],
+    "dateAdded": 1760916609441
+  },
+  {
+    "id": "pants_36",
+    "category": "Bottom",
+    "name": "Nike Bottom 36",
+    "brand": "Nike",
+    "price": 170,
+    "imageUri": "file:///assets/mock-data/images/pants_black_cropped_1769291818202.png",
+    "status": "Clean",
+    "warmth": 1,
+    "formality": 4,
+    "color": "Black",
+    "styleTags": [
+      "Minimalist"
+    ],
+    "dateAdded": 1759846894481
+  },
+  {
+    "id": "pants_37",
+    "category": "Bottom",
+    "name": "Adidas Bottom 37",
+    "brand": "Adidas",
+    "price": 207,
+    "imageUri": "file:///assets/mock-data/images/pants_beige_chinos_1769291832497.png",
+    "status": "Clean",
+    "warmth": 2,
+    "formality": 3,
+    "color": "Black",
+    "styleTags": [
+      "Workwear"
+    ],
+    "dateAdded": 1759594595290
+  },
+  {
+    "id": "pants_38",
+    "category": "Bottom",
+    "name": "Clarks Bottom 38",
+    "brand": "Clarks",
+    "price": 59,
+    "imageUri": "file:///assets/mock-data/images/pants_grey_wool_1769291853652.png",
+    "status": "Clean",
+    "warmth": 5,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Streetwear"
+    ],
+    "dateAdded": 1762465494717
+  },
+  {
+    "id": "pants_39",
+    "category": "Bottom",
+    "name": "Birkenstock Bottom 39",
+    "brand": "Birkenstock",
+    "price": 79,
+    "imageUri": "file:///assets/mock-data/images/pants_denim_indigo_1769291869436.png",
+    "status": "Clean",
+    "warmth": 1,
+    "formality": 3,
+    "color": "Black",
+    "styleTags": [
+      "Formal"
+    ],
+    "dateAdded": 1767928317078
+  },
+  {
+    "id": "pants_40",
+    "category": "Bottom",
+    "name": "Zara Bottom 40",
+    "brand": "Zara",
+    "price": 248,
+    "imageUri": "file:///assets/mock-data/images/pants_olive_cargo_1769291882181.png",
+    "status": "Clean",
+    "warmth": 3,
+    "formality": 1,
+    "color": "Black",
+    "styleTags": [
+      "Casual"
+    ],
+    "dateAdded": 1763421102800
+  },
+  {
+    "id": "pants_41",
+    "category": "Bottom",
+    "name": "Uniqlo Bottom 41",
+    "brand": "Uniqlo",
+    "price": 57,
+    "imageUri": "file:///assets/mock-data/images/pants_black_cropped_1769291818202.png",
+    "status": "Clean",
+    "warmth": 2,
+    "formality": 1,
+    "color": "Black",
+    "styleTags": [
+      "Avant-Garde"
+    ],
+    "dateAdded": 1762402400126
+  },
+  {
+    "id": "pants_42",
+    "category": "Bottom",
+    "name": "Acne Studios Bottom 42",
+    "brand": "Acne Studios",
+    "price": 215,
+    "imageUri": "file:///assets/mock-data/images/pants_beige_chinos_1769291832497.png",
+    "status": "Clean",
+    "warmth": 2,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Vintage"
+    ],
+    "dateAdded": 1763587747307
+  },
+  {
+    "id": "pants_43",
+    "category": "Bottom",
+    "name": "Common Projects Bottom 43",
+    "brand": "Common Projects",
+    "price": 172,
+    "imageUri": "file:///assets/mock-data/images/pants_grey_wool_1769291853652.png",
+    "status": "Clean",
+    "warmth": 1,
+    "formality": 1,
+    "color": "Black",
+    "styleTags": [
+      "Minimalist"
+    ],
+    "dateAdded": 1760632387574
+  },
+  {
+    "id": "pants_44",
+    "category": "Bottom",
+    "name": "A.P.C. Bottom 44",
+    "brand": "A.P.C.",
+    "price": 191,
+    "imageUri": "file:///assets/mock-data/images/pants_denim_indigo_1769291869436.png",
+    "status": "Clean",
+    "warmth": 5,
+    "formality": 4,
+    "color": "Black",
+    "styleTags": [
+      "Workwear"
+    ],
+    "dateAdded": 1763798712780
+  },
+  {
+    "id": "pants_45",
+    "category": "Bottom",
+    "name": "Theory Bottom 45",
+    "brand": "Theory",
+    "price": 131,
+    "imageUri": "file:///assets/mock-data/images/pants_olive_cargo_1769291882181.png",
+    "status": "Clean",
+    "warmth": 2,
+    "formality": 4,
+    "color": "Black",
+    "styleTags": [
+      "Streetwear"
+    ],
+    "dateAdded": 1766744350702
+  },
+  {
+    "id": "pants_46",
+    "category": "Bottom",
+    "name": "Nike Bottom 46",
+    "brand": "Nike",
+    "price": 129,
+    "imageUri": "file:///assets/mock-data/images/pants_black_cropped_1769291818202.png",
+    "status": "Clean",
+    "warmth": 3,
+    "formality": 4,
+    "color": "Black",
+    "styleTags": [
+      "Formal"
+    ],
+    "dateAdded": 1768934915197
+  },
+  {
+    "id": "pants_47",
+    "category": "Bottom",
+    "name": "Adidas Bottom 47",
+    "brand": "Adidas",
+    "price": 185,
+    "imageUri": "file:///assets/mock-data/images/pants_beige_chinos_1769291832497.png",
+    "status": "Clean",
+    "warmth": 3,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Casual"
+    ],
+    "dateAdded": 1761644190665
+  },
+  {
+    "id": "pants_48",
+    "category": "Bottom",
+    "name": "Clarks Bottom 48",
+    "brand": "Clarks",
+    "price": 168,
+    "imageUri": "file:///assets/mock-data/images/pants_grey_wool_1769291853652.png",
+    "status": "Clean",
+    "warmth": 2,
+    "formality": 5,
+    "color": "Black",
+    "styleTags": [
+      "Avant-Garde"
+    ],
+    "dateAdded": 1761094566559
+  },
+  {
+    "id": "pants_49",
+    "category": "Bottom",
+    "name": "Birkenstock Bottom 49",
+    "brand": "Birkenstock",
+    "price": 114,
+    "imageUri": "file:///assets/mock-data/images/pants_denim_indigo_1769291869436.png",
+    "status": "Clean",
+    "warmth": 3,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Vintage"
+    ],
+    "dateAdded": 1759687169559
+  },
+  {
+    "id": "pants_50",
+    "category": "Bottom",
+    "name": "Zara Bottom 50",
+    "brand": "Zara",
+    "price": 240,
+    "imageUri": "file:///assets/mock-data/images/pants_olive_cargo_1769291882181.png",
+    "status": "Clean",
+    "warmth": 5,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Minimalist"
+    ],
+    "dateAdded": 1760589499067
+  },
+  {
+    "id": "shoes_1",
+    "category": "Shoes",
+    "name": "Uniqlo Shoes 1",
+    "brand": "Uniqlo",
+    "price": 241,
+    "imageUri": "file:///assets/mock-data/images/shoes_white_sneakers_1769291896158.png",
+    "status": "Clean",
+    "warmth": 3,
+    "formality": 4,
+    "color": "Black",
+    "styleTags": [
+      "Minimalist"
+    ],
+    "dateAdded": 1763587046400
+  },
+  {
+    "id": "shoes_2",
+    "category": "Shoes",
+    "name": "Acne Studios Shoes 2",
+    "brand": "Acne Studios",
+    "price": 88,
+    "imageUri": "file:///assets/mock-data/images/shoes_black_boots_1769291909320.png",
+    "status": "Clean",
+    "warmth": 4,
+    "formality": 4,
+    "color": "Black",
+    "styleTags": [
+      "Workwear"
+    ],
+    "dateAdded": 1764378569139
+  },
+  {
+    "id": "shoes_3",
+    "category": "Shoes",
+    "name": "Common Projects Shoes 3",
+    "brand": "Common Projects",
+    "price": 225,
+    "imageUri": "file:///assets/mock-data/images/shoes_brown_loafers_1769291923879.png",
+    "status": "Clean",
+    "warmth": 1,
+    "formality": 3,
+    "color": "Black",
+    "styleTags": [
+      "Streetwear"
+    ],
+    "dateAdded": 1759370885667
+  },
+  {
+    "id": "shoes_4",
+    "category": "Shoes",
+    "name": "A.P.C. Shoes 4",
+    "brand": "A.P.C.",
+    "price": 65,
+    "imageUri": "file:///assets/mock-data/images/shoes_grey_runners_1769291938062.png",
+    "status": "Clean",
+    "warmth": 5,
+    "formality": 4,
+    "color": "Black",
+    "styleTags": [
+      "Formal"
+    ],
+    "dateAdded": 1761637960135
+  },
+  {
+    "id": "shoes_5",
+    "category": "Shoes",
+    "name": "Theory Shoes 5",
+    "brand": "Theory",
+    "price": 147,
+    "imageUri": "file:///assets/mock-data/images/shoes_black_derbies_1769291955831.png",
+    "status": "Clean",
+    "warmth": 5,
+    "formality": 4,
+    "color": "Black",
+    "styleTags": [
+      "Casual"
+    ],
+    "dateAdded": 1765114714841
+  },
+  {
+    "id": "shoes_6",
+    "category": "Shoes",
+    "name": "Nike Shoes 6",
+    "brand": "Nike",
+    "price": 86,
+    "imageUri": "file:///assets/mock-data/images/shoes_white_sneakers_1769291896158.png",
+    "status": "Clean",
+    "warmth": 3,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Avant-Garde"
+    ],
+    "dateAdded": 1760693606326
+  },
+  {
+    "id": "shoes_7",
+    "category": "Shoes",
+    "name": "Adidas Shoes 7",
+    "brand": "Adidas",
+    "price": 75,
+    "imageUri": "file:///assets/mock-data/images/shoes_black_boots_1769291909320.png",
+    "status": "Clean",
+    "warmth": 1,
+    "formality": 5,
+    "color": "Black",
+    "styleTags": [
+      "Vintage"
+    ],
+    "dateAdded": 1765080050741
+  },
+  {
+    "id": "shoes_8",
+    "category": "Shoes",
+    "name": "Clarks Shoes 8",
+    "brand": "Clarks",
+    "price": 244,
+    "imageUri": "file:///assets/mock-data/images/shoes_brown_loafers_1769291923879.png",
+    "status": "Clean",
+    "warmth": 4,
+    "formality": 4,
+    "color": "Black",
+    "styleTags": [
+      "Minimalist"
+    ],
+    "dateAdded": 1759837703022
+  },
+  {
+    "id": "shoes_9",
+    "category": "Shoes",
+    "name": "Birkenstock Shoes 9",
+    "brand": "Birkenstock",
+    "price": 111,
+    "imageUri": "file:///assets/mock-data/images/shoes_grey_runners_1769291938062.png",
+    "status": "Clean",
+    "warmth": 5,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Workwear"
+    ],
+    "dateAdded": 1768960726390
+  },
+  {
+    "id": "shoes_10",
+    "category": "Shoes",
+    "name": "Zara Shoes 10",
+    "brand": "Zara",
+    "price": 124,
+    "imageUri": "file:///assets/mock-data/images/shoes_black_derbies_1769291955831.png",
+    "status": "Clean",
+    "warmth": 2,
+    "formality": 1,
+    "color": "Black",
+    "styleTags": [
+      "Streetwear"
+    ],
+    "dateAdded": 1759950681366
+  },
+  {
+    "id": "shoes_11",
+    "category": "Shoes",
+    "name": "Uniqlo Shoes 11",
+    "brand": "Uniqlo",
+    "price": 150,
+    "imageUri": "file:///assets/mock-data/images/shoes_white_sneakers_1769291896158.png",
+    "status": "Clean",
+    "warmth": 5,
+    "formality": 5,
+    "color": "Black",
+    "styleTags": [
+      "Formal"
+    ],
+    "dateAdded": 1762684104875
+  },
+  {
+    "id": "shoes_12",
+    "category": "Shoes",
+    "name": "Acne Studios Shoes 12",
+    "brand": "Acne Studios",
+    "price": 52,
+    "imageUri": "file:///assets/mock-data/images/shoes_black_boots_1769291909320.png",
+    "status": "Clean",
+    "warmth": 3,
+    "formality": 4,
+    "color": "Black",
+    "styleTags": [
+      "Casual"
+    ],
+    "dateAdded": 1760679932885
+  },
+  {
+    "id": "shoes_13",
+    "category": "Shoes",
+    "name": "Common Projects Shoes 13",
+    "brand": "Common Projects",
+    "price": 200,
+    "imageUri": "file:///assets/mock-data/images/shoes_brown_loafers_1769291923879.png",
+    "status": "Clean",
+    "warmth": 5,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Avant-Garde"
+    ],
+    "dateAdded": 1760038064818
+  },
+  {
+    "id": "shoes_14",
+    "category": "Shoes",
+    "name": "A.P.C. Shoes 14",
+    "brand": "A.P.C.",
+    "price": 239,
+    "imageUri": "file:///assets/mock-data/images/shoes_grey_runners_1769291938062.png",
+    "status": "Clean",
+    "warmth": 4,
+    "formality": 3,
+    "color": "Black",
+    "styleTags": [
+      "Vintage"
+    ],
+    "dateAdded": 1761480054746
+  },
+  {
+    "id": "shoes_15",
+    "category": "Shoes",
+    "name": "Theory Shoes 15",
+    "brand": "Theory",
+    "price": 62,
+    "imageUri": "file:///assets/mock-data/images/shoes_black_derbies_1769291955831.png",
+    "status": "Clean",
+    "warmth": 3,
+    "formality": 1,
+    "color": "Black",
+    "styleTags": [
+      "Minimalist"
+    ],
+    "dateAdded": 1760970877831
+  },
+  {
+    "id": "shoes_16",
+    "category": "Shoes",
+    "name": "Nike Shoes 16",
+    "brand": "Nike",
+    "price": 110,
+    "imageUri": "file:///assets/mock-data/images/shoes_white_sneakers_1769291896158.png",
+    "status": "Clean",
+    "warmth": 5,
+    "formality": 3,
+    "color": "Black",
+    "styleTags": [
+      "Workwear"
+    ],
+    "dateAdded": 1762616723615
+  },
+  {
+    "id": "shoes_17",
+    "category": "Shoes",
+    "name": "Adidas Shoes 17",
+    "brand": "Adidas",
+    "price": 133,
+    "imageUri": "file:///assets/mock-data/images/shoes_black_boots_1769291909320.png",
+    "status": "Clean",
+    "warmth": 5,
+    "formality": 4,
+    "color": "Black",
+    "styleTags": [
+      "Streetwear"
+    ],
+    "dateAdded": 1760596011152
+  },
+  {
+    "id": "shoes_18",
+    "category": "Shoes",
+    "name": "Clarks Shoes 18",
+    "brand": "Clarks",
+    "price": 243,
+    "imageUri": "file:///assets/mock-data/images/shoes_brown_loafers_1769291923879.png",
+    "status": "Clean",
+    "warmth": 3,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Formal"
+    ],
+    "dateAdded": 1768233099327
+  },
+  {
+    "id": "shoes_19",
+    "category": "Shoes",
+    "name": "Birkenstock Shoes 19",
+    "brand": "Birkenstock",
+    "price": 152,
+    "imageUri": "file:///assets/mock-data/images/shoes_grey_runners_1769291938062.png",
+    "status": "Clean",
+    "warmth": 2,
+    "formality": 1,
+    "color": "Black",
+    "styleTags": [
+      "Casual"
+    ],
+    "dateAdded": 1762341999437
+  },
+  {
+    "id": "shoes_20",
+    "category": "Shoes",
+    "name": "Zara Shoes 20",
+    "brand": "Zara",
+    "price": 215,
+    "imageUri": "file:///assets/mock-data/images/shoes_black_derbies_1769291955831.png",
+    "status": "Clean",
+    "warmth": 5,
+    "formality": 5,
+    "color": "Black",
+    "styleTags": [
+      "Avant-Garde"
+    ],
+    "dateAdded": 1769053678626
+  },
+  {
+    "id": "shoes_21",
+    "category": "Shoes",
+    "name": "Uniqlo Shoes 21",
+    "brand": "Uniqlo",
+    "price": 132,
+    "imageUri": "file:///assets/mock-data/images/shoes_white_sneakers_1769291896158.png",
+    "status": "Clean",
+    "warmth": 5,
+    "formality": 4,
+    "color": "Black",
+    "styleTags": [
+      "Vintage"
+    ],
+    "dateAdded": 1763639413455
+  },
+  {
+    "id": "shoes_22",
+    "category": "Shoes",
+    "name": "Acne Studios Shoes 22",
+    "brand": "Acne Studios",
+    "price": 223,
+    "imageUri": "file:///assets/mock-data/images/shoes_black_boots_1769291909320.png",
+    "status": "Clean",
+    "warmth": 5,
+    "formality": 1,
+    "color": "Black",
+    "styleTags": [
+      "Minimalist"
+    ],
+    "dateAdded": 1768267935741
+  },
+  {
+    "id": "shoes_23",
+    "category": "Shoes",
+    "name": "Common Projects Shoes 23",
+    "brand": "Common Projects",
+    "price": 122,
+    "imageUri": "file:///assets/mock-data/images/shoes_brown_loafers_1769291923879.png",
+    "status": "Clean",
+    "warmth": 2,
+    "formality": 1,
+    "color": "Black",
+    "styleTags": [
+      "Workwear"
+    ],
+    "dateAdded": 1761239538712
+  },
+  {
+    "id": "shoes_24",
+    "category": "Shoes",
+    "name": "A.P.C. Shoes 24",
+    "brand": "A.P.C.",
+    "price": 184,
+    "imageUri": "file:///assets/mock-data/images/shoes_grey_runners_1769291938062.png",
+    "status": "Clean",
+    "warmth": 1,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Streetwear"
+    ],
+    "dateAdded": 1766421170951
+  },
+  {
+    "id": "shoes_25",
+    "category": "Shoes",
+    "name": "Theory Shoes 25",
+    "brand": "Theory",
+    "price": 244,
+    "imageUri": "file:///assets/mock-data/images/shoes_black_derbies_1769291955831.png",
+    "status": "Clean",
+    "warmth": 3,
+    "formality": 4,
+    "color": "Black",
+    "styleTags": [
+      "Formal"
+    ],
+    "dateAdded": 1761638626529
+  },
+  {
+    "id": "shoes_26",
+    "category": "Shoes",
+    "name": "Nike Shoes 26",
+    "brand": "Nike",
+    "price": 125,
+    "imageUri": "file:///assets/mock-data/images/shoes_white_sneakers_1769291896158.png",
+    "status": "Clean",
+    "warmth": 3,
+    "formality": 1,
+    "color": "Black",
+    "styleTags": [
+      "Casual"
+    ],
+    "dateAdded": 1761418474303
+  },
+  {
+    "id": "shoes_27",
+    "category": "Shoes",
+    "name": "Adidas Shoes 27",
+    "brand": "Adidas",
+    "price": 218,
+    "imageUri": "file:///assets/mock-data/images/shoes_black_boots_1769291909320.png",
+    "status": "Clean",
+    "warmth": 3,
+    "formality": 3,
+    "color": "Black",
+    "styleTags": [
+      "Avant-Garde"
+    ],
+    "dateAdded": 1761070435390
+  },
+  {
+    "id": "shoes_28",
+    "category": "Shoes",
+    "name": "Clarks Shoes 28",
+    "brand": "Clarks",
+    "price": 81,
+    "imageUri": "file:///assets/mock-data/images/shoes_brown_loafers_1769291923879.png",
+    "status": "Clean",
+    "warmth": 3,
+    "formality": 5,
+    "color": "Black",
+    "styleTags": [
+      "Vintage"
+    ],
+    "dateAdded": 1762301525949
+  },
+  {
+    "id": "shoes_29",
+    "category": "Shoes",
+    "name": "Birkenstock Shoes 29",
+    "brand": "Birkenstock",
+    "price": 154,
+    "imageUri": "file:///assets/mock-data/images/shoes_grey_runners_1769291938062.png",
+    "status": "Clean",
+    "warmth": 3,
+    "formality": 3,
+    "color": "Black",
+    "styleTags": [
+      "Minimalist"
+    ],
+    "dateAdded": 1764986279659
+  },
+  {
+    "id": "shoes_30",
+    "category": "Shoes",
+    "name": "Zara Shoes 30",
+    "brand": "Zara",
+    "price": 227,
+    "imageUri": "file:///assets/mock-data/images/shoes_black_derbies_1769291955831.png",
+    "status": "Clean",
+    "warmth": 4,
+    "formality": 4,
+    "color": "Black",
+    "styleTags": [
+      "Workwear"
+    ],
+    "dateAdded": 1759394196555
+  },
+  {
+    "id": "shoes_31",
+    "category": "Shoes",
+    "name": "Uniqlo Shoes 31",
+    "brand": "Uniqlo",
+    "price": 110,
+    "imageUri": "file:///assets/mock-data/images/shoes_white_sneakers_1769291896158.png",
+    "status": "Clean",
+    "warmth": 5,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Streetwear"
+    ],
+    "dateAdded": 1762565212212
+  },
+  {
+    "id": "shoes_32",
+    "category": "Shoes",
+    "name": "Acne Studios Shoes 32",
+    "brand": "Acne Studios",
+    "price": 90,
+    "imageUri": "file:///assets/mock-data/images/shoes_black_boots_1769291909320.png",
+    "status": "Clean",
+    "warmth": 2,
+    "formality": 3,
+    "color": "Black",
+    "styleTags": [
+      "Formal"
+    ],
+    "dateAdded": 1766424865193
+  },
+  {
+    "id": "shoes_33",
+    "category": "Shoes",
+    "name": "Common Projects Shoes 33",
+    "brand": "Common Projects",
+    "price": 186,
+    "imageUri": "file:///assets/mock-data/images/shoes_brown_loafers_1769291923879.png",
+    "status": "Clean",
+    "warmth": 1,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Casual"
+    ],
+    "dateAdded": 1766839035765
+  },
+  {
+    "id": "shoes_34",
+    "category": "Shoes",
+    "name": "A.P.C. Shoes 34",
+    "brand": "A.P.C.",
+    "price": 182,
+    "imageUri": "file:///assets/mock-data/images/shoes_grey_runners_1769291938062.png",
+    "status": "Clean",
+    "warmth": 2,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Avant-Garde"
+    ],
+    "dateAdded": 1765764436575
+  },
+  {
+    "id": "shoes_35",
+    "category": "Shoes",
+    "name": "Theory Shoes 35",
+    "brand": "Theory",
+    "price": 87,
+    "imageUri": "file:///assets/mock-data/images/shoes_black_derbies_1769291955831.png",
+    "status": "Clean",
+    "warmth": 4,
+    "formality": 4,
+    "color": "Black",
+    "styleTags": [
+      "Vintage"
+    ],
+    "dateAdded": 1767975040490
+  },
+  {
+    "id": "shoes_36",
+    "category": "Shoes",
+    "name": "Nike Shoes 36",
+    "brand": "Nike",
+    "price": 50,
+    "imageUri": "file:///assets/mock-data/images/shoes_white_sneakers_1769291896158.png",
+    "status": "Clean",
+    "warmth": 1,
+    "formality": 1,
+    "color": "Black",
+    "styleTags": [
+      "Minimalist"
+    ],
+    "dateAdded": 1763738826979
+  },
+  {
+    "id": "shoes_37",
+    "category": "Shoes",
+    "name": "Adidas Shoes 37",
+    "brand": "Adidas",
+    "price": 89,
+    "imageUri": "file:///assets/mock-data/images/shoes_black_boots_1769291909320.png",
+    "status": "Clean",
+    "warmth": 1,
+    "formality": 3,
+    "color": "Black",
+    "styleTags": [
+      "Workwear"
+    ],
+    "dateAdded": 1764703212064
+  },
+  {
+    "id": "shoes_38",
+    "category": "Shoes",
+    "name": "Clarks Shoes 38",
+    "brand": "Clarks",
+    "price": 167,
+    "imageUri": "file:///assets/mock-data/images/shoes_brown_loafers_1769291923879.png",
+    "status": "Clean",
+    "warmth": 3,
+    "formality": 1,
+    "color": "Black",
+    "styleTags": [
+      "Streetwear"
+    ],
+    "dateAdded": 1766417946980
+  },
+  {
+    "id": "shoes_39",
+    "category": "Shoes",
+    "name": "Birkenstock Shoes 39",
+    "brand": "Birkenstock",
+    "price": 231,
+    "imageUri": "file:///assets/mock-data/images/shoes_grey_runners_1769291938062.png",
+    "status": "Clean",
+    "warmth": 4,
+    "formality": 3,
+    "color": "Black",
+    "styleTags": [
+      "Formal"
+    ],
+    "dateAdded": 1765679460147
+  },
+  {
+    "id": "shoes_40",
+    "category": "Shoes",
+    "name": "Zara Shoes 40",
+    "brand": "Zara",
+    "price": 61,
+    "imageUri": "file:///assets/mock-data/images/shoes_black_derbies_1769291955831.png",
+    "status": "Clean",
+    "warmth": 3,
+    "formality": 3,
+    "color": "Black",
+    "styleTags": [
+      "Casual"
+    ],
+    "dateAdded": 1767524402486
+  },
+  {
+    "id": "shoes_41",
+    "category": "Shoes",
+    "name": "Uniqlo Shoes 41",
+    "brand": "Uniqlo",
+    "price": 159,
+    "imageUri": "file:///assets/mock-data/images/shoes_white_sneakers_1769291896158.png",
+    "status": "Clean",
+    "warmth": 4,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Avant-Garde"
+    ],
+    "dateAdded": 1768435290258
+  },
+  {
+    "id": "shoes_42",
+    "category": "Shoes",
+    "name": "Acne Studios Shoes 42",
+    "brand": "Acne Studios",
+    "price": 60,
+    "imageUri": "file:///assets/mock-data/images/shoes_black_boots_1769291909320.png",
+    "status": "Clean",
+    "warmth": 5,
+    "formality": 3,
+    "color": "Black",
+    "styleTags": [
+      "Vintage"
+    ],
+    "dateAdded": 1767475486247
+  },
+  {
+    "id": "shoes_43",
+    "category": "Shoes",
+    "name": "Common Projects Shoes 43",
+    "brand": "Common Projects",
+    "price": 67,
+    "imageUri": "file:///assets/mock-data/images/shoes_brown_loafers_1769291923879.png",
+    "status": "Clean",
+    "warmth": 1,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Minimalist"
+    ],
+    "dateAdded": 1763135620887
+  },
+  {
+    "id": "shoes_44",
+    "category": "Shoes",
+    "name": "A.P.C. Shoes 44",
+    "brand": "A.P.C.",
+    "price": 237,
+    "imageUri": "file:///assets/mock-data/images/shoes_grey_runners_1769291938062.png",
+    "status": "Clean",
+    "warmth": 2,
+    "formality": 4,
+    "color": "Black",
+    "styleTags": [
+      "Workwear"
+    ],
+    "dateAdded": 1761041623428
+  },
+  {
+    "id": "shoes_45",
+    "category": "Shoes",
+    "name": "Theory Shoes 45",
+    "brand": "Theory",
+    "price": 163,
+    "imageUri": "file:///assets/mock-data/images/shoes_black_derbies_1769291955831.png",
+    "status": "Clean",
+    "warmth": 1,
+    "formality": 3,
+    "color": "Black",
+    "styleTags": [
+      "Streetwear"
+    ],
+    "dateAdded": 1767407221184
+  },
+  {
+    "id": "shoes_46",
+    "category": "Shoes",
+    "name": "Nike Shoes 46",
+    "brand": "Nike",
+    "price": 154,
+    "imageUri": "file:///assets/mock-data/images/shoes_white_sneakers_1769291896158.png",
+    "status": "Clean",
+    "warmth": 4,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Formal"
+    ],
+    "dateAdded": 1760005531332
+  },
+  {
+    "id": "shoes_47",
+    "category": "Shoes",
+    "name": "Adidas Shoes 47",
+    "brand": "Adidas",
+    "price": 103,
+    "imageUri": "file:///assets/mock-data/images/shoes_black_boots_1769291909320.png",
+    "status": "Clean",
+    "warmth": 2,
+    "formality": 5,
+    "color": "Black",
+    "styleTags": [
+      "Casual"
+    ],
+    "dateAdded": 1760133682069
+  },
+  {
+    "id": "shoes_48",
+    "category": "Shoes",
+    "name": "Clarks Shoes 48",
+    "brand": "Clarks",
+    "price": 157,
+    "imageUri": "file:///assets/mock-data/images/shoes_brown_loafers_1769291923879.png",
+    "status": "Clean",
+    "warmth": 4,
+    "formality": 2,
+    "color": "Black",
+    "styleTags": [
+      "Avant-Garde"
+    ],
+    "dateAdded": 1762043763179
+  },
+  {
+    "id": "shoes_49",
+    "category": "Shoes",
+    "name": "Birkenstock Shoes 49",
+    "brand": "Birkenstock",
+    "price": 70,
+    "imageUri": "file:///assets/mock-data/images/shoes_grey_runners_1769291938062.png",
+    "status": "Clean",
+    "warmth": 4,
+    "formality": 1,
+    "color": "Black",
+    "styleTags": [
+      "Vintage"
+    ],
+    "dateAdded": 1762320458743
+  },
+  {
+    "id": "shoes_50",
+    "category": "Shoes",
+    "name": "Zara Shoes 50",
+    "brand": "Zara",
+    "price": 186,
+    "imageUri": "file:///assets/mock-data/images/shoes_black_derbies_1769291955831.png",
+    "status": "Clean",
+    "warmth": 4,
+    "formality": 5,
+    "color": "Black",
+    "styleTags": [
+      "Minimalist"
+    ],
+    "dateAdded": 1766824906715
+  }
+]

@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions } from '
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS } from '../tokens/color.tokens';
 import { SPACING } from '../tokens/spacing.tokens';
-import { TYPOGRAPHY } from '../tokens/typography.tokens';
+import { TYPOGRAPHY } from '../tokens';
 
 interface WelcomeStateProps {
     onAddItems: () => void;

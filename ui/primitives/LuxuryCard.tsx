@@ -14,6 +14,7 @@ interface LuxuryCardProps {
     activeScale?: number;
     selected?: boolean;
     delayPressIn?: number;
+    noPadding?: boolean;
 }
 
 export const LuxuryCard: React.FC<LuxuryCardProps> = ({
@@ -23,7 +24,8 @@ export const LuxuryCard: React.FC<LuxuryCardProps> = ({
     onLongPress,
     activeScale = 0.96,
     selected = false,
-    delayPressIn = 0
+    delayPressIn = 0,
+    noPadding = false
 }) => {
     // 1. Shared Press Logic
     const { animatedStyle: pressStyle, pressHandlers } = usePressFeedback({ activeScale });
@@ -52,7 +54,7 @@ export const LuxuryCard: React.FC<LuxuryCardProps> = ({
                 delayPressIn={delayPressIn}
                 style={{ flex: 1 }}
             >
-                <GlassCard style={styles.glass}>
+                <GlassCard style={styles.glass} noPadding={noPadding}>
                     {children}
                 </GlassCard>
                 {selected && (

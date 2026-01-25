@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { COLORS, MATERIAL } from '../tokens/color.tokens';
-import { TYPOGRAPHY } from '../tokens/typography.tokens';
+import { TYPOGRAPHY } from '../tokens';
 import { SPACING } from '../tokens/spacing.tokens';
 import { ritualMachine } from '../state/ritualMachine';
 import * as Haptics from 'expo-haptics';
@@ -61,14 +61,15 @@ export const CameraScreen: React.FC = () => {
                 if (photo) capturedUri = photo.uri;
             }
 
-            // Ingest via Service
-            await GarmentIngestionService.getInstance().ingestFromUri(capturedUri);
+            // Create draft item for preview (don't save yet)
+            const draftItem = await GarmentIngestionService.getInstance().createDraftItem(capturedUri);
 
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
+            // Navigate to preview with draft item
             setTimeout(() => {
-                ritualMachine.toWardrobe();
-            }, 800);
+                ritualMachine.toItemPreview(draftItem);
+            }, 300);
 
         } catch (error) {
             console.error('[CameraScreen] Capture Failed:', error);

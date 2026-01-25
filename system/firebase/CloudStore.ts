@@ -1,7 +1,15 @@
-import { FIREBASE_DB, FIREBASE_AUTH } from './firebaseConfig';
-import { collection, doc, setDoc, getDoc, updateDoc, arrayUnion, query, where, getDocs, Timestamp } from "firebase/firestore";
+import { FIREBASE_DB, FIREBASE_AUTH, FIREBASE_STORAGE } from './firebaseConfig';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/firestore';
+import 'firebase/compat/storage';
 import { Piece, Outfit } from '../../truth/types';
 
+/**
+ * CloudStore - Enhanced Firestore integration
+ * 
+ * This is a legacy class that's being replaced by the new service layer.
+ * Kept for backward compatibility during migration.
+ */
 export class CloudStore {
     private static instance: CloudStore;
 
@@ -22,18 +30,23 @@ export class CloudStore {
 
     public async syncPiece(piece: Piece): Promise<void> {
         const uid = this.getUserId();
-        if (!uid) return; // Silent fail if not logged in
+        if (!uid) return;
 
         try {
-            const pieceRef = doc(FIREBASE_DB, 'users', uid, 'wardrobe', piece.id);
-            await setDoc(pieceRef, {
+            const pieceRef = FIREBASE_DB
+                .collection('users')
+                .doc(uid)
+                .collection('wardrobe')
+                .doc(piece.id);
+
+            await pieceRef.set({
                 ...piece,
-                lastSynced: Timestamp.now()
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
             }, { merge: true });
+
             console.log(`[CloudStore] Synced piece: ${piece.id}`);
         } catch (error) {
             console.error('[CloudStore] Sync failed for piece:', piece.id, error);
-            // In a real app, we might queue this for later retry
         }
     }
 
@@ -42,17 +55,40 @@ export class CloudStore {
         if (!uid) return {};
 
         try {
-            const q = query(collection(FIREBASE_DB, 'users', uid, 'wardrobe'));
-            const querySnapshot = await getDocs(q);
+            const snapshot = await FIREBASE_DB
+                .collection('users')
+                .doc(uid)
+                .collection('wardrobe')
+                .get();
 
             const wardrobe: Record<string, Piece> = {};
-            querySnapshot.forEach((doc) => {
+            snapshot.forEach((doc) => {
                 wardrobe[doc.id] = doc.data() as Piece;
             });
+
+            console.log(`[CloudStore] Pulled ${Object.keys(wardrobe).length} pieces`);
             return wardrobe;
         } catch (error) {
             console.error('[CloudStore] Pull failed:', error);
             return {};
+        }
+    }
+
+    public async deletePiece(pieceId: string): Promise<void> {
+        const uid = this.getUserId();
+        if (!uid) return;
+
+        try {
+            await FIREBASE_DB
+                .collection('users')
+                .doc(uid)
+                .collection('wardrobe')
+                .doc(pieceId)
+                .delete();
+
+            console.log(`[CloudStore] Deleted piece: ${pieceId}`);
+        } catch (error) {
+            console.error('[CloudStore] Delete failed for piece:', pieceId, error);
         }
     }
 
@@ -63,23 +99,93 @@ export class CloudStore {
         if (!uid) return;
 
         try {
-            const ritualRef = doc(collection(FIREBASE_DB, 'users', uid, 'rituals'));
-            await setDoc(ritualRef, {
+            const ritualRef = FIREBASE_DB
+                .collection('users')
+                .doc(uid)
+                .collection('rituals')
+                .doc();
+
+            await ritualRef.set({
                 outfitId: outfit.id,
                 items: outfit.items,
-                timestamp: Timestamp.now(),
-                score: outfit.score
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                score: outfit.score,
+                confidence: outfit.confidence,
             });
 
             // Update Stats
-            const statsRef = doc(FIREBASE_DB, 'users', uid, 'stats', 'summary');
-            await setDoc(statsRef, {
-                totalRituals: 0, // In reality, use increment()
-                lastRitual: Timestamp.now()
+            const statsRef = FIREBASE_DB
+                .collection('users')
+                .doc(uid)
+                .collection('stats')
+                .doc('summary');
+
+            await statsRef.set({
+                totalRituals: firebase.firestore.FieldValue.increment(1),
+                lastRitual: firebase.firestore.FieldValue.serverTimestamp(),
             }, { merge: true });
 
+            console.log('[CloudStore] Recorded ritual:', outfit.id);
         } catch (error) {
             console.error('[CloudStore] Record ritual failed:', error);
         }
+    }
+
+    // --- BATCH OPERATIONS ---
+
+    public async batchSyncPieces(pieces: Piece[]): Promise<void> {
+        const uid = this.getUserId();
+        if (!uid) return;
+
+        try {
+            const batch = FIREBASE_DB.batch();
+            const timestamp = firebase.firestore.FieldValue.serverTimestamp();
+
+            pieces.forEach((piece) => {
+                const ref = FIREBASE_DB
+                    .collection('users')
+                    .doc(uid)
+                    .collection('wardrobe')
+                    .doc(piece.id);
+
+                batch.set(ref, {
+                    ...piece,
+                    updatedAt: timestamp,
+                }, { merge: true });
+            });
+
+            await batch.commit();
+            console.log(`[CloudStore] Batch synced ${pieces.length} pieces`);
+        } catch (error) {
+            console.error('[CloudStore] Batch sync failed:', error);
+        }
+    }
+
+    // --- REAL-TIME SUBSCRIPTIONS ---
+
+    public subscribeToWardrobe(callback: (pieces: Record<string, Piece>) => void): () => void {
+        const uid = this.getUserId();
+        if (!uid) {
+            return () => { };
+        }
+
+        const unsubscribe = FIREBASE_DB
+            .collection('users')
+            .doc(uid)
+            .collection('wardrobe')
+            .onSnapshot(
+                (snapshot) => {
+                    const pieces: Record<string, Piece> = {};
+                    snapshot.forEach((doc) => {
+                        pieces[doc.id] = doc.data() as Piece;
+                    });
+                    callback(pieces);
+                },
+                (error) => {
+                    console.error('[CloudStore] Subscription error:', error);
+                }
+            );
+
+        return unsubscribe;
     }
 }

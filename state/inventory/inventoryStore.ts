@@ -2,8 +2,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Piece, PieceID, Inventory } from "../../truth/types";
 import { INITIAL_INVENTORY } from "./initialInventory";
 import { CloudStore } from "../../system/firebase/CloudStore";
+// MOCK_PIECES imported dynamically in seedMockData() to avoid blocking main thread
 
-const STORAGE_KEY = '@fit_check_inventory_v2'; // Bump version to clear old data
+const STORAGE_KEY = '@fit_check_inventory_v3'; // Bump version to clear old data with wrong labels
 
 export class InventoryStore {
     private static instance: InventoryStore;
@@ -228,5 +229,27 @@ export class InventoryStore {
 
         await this.save();
         console.log('[InventoryStore] Seeding Complete.');
+    }
+
+    public async seedMockData() {
+        console.log('[InventoryStore] Seeding 150 Mock Items...');
+
+        // Dynamic import to avoid blocking main thread on app startup
+        const { MOCK_PIECES } = require('../../assets/mock-data/mockPieces');
+
+        // Clear existing
+        this.inventory.pieces = {};
+
+        MOCK_PIECES.forEach((p: Piece) => {
+            this.inventory.pieces[p.id] = p;
+        });
+
+        await this.save();
+        console.log('[InventoryStore] Seeding Complete. Total pieces:', Object.keys(this.inventory.pieces).length);
+
+        // CRITICAL: Reinitialize engine with new inventory
+        const { EngineBinder } = require('../../bridge/engineBinder');
+        await EngineBinder.reinitialize(this.inventory);
+        console.log('[InventoryStore] Engine ready with 150 items');
     }
 }

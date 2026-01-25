@@ -34,8 +34,8 @@ export const COLORS = {
     WARNING_GOLD: '#F59E0B',
 
     // Surfaces
-    GLASS_SURFACE: 'rgba(18, 18, 25, 0.7)',
-    SURFACE_GLASS: 'rgba(20, 20, 25, 0.8)', // Slightly more opaque
+    GLASS_SURFACE: 'rgba(18, 18, 25, 0.4)',
+    SURFACE_GLASS: 'rgba(20, 20, 25, 0.5)', // Slightly more opaque
     SURFACE_MUTE: 'rgba(255, 255, 255, 0.05)',
 
     GLASS_BORDER: 'rgba(255, 255, 255, 0.08)',
@@ -46,6 +46,12 @@ export const COLORS = {
     AUTHORITY_WHITE: '#E5E7EB',
     MATTER_WHITE: '#F5F5F7',   // Alias for SOFT_WHITE
     FAILURE_ONLY: '#EF4444',
+
+    // Missing Keys Patch
+    RITUAL_RED: '#FF3B30',
+    ROYAL_GOLD: '#FFD700',
+    EMERALD_DUSK: '#005C4B',
+    SURFACE_GLASS_HIGHLIGHT: 'rgba(255, 255, 255, 0.15)',
 } as const;
 
 export const MATERIAL = {

@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Animated, { SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { COLORS } from '../tokens/color.tokens';
 import { SPACING } from '../tokens/spacing.tokens';
-import { TYPOGRAPHY } from '../tokens/typography.tokens';
+import { TYPOGRAPHY, formatCommand } from '../tokens';
 
 interface BulkActionSheetProps {
     count: number;

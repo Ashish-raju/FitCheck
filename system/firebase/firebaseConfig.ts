@@ -1,12 +1,11 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
-import { initializeAuth, getReactNativePersistence, getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
-import { getStorage } from "firebase/storage";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import 'firebase/compat/firestore';
+import 'firebase/compat/storage';
+import Constants from 'expo-constants';
 
-// Get these from: Firebase Console -> Project Settings -> General -> Your apps -> SDK Setup/Configuration
-const firebaseConfig = {
+// Get Firebase config from app.config.ts extra field
+const firebaseConfig = Constants.expoConfig?.extra?.firebase || {
     apiKey: "AIzaSyBPondZnMTKKSB-ynrDkw9EJYWSmcjN1PM",
     authDomain: "invisible-wardrobe.firebaseapp.com",
     projectId: "invisible-wardrobe",
@@ -16,22 +15,38 @@ const firebaseConfig = {
     measurementId: "G-BGJ7R8WJ7W"
 };
 
-// Initialize Firebase App via Compat (ensures component registration)
+// Development mode check
+const __DEV__ = process.env.NODE_ENV === 'development';
+const USE_EMULATORS = __DEV__ && false; // Set to true to use local emulators
+
+// Initialize Firebase App
 const app = firebase.apps.length === 0 ? firebase.initializeApp(firebaseConfig) : firebase.app();
 
-// Initialize Auth with persistence for React Native via Modular API
-let auth;
-try {
-    // We try modular initialization as the primary
-    auth = initializeAuth(app as any, {
-        persistence: getReactNativePersistence(AsyncStorage)
-    });
-} catch (e) {
-    // Fallback to existing auth if already initialized
-    auth = getAuth(app as any);
+// Get services
+const auth = firebase.auth(app);
+const db = firebase.firestore(app);
+const storage = firebase.storage(app);
+
+// Enable persistence for auth (automatic with compat SDK)
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+// Connect to emulators in development (if enabled)
+if (USE_EMULATORS) {
+    const EMULATOR_HOST = 'localhost'; // Change to your machine IP for physical device testing
+
+    try {
+        auth.useEmulator(`http://${EMULATOR_HOST}:9099`);
+        db.useEmulator(EMULATOR_HOST, 8080);
+        storage.useEmulator(EMULATOR_HOST, 9199);
+        console.log('[Firebase] Connected to emulators');
+    } catch (e) {
+        console.warn('[Firebase] Emulator connection failed:', e);
+    }
 }
+
+console.log('[Firebase] Initialized with project:', firebaseConfig.projectId);
 
 export const FIREBASE_APP = app;
 export const FIREBASE_AUTH = auth;
-export const FIREBASE_DB = getFirestore(app as any);
-export const FIREBASE_STORAGE = getStorage(app as any);
+export const FIREBASE_DB = db;
+export const FIREBASE_STORAGE = storage;

@@ -10,7 +10,7 @@ import Animated, {
     runOnJS
 } from 'react-native-reanimated';
 import { COLORS, MATERIAL } from '../tokens/color.tokens';
-import { TYPOGRAPHY } from '../tokens/typography.tokens';
+import { TYPOGRAPHY } from '../tokens';
 import { MOTION } from '../tokens/motion.tokens';
 
 import { ritualMachine } from '../state/ritualMachine';
@@ -28,6 +28,7 @@ export const SplashSequence: React.FC = () => {
     const textOpacity = useSharedValue(0);
     const subTextOpacity = useSharedValue(0);
     const lineWidth = useSharedValue(0);
+    const hasNavigated = React.useRef(false);
 
     const containerStyle = useAnimatedStyle(() => ({
         opacity: opacity.value,
@@ -48,29 +49,59 @@ export const SplashSequence: React.FC = () => {
     }));
 
     useEffect(() => {
-        // Sequence:
-        // 1. Fade in container/bg
-        // 2. Reveal "FIT CHECK"
-        // 3. Draw line
-        // 4. Reveal "Your Personal Stylist"
-        // 5. Exit
+        console.log('[SplashSequence] === MOUNT START ===');
+        console.log('[SplashSequence] hasNavigated.current:', hasNavigated.current);
 
+        const navigateToIntro = (source: string) => {
+            console.log(`[SplashSequence] navigateToIntro called from: ${source}`);
+            console.log('[SplashSequence] hasNavigated.current before check:', hasNavigated.current);
+
+            if (!hasNavigated.current) {
+                hasNavigated.current = true;
+                console.log('[SplashSequence] >>> EXECUTING NAVIGATION TO INTRO <<<');
+                try {
+                    ritualMachine.toIntro();
+                    console.log('[SplashSequence] ritualMachine.toIntro() completed');
+                } catch (e) {
+                    console.error('[SplashSequence] Navigation CRASHED:', e);
+                }
+            } else {
+                console.log('[SplashSequence] Navigation already happened, skipping');
+            }
+        };
+
+        // PRIMARY TIMER: Navigate after 2.5 seconds (after animations complete)
+        console.log('[SplashSequence] Setting up primary timer (2500ms)');
+        const primaryTimer = setTimeout(() => {
+            console.log('[SplashSequence] PRIMARY TIMER FIRED');
+            navigateToIntro('primaryTimer');
+        }, 2500);
+
+        // WATCHDOG TIMER: Force navigation after 4 seconds as backup
+        console.log('[SplashSequence] Setting up watchdog timer (4000ms)');
+        const watchdogTimer = setTimeout(() => {
+            console.log('[SplashSequence] WATCHDOG TIMER FIRED');
+            navigateToIntro('watchdog');
+        }, 4000);
+
+        // Sequence animations (these are purely for visual, not for navigation control)
+        console.log('[SplashSequence] Starting animations');
         opacity.value = withTiming(1, { duration: 800 });
         scale.value = withTiming(1, { duration: 1200, easing: MOTION.CURVES.EASE_OUT_EXPO });
-
         textTranslateY.value = withDelay(400, withSpring(0, MOTION.PHYSICS.SPRING_SNAPPY));
         textOpacity.value = withDelay(400, withTiming(1, { duration: 600 }));
-
         lineWidth.value = withDelay(1000, withTiming(120, { duration: 600, easing: MOTION.CURVES.SMOOTH_FLOW }));
-
         subTextOpacity.value = withDelay(1400, withTiming(1, { duration: 800 }));
+        console.log('[SplashSequence] Animations queued');
 
-        // Exit after 3.5s
-        setTimeout(() => {
-            // onComplete();
-            ritualMachine.toIntro();
-        }, 3500);
+        console.log('[SplashSequence] === MOUNT COMPLETE ===');
 
+        return () => {
+            console.log('[SplashSequence] === UNMOUNT ===');
+            hasNavigated.current = true;
+            clearTimeout(primaryTimer);
+            clearTimeout(watchdogTimer);
+        };
     }, []);
 
     return (

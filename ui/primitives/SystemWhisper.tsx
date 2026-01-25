@@ -5,18 +5,8 @@
 
 import React from 'react';
 import { Text, StyleSheet } from 'react-native';
-import { TYPOGRAPHY, formatCommand } from '../tokens/typography.tokens';
+import { TYPOGRAPHY, formatCommand } from '../tokens';
 import { COLORS } from '../tokens/color.tokens';
-
-console.log("[DEBUG_ANTIGRAVITY] SystemWhisper.tsx evaluating...");
-try {
-    console.log("[DEBUG_ANTIGRAVITY] TYPOGRAPHY import:", TYPOGRAPHY);
-    if (!TYPOGRAPHY) {
-        console.error("[DEBUG_ANTIGRAVITY] TYPOGRAPHY IS UNDEFINED!");
-    }
-} catch (e) {
-    console.error("[DEBUG_ANTIGRAVITY] Error accessing TYPOGRAPHY:", e);
-}
 
 interface SystemWhisperProps {
     children: string;

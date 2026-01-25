@@ -59,4 +59,40 @@ export class GarmentIngestionService {
 
         console.log('[GarmentIngestionService] Ingestion complete.');
     }
+
+    /**
+     * Creates a draft item for preview without saving to inventory
+     */
+    public async createDraftItem(localUri: string): Promise<any> {
+        console.log('[GarmentIngestionService] Creating draft item for:', localUri);
+
+        const taggingService = TaggingService.getInstance();
+        const bgService = BackgroundRemovalService.getInstance();
+        const uploader = ImageUploader.getInstance();
+
+        // Run Background Removal and Tagging in PARALLEL
+        const [processedUri, tags] = await Promise.all([
+            bgService.removeBackground(localUri).then(res => res || undefined),
+            taggingService.tagImage(localUri)
+        ]);
+
+        // Create draft piece object
+        const draftPiece = {
+            id: ('DRAFT_' + Date.now()) as any,
+            category: tags.category,
+            color: tags.color,
+            imageUri: localUri,
+            processedImageUri: processedUri,
+            status: 'Clean' as const,
+            currentUses: 0,
+            maxUses: 3,
+            warmth: 0.5,
+            formality: 0.5,
+            dateAdded: Date.now(),
+            name: `${tags.color || ''} ${tags.category}`.trim() || 'New Item'
+        };
+
+        console.log('[GarmentIngestionService] Draft item created:', draftPiece.id);
+        return draftPiece;
+    }
 }

@@ -3,7 +3,7 @@ import { View, StyleSheet, PanResponder, Animated } from 'react-native';
 import { useRitualActions } from '../state/ritualProvider';
 import * as Haptics from 'expo-haptics';
 import { MOTION } from '../tokens/motion.tokens';
-import { TYPOGRAPHY } from '../tokens/typography.tokens';
+import { TYPOGRAPHY } from '../tokens';
 import { COLORS } from '../tokens/color.tokens';
 
 /**

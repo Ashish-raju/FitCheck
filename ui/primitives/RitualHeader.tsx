@@ -1,98 +1,69 @@
-import React, { useEffect } from 'react';
-import { Text, StyleSheet, View } from 'react-native';
-import Animated, {
-    useSharedValue,
-    useAnimatedStyle,
-    withRepeat,
-    withTiming,
-    FadeInLeft,
-    FadeIn
-} from 'react-native-reanimated';
-import { TYPOGRAPHY } from '../tokens/typography.tokens';
-import { COLORS } from '../tokens/color.tokens';
-import { SPACING } from '../tokens/spacing.tokens';
-import { MOTION } from '../tokens/motion.tokens';
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { COLORS, MATERIAL } from '../tokens/color.tokens';
+import { TYPOGRAPHY } from '../tokens';
 
 interface RitualHeaderProps {
-    title: string;
+    title?: string;
     subtitle?: string;
-    showPulse?: boolean;
+    onBack?: () => void;
+    showBack?: boolean;
 }
 
-/**
- * RitualHeader - High-prestige typography unit for ritual dates and headers.
- * Now featuring neural pulse micro-interactions.
- */
-export const RitualHeader: React.FC<RitualHeaderProps> = ({ title, subtitle, showPulse = true }) => {
-    const pulseOpacity = useSharedValue(0.4);
-
-    useEffect(() => {
-        pulseOpacity.value = withRepeat(
-            withTiming(1, { duration: MOTION.DURATIONS.AMBIENT_BREATHE / 2 }),
-            -1,
-            true
-        );
-    }, []);
-
-    const pulseStyle = useAnimatedStyle(() => ({
-        opacity: pulseOpacity.value,
-    }));
-
+export const RitualHeader: React.FC<RitualHeaderProps> = ({
+    title,
+    subtitle,
+    onBack,
+    showBack = true
+}) => {
     return (
         <View style={styles.container}>
-            <View style={styles.row}>
-                {showPulse && <Animated.View style={[styles.pulseDot, pulseStyle]} />}
-                {subtitle && (
-                    <Animated.Text
-                        entering={FadeInLeft.delay(100).duration(MOTION.DURATIONS.RITUAL_TRANSITION)}
-                        style={styles.subtitle}
-                    >
-                        {subtitle.toUpperCase()}
-                    </Animated.Text>
+            <View style={styles.content}>
+                {showBack && onBack && (
+                    <TouchableOpacity onPress={onBack} style={styles.backButton}>
+                        <Text style={styles.backText}>←</Text>
+                    </TouchableOpacity>
                 )}
+                <View style={styles.textContainer}>
+                    {title && <Text style={styles.title}>{title}</Text>}
+                    {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
+                </View>
             </View>
-            <Animated.Text
-                entering={FadeIn.delay(300).duration(MOTION.DURATIONS.SNAPPY)}
-                style={styles.title}
-            >
-                {title}
-            </Animated.Text>
         </View>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
-        paddingVertical: SPACING.STACK.LARGE,
+        paddingTop: 16,
+        paddingBottom: 12,
+        paddingHorizontal: 20,
     },
-    row: {
+    content: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: SPACING.STACK.TIGHT,
     },
-    pulseDot: {
-        width: 6,
-        height: 6,
-        borderRadius: 3,
-        backgroundColor: COLORS.ELECTRIC_COBALT,
-        marginRight: 8,
-        shadowColor: COLORS.ELECTRIC_COBALT,
-        shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.8,
-        shadowRadius: 4,
+    backButton: {
+        marginRight: 16,
+        padding: 8,
     },
-    subtitle: {
-        fontFamily: TYPOGRAPHY.STACKS.PRIMARY,
-        fontSize: TYPOGRAPHY.SCALE.LABEL,
-        color: COLORS.ELECTRIC_COBALT,
-        fontWeight: TYPOGRAPHY.WEIGHTS.BOLD,
-        letterSpacing: TYPOGRAPHY.TRACKING.WIDE,
+    backText: {
+        fontSize: 24,
+        color: MATERIAL.TEXT_MAIN,
+    },
+    textContainer: {
+        flex: 1,
     },
     title: {
         fontFamily: TYPOGRAPHY.STACKS.DISPLAY,
-        fontSize: TYPOGRAPHY.SCALE.HERO,
-        color: COLORS.RITUAL_WHITE,
-        fontWeight: TYPOGRAPHY.WEIGHTS.MEDIUM,
-        letterSpacing: TYPOGRAPHY.TRACKING.TIGHT,
+        fontSize: 24,
+        color: MATERIAL.TEXT_MAIN,
+        fontWeight: TYPOGRAPHY.WEIGHTS.BOLD,
+    },
+    subtitle: {
+        fontFamily: TYPOGRAPHY.STACKS.PRIMARY,
+        fontSize: 14,
+        color: MATERIAL.TEXT_MUTED,
+        marginTop: 4,
     },
 });

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { COLORS, MATERIAL } from '../tokens/color.tokens';
-import { TYPOGRAPHY } from '../tokens/typography.tokens';
+import { TYPOGRAPHY } from '../tokens';
 
 export const SocialScreen: React.FC = () => {
     return (

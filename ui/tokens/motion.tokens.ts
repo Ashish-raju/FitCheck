@@ -13,6 +13,8 @@ export const MOTION = {
         MEDIUM: 500,
         LONG: 800,
         CINEMATIC: 1200,
+        AMBIENT_BREATHE: 3000,
+        RITUAL_TRANSITION: 800,
     },
     CURVES: {
         // CRED-like easing: Slow in, very fast out, or slight bounce

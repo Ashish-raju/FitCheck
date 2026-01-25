@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 import { COLORS } from '../tokens/color.tokens';
-import { TYPOGRAPHY } from '../tokens/typography.tokens';
+import { TYPOGRAPHY } from '../tokens';
 import { SPACING } from '../tokens/spacing.tokens';
 import { ritualMachine } from '../state/ritualMachine';
 import { RitualHeader } from '../primitives/RitualHeader';

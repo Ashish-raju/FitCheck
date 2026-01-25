@@ -10,7 +10,7 @@ import Animated, {
     withDelay
 } from 'react-native-reanimated';
 import { COLORS } from '../tokens/color.tokens';
-import { TYPOGRAPHY } from '../tokens/typography.tokens';
+// import { TYPOGRAPHY } from '../tokens'; // BYPASS FOR DEBUGGING
 import { MOTION } from '../tokens/motion.tokens';
 
 export const VoidScreen: React.FC = () => {
@@ -64,7 +64,7 @@ export const VoidScreen: React.FC = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: COLORS.DEEP_OBSIDIAN,
+        backgroundColor: 'transparent',
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -73,9 +73,9 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     logoText: {
-        fontFamily: TYPOGRAPHY.STACKS.PRIMARY,
+        fontFamily: 'Inter', // TYPOGRAPHY.STACKS.PRIMARY
         fontSize: 32,
-        fontWeight: TYPOGRAPHY.WEIGHTS.BLACK as any,
+        fontWeight: '900', // TYPOGRAPHY.WEIGHTS.BLACK
         color: COLORS.RITUAL_WHITE,
         letterSpacing: 12,
         textShadowColor: 'rgba(255, 255, 255, 0.2)',
@@ -100,9 +100,9 @@ const styles = StyleSheet.create({
     statusText: {
         position: 'absolute',
         bottom: 80,
-        fontFamily: TYPOGRAPHY.STACKS.PRIMARY,
+        fontFamily: 'Inter', // TYPOGRAPHY.STACKS.PRIMARY
         fontSize: 10,
-        fontWeight: TYPOGRAPHY.WEIGHTS.BOLD,
+        fontWeight: '700', // TYPOGRAPHY.WEIGHTS.BOLD
         color: COLORS.RITUAL_WHITE,
         letterSpacing: 4,
     },

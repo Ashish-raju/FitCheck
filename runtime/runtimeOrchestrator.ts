@@ -21,7 +21,8 @@ export const RuntimeOrchestrator = {
         EngineBinder.bind(inventory);
 
         // 4. Predictive Instantiation: Trigger Generation on Boot
-        EngineBinder.execute();
+        // DISABLED: Wait for inventory seeding to complete first
+        // EngineBinder.execute();
 
         console.log('[RuntimeOrchestrator] Orchestration Complete. Organism is wired.');
     }

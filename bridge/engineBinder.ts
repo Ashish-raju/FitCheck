@@ -36,6 +36,13 @@ export class EngineBinder {
     static async execute() {
         if (!this.director || !this.inventory) return;
 
+        // GUARD: Don't execute until inventory is properly seeded (>10 items)
+        const itemCount = Object.keys(this.inventory.pieces).length;
+        if (itemCount < 10) {
+            console.log(`[EngineBinder] Skipping execute - inventory too small (${itemCount} items). Waiting for seeding...`);
+            return;
+        }
+
         const ctx = ContextManager.getInstance().getCurrent();
         console.log('[EngineBinder] Executing Proposal Generation...');
         const pre = PrecomputeEngine.getInstance();
@@ -43,6 +50,14 @@ export class EngineBinder {
 
         // TRANSITION: Move to RITUAL once slab is ready
         const outfits = pre.getAllCached();
+
+        // DEBUG: Prove engine uses real wardrobe items
+        console.log(`[EngineBinder] Generated ${outfits.length} outfits from real wardrobe data`);
+        outfits.forEach((outfit, i) => {
+            const itemNames = outfit.pieces.map(p => p.name || `${p.color} ${p.category}`).join(', ');
+            console.log(`  Outfit ${i + 1}: ${itemNames} (score: ${outfit.score.toFixed(1)})`);
+        });
+
         const state = ritualMachine.getState();
         if (state.phase === 'VOID' || state.phase === 'HOME') {
             ritualMachine.enterRitual(outfits);
@@ -73,5 +88,23 @@ export class EngineBinder {
             ritualMachine.updateRitualOutfits(newOutfits);
             SensoryBinder.triggerTransition();
         }
+    }
+
+    /**
+     * Reinitialize the engine with updated inventory (e.g., after seeding mock data)
+     */
+    static async reinitialize(inventory: Inventory) {
+        console.log('[EngineBinder] Reinitializing engine with updated inventory...');
+        const director = new RitualDirector(inventory);
+        this.setDirector(director);
+        this.inventory = inventory;
+
+        // CRITICAL: Clear old precomputed outfits and regenerate with new inventory
+        const pre = PrecomputeEngine.getInstance();
+        pre.clearSlab();
+        const ctx = ContextManager.getInstance().getCurrent();
+        await pre.fillSlab(ctx.weather);
+
+        console.log('[EngineBinder] Engine reinitialized successfully with fresh outfits');
     }
 }

@@ -1,0 +1,27 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Users can only access their own folder
+    match /users/{uid}/{allPaths=**} {
+      // Allow read/write only to the owner
+      allow read, write: if isAuthenticated() && request.auth.uid == uid;
+      
+      // Validate file size (max 10MB for images)
+      allow write: if request.resource.size < 10 * 1024 * 1024;
+      
+      // Validate file type (images only)
+      allow write: if request.resource.contentType.matches('image/.*');
+    }
+    
+    // Deny all other access
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

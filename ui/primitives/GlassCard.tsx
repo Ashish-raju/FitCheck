@@ -1,55 +1,60 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { COLORS } from '../tokens/color.tokens';
+import { BlurView } from 'expo-blur';
 import { SPACING } from '../tokens/spacing.tokens';
 
 interface GlassCardProps {
     children: React.ReactNode;
     style?: any;
+    noPadding?: boolean;
+    intensity?: number;
 }
 
 /**
  * GlassCard - The primary material unit for Fit Check.
- * Implements the "Glass & Gravity" aesthetic using transparency and borders.
- * Optimized for Android: Uses Gradient + Border instead of Elevation/Blur.
+ * Implements the "Liquid Glass" aesthetic using expo-blur and reflection streaks.
  */
-export const GlassCard: React.FC<GlassCardProps> = ({ children, style }) => {
+export const GlassCard: React.FC<GlassCardProps> = memo(({
+    children,
+    style,
+    noPadding = false,
+    intensity = 20 // Lower for "Acrylic" feel
+}) => {
     return (
-        <LinearGradient
-            colors={[COLORS.SURFACE_GLASS, COLORS.GLASS_SURFACE]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={[styles.container, style]}
-        >
-            <View style={styles.blurLayer}>
+        <View style={[styles.container, style]}>
+            <BlurView intensity={intensity} tint="dark" style={StyleSheet.absoluteFill} />
+
+            {/* Acrylic Surface Layers - Top Highlight & Gradient */}
+            <LinearGradient
+                colors={['rgba(255, 255, 255, 0.08)', 'rgba(255,255,255,0.02)', 'transparent']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0.8, y: 0.8 }}
+                style={StyleSheet.absoluteFill}
+            />
+
+            {/* Inner Vignette / Grain (Simulated) */}
+            <View style={styles.vignetteOverlay} />
+
+            <View style={[styles.blurLayer, noPadding && { padding: 0 }]}>
                 {children}
             </View>
-        </LinearGradient>
+        </View>
     );
-};
+});
 
 const styles = StyleSheet.create({
     container: {
-        // backgroundColor: COLORS.SURFACE_GLASS, // Replaced by Gradient
-        borderRadius: SPACING.RADIUS.LARGE,
-        borderWidth: 1,
-        borderColor: COLORS.SURFACE_BORDER,
+        borderRadius: 22, // Radius 18-22
         overflow: 'hidden',
-        ...Platform.select({
-            ios: {
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 4 }, // Reduced shadow
-                shadowOpacity: 0.2, // Reduced opacity
-                shadowRadius: 8, // Reduced radius
-            },
-            android: {
-                // elevation: 0, // REMOVED ELEVATION
-            },
-        }),
+        backgroundColor: 'rgba(18, 18, 20, 0.9)', // Near-black base
+    },
+    vignetteOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0,0,0,0.05)', // Subtle vignette/quiet feel
     },
     blurLayer: {
         padding: SPACING.CARD.HORIZONTAL_PADDING,
         flex: 1,
-    },
+    }
 });

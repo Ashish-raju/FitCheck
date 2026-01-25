@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { COLORS, MATERIAL } from '../tokens/color.tokens';
-import { TYPOGRAPHY } from '../tokens/typography.tokens';
+import { TYPOGRAPHY } from '../tokens';
 import { RootStackParamList } from '../navigation/AppNavigator';
 
 interface PersistentNavProps {
@@ -20,7 +20,7 @@ export const PersistentNav: React.FC<PersistentNavProps> = ({ activeRouteName })
     const navigation = useNavigation<NavigationProp>();
 
     // Hide if in immersive screens
-    const HIDDEN_ROUTES = ['Ritual', 'Seal', 'Camera', 'Void', 'Splash', 'Intro', 'Onboarding'];
+    const HIDDEN_ROUTES = ['Ritual', 'Seal', 'Camera', 'Void', 'Splash', 'Intro', 'Onboarding', 'RitualDeck'];
     if (HIDDEN_ROUTES.includes(activeRouteName)) {
         return null;
     }

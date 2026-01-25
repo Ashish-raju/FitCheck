@@ -11,19 +11,21 @@ export type RitualPhase =
     | 'SPLASH'    // Cinematic Intro
     | 'INTRO'     // 3-Screen Editorial Slideshow
     | 'ONBOARDING' // Style Quiz
+    | 'AUTH'      // Authentication
     | 'HOME'      // Main dashboard
     | 'RITUAL'    // User is making choices (The Carousel)
     | 'SEAL'      // Choice is locked (Final screen)
     | 'WARDROBE'  // Digital closet
     | 'PROFILE'   // User settings & saved outfits
     | 'CAMERA'    // Garment capture
+    | 'ITEM_PREVIEW' // Preview captured item before saving
     | 'FRIENDS_FEED' // Phase 2: Social feed
     | 'AI_STYLIST_CHAT' // Phase 2: AI interaction
     | 'SAFETY';   // Emergency fallback state
 
 export type WardrobeTab = 'Top' | 'Bottom' | 'Shoes' | 'Outerwear' | 'Accessory' | 'All';
 
-import { Outfit } from '../../truth/types';
+import { Outfit, Piece } from '../../truth/types';
 
 export interface UIState {
     phase: RitualPhase;
@@ -35,6 +37,7 @@ export interface UIState {
     lastSealTime: number | null;
     error: string | null;
     mood: number; // 0.0 to 1.0
+    draftItem: Piece | null; // Draft item for preview before saving
 }
 
 export const INITIAL_STATE: UIState = {
@@ -47,4 +50,5 @@ export const INITIAL_STATE: UIState = {
     lastSealTime: null,
     error: null,
     mood: 0.5,
+    draftItem: null,
 };

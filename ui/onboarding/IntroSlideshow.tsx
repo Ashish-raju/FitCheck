@@ -9,7 +9,7 @@ import Animated, {
     FadeOutLeft
 } from 'react-native-reanimated';
 import { COLORS, MATERIAL } from '../tokens/color.tokens';
-import { TYPOGRAPHY } from '../tokens/typography.tokens';
+import { TYPOGRAPHY } from '../tokens';
 import { ritualMachine } from '../state/ritualMachine';
 
 const { width, height } = Dimensions.get('window');
@@ -88,6 +88,7 @@ export const IntroSlideshow: React.FC = () => {
                 <TouchableOpacity
                     style={[styles.button, { borderColor: currentSlide.accent }]}
                     onPress={handleNext}
+                    activeOpacity={0.7}
                 >
                     <Text style={styles.buttonText}>
                         {currentIndex === SLIDES.length - 1 ? 'BEGIN' : 'NEXT'}
@@ -154,6 +155,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 32,
         borderWidth: 1,
         borderRadius: 30,
+        zIndex: 100,
     },
     buttonText: {
         color: MATERIAL.TEXT_MAIN,

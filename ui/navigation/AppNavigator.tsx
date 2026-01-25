@@ -8,14 +8,14 @@ import { VoidScreen } from '../void/VoidScreen';
 import { SplashSequence } from '../onboarding/SplashSequence';
 import { IntroSlideshow } from '../onboarding/IntroSlideshow';
 import { StyleQuiz } from '../onboarding/StyleQuiz';
+import { AuthScreen } from '../auth/AuthScreen';
 import { TodayScreen } from '../system/TodayScreen';
-// import { RitualScreen } from '../ritual/RitualScreen'; // DEPRECATED
-import { RitualRevealScreen } from '../ritual/RitualRevealScreen';
 import { RitualDeckScreen } from '../ritual/RitualDeckScreen';
 import { SealScreen } from '../seal/SealScreen';
 import { WardrobeScreen } from '../system/WardrobeScreen';
 import { InsightsScreen } from '../system/InsightsScreen';
 import { CameraScreen } from '../system/CameraScreen';
+import { ItemPreviewScreen } from '../system/ItemPreviewScreen';
 import { SocialScreen } from '../system/SocialScreen';
 import { AIStylistChat } from '../system/AIStylistChat';
 
@@ -25,13 +25,14 @@ export type RootStackParamList = {
     Splash: undefined;
     Intro: undefined;
     Onboarding: undefined;
+    Auth: undefined;
     Home: undefined; // TodayScreen
-    Ritual: undefined; // Now points to RitualReveal
     RitualDeck: undefined; // New Deck Screen
     Seal: undefined;
     Wardrobe: undefined;
     Profile: undefined; // InsightsScreen
     Camera: undefined;
+    ItemPreview: undefined; // Item Preview Screen
     Social: undefined; // FriendsFeed
     AIStylist: undefined;
 };
@@ -63,6 +64,7 @@ export const AppStack: React.FC = () => {
             <Stack.Screen name="Splash" component={SplashSequence} />
             <Stack.Screen name="Intro" component={IntroSlideshow} />
             <Stack.Screen name="Onboarding" component={StyleQuiz} />
+            <Stack.Screen name="Auth" component={AuthScreen} />
 
             {/* THE CORE LOOP */}
             <Stack.Screen
@@ -71,11 +73,6 @@ export const AppStack: React.FC = () => {
                 options={{ animation: 'fade' }}
             />
             {/* RITUAL FLOW */}
-            <Stack.Screen
-                name="Ritual"
-                component={RitualRevealScreen}
-                options={{ animation: 'fade', gestureEnabled: false }}
-            />
             <Stack.Screen
                 name="RitualDeck"
                 component={RitualDeckScreen}
@@ -103,6 +100,11 @@ export const AppStack: React.FC = () => {
                 name="Camera"
                 component={CameraScreen}
                 options={{ animation: 'slide_from_bottom' }}
+            />
+            <Stack.Screen
+                name="ItemPreview"
+                component={ItemPreviewScreen}
+                options={{ animation: 'fade' }}
             />
             <Stack.Screen
                 name="Social"

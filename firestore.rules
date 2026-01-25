@@ -1,0 +1,78 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if user owns the resource
+    function isOwner(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
+    }
+    
+    // User profiles
+    match /users/{uid} {
+      // Users can read and write their own profile
+      allow read, write: if isOwner(uid);
+      
+      // Wardrobe subcollection
+      match /wardrobe/{itemId} {
+        // Users can only access their own wardrobe items
+        allow read, write: if isOwner(uid);
+        
+        // Validate required fields on create/update
+        allow create: if isOwner(uid) 
+          && request.resource.data.keys().hasAll(['id', 'category', 'warmth', 'formality', 'color', 'status', 'currentUses'])
+          && request.resource.data.warmth is number
+          && request.resource.data.formality is number
+          && request.resource.data.currentUses is number
+          && request.resource.data.category in ['Top', 'Bottom', 'Shoes', 'Outerwear', 'Accessory']
+          && request.resource.data.status in ['Clean', 'Dirty', 'Laundry', 'Ghost'];
+      }
+      
+      // Outfits subcollection
+      match /outfits/{outfitId} {
+        // Users can only access their own outfits
+        allow read, write: if isOwner(uid);
+        
+        // Validate required fields
+        allow create: if isOwner(uid)
+          && request.resource.data.keys().hasAll(['id', 'items', 'pieces', 'score'])
+          && request.resource.data.items is list
+          && request.resource.data.pieces is list
+          && request.resource.data.score is number;
+      }
+      
+      // Rituals subcollection (daily outfit selections)
+      match /rituals/{ritualId} {
+        // Users can read their own rituals, but only server can write
+        allow read: if isOwner(uid);
+        allow create: if isOwner(uid)
+          && request.resource.data.keys().hasAll(['outfitId', 'items', 'timestamp'])
+          && request.resource.data.items is list;
+        // Prevent modification of existing rituals
+        allow update, delete: if false;
+      }
+      
+      // Stats subcollection
+      match /stats/{statId} {
+        // Users can read their own stats
+        allow read: if isOwner(uid);
+        // Only server can write stats
+        allow write: if isOwner(uid);
+      }
+      
+      // Friends subcollection (for social features)
+      match /friends/{friendId} {
+        allow read, write: if isOwner(uid);
+      }
+    }
+    
+    // Deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

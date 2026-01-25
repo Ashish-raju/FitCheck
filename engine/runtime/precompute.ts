@@ -32,12 +32,14 @@ export class PrecomputeEngine {
 
         return new Promise<void>((resolve) => {
             setTimeout(() => {
-                // Generate next three candidates for the carousel
+                // Generate next five candidates for the carousel
                 const next1 = this.director!.startRitual(context);
                 const next2 = this.director!.rejectResult(next1, context);
                 const next3 = this.director!.rejectResult(next2, context);
+                const next4 = this.director!.rejectResult(next3, context);
+                const next5 = this.director!.rejectResult(next4, context);
 
-                this.slab = [next1, next2, next3];
+                this.slab = [next1, next2, next3, next4, next5];
                 resolve();
             }, 0);
         });

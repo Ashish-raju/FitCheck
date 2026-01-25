@@ -2,8 +2,10 @@ import React from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity, Image, ScrollView, Platform } from 'react-native';
 import Animated, { FadeIn, SlideInDown, ZoomIn } from 'react-native-reanimated';
 import { COLORS } from '../tokens/color.tokens';
-import { TYPOGRAPHY } from '../tokens/typography.tokens';
+import { TYPOGRAPHY } from '../tokens';
 import { SPACING } from '../tokens/spacing.tokens';
+import { ritualMachine } from '../state/ritualMachine';
+import { useRitualState } from '../state/ritualProvider';
 import { Piece } from '../../truth/types';
 import * as Haptics from 'expo-haptics';
 import { GlassCard } from '../primitives/GlassCard';
@@ -26,6 +28,7 @@ export const WardrobeDetailModal: React.FC<WardrobeDetailModalProps> = ({
     onDelete,
     onFavorite
 }) => {
+    const { candidateOutfits } = useRitualState();
     if (!piece) return null;
 
     return (
@@ -48,7 +51,10 @@ export const WardrobeDetailModal: React.FC<WardrobeDetailModalProps> = ({
                     {/* VISUAL FRAME */}
                     <Animated.View entering={ZoomIn.duration(400)} style={styles.imageFrame}>
                         {piece.imageUri ? (
-                            <Image source={{ uri: piece.imageUri }} style={styles.image} />
+                            <Image
+                                source={typeof piece.imageUri === 'string' ? { uri: piece.imageUri } : piece.imageUri}
+                                style={styles.image}
+                            />
                         ) : (
                             <View style={[styles.placeholder, { backgroundColor: piece.color }]} />
                         )}
@@ -120,7 +126,11 @@ export const WardrobeDetailModal: React.FC<WardrobeDetailModalProps> = ({
                         style={styles.aiButton}
                         onPress={() => {
                             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                            // TODO: Trigger AI
+                            // Set phase to RITUAL and provide outfits
+                            // Using a fallback to ensure we always have something to show
+                            const outfits = (candidateOutfits && candidateOutfits.length > 0) ? candidateOutfits : [];
+                            ritualMachine.enterRitual(outfits);
+                            onClose(); // Close modal
                         }}
                     >
                         <Text style={styles.aiButtonText}>✦ GENERATE OUTFITS</Text>
@@ -163,7 +173,7 @@ const styles = StyleSheet.create({
     imageFrame: {
         height: 400,
         marginHorizontal: SPACING.GUTTER,
-        marginBottom: SPACING.STACK.SECTION,
+        marginBottom: SPACING.STACK.X_LARGE,
         alignItems: 'center',
         justifyContent: 'center',
     },

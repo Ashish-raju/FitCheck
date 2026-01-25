@@ -36,7 +36,6 @@ export const BootLoader = {
         await SocialManager.getInstance().initialize();
         console.log('[BootLoader] Social Sync Complete.');
 
-        ritualMachine.toHome();
-        console.log('[BootLoader] Redirected to HOME.');
+        // Don't navigate here - SystemController will handle navigation to SPLASH
     }
 };

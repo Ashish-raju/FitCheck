@@ -1,5 +1,5 @@
-import { UIState, RitualPhase, INITIAL_STATE } from './uiState';
-import { Outfit } from '../../truth/types';
+import { UIState, INITIAL_STATE } from './uiState';
+import { Outfit, Piece } from '../../truth/types';
 import { InventoryStore } from '../../state/inventory/inventoryStore';
 import { CloudStore } from '../../system/firebase/CloudStore';
 
@@ -58,11 +58,18 @@ export class RitualMachine {
         this.emit();
     }
 
+    public toAuth() {
+        console.log('[RitualMachine] Navigating to AUTH');
+        this.state = { ...this.state, phase: 'AUTH' };
+        this.emit();
+    }
+
     public toHome() {
         console.log('[RitualMachine] Navigating to HOME');
         this.state = {
             ...this.state,
             phase: 'HOME',
+            candidateOutfits: [], // Clear old outfits to force fresh generation
             swipeDirection: 'NONE'
         };
         this.emit();
@@ -118,6 +125,26 @@ export class RitualMachine {
         this.emit();
     }
 
+    public toItemPreview(draftItem: Piece) {
+        console.log('[RitualMachine] Navigating to ITEM_PREVIEW');
+        this.state = {
+            ...this.state,
+            phase: 'ITEM_PREVIEW',
+            draftItem,
+            swipeDirection: 'NONE'
+        };
+        this.emit();
+    }
+
+    public clearDraftItem() {
+        console.log('[RitualMachine] Clearing draft item');
+        this.state = {
+            ...this.state,
+            draftItem: null
+        };
+        this.emit();
+    }
+
     // --- TRANSITIONS ---
 
     /**
@@ -125,6 +152,10 @@ export class RitualMachine {
      */
     public enterRitual(outfits: Outfit[], startIndex: number = 0) {
         console.log(`[RitualMachine] Transitioning to RITUAL with ${outfits.length} outfits`);
+        if (outfits.length > 0 && outfits[0].pieces.length > 0) {
+            const firstOutfitItems = outfits[0].pieces.map(p => p.name || `${p.color} ${p.category}`).join(', ');
+            console.log(`[RitualMachine] First outfit: ${firstOutfitItems}`);
+        }
         this.state = {
             ...this.state,
             phase: 'RITUAL',
@@ -135,9 +166,6 @@ export class RitualMachine {
         this.emit();
     }
 
-    /**
-     * Update the list of outfits (e.g. after a rejection) without resetting current position or phase.
-     */
     public updateRitualOutfits(outfits: Outfit[]) {
         if (this.state.phase !== 'RITUAL') return;
         this.state.candidateOutfits = outfits;
@@ -150,36 +178,22 @@ export class RitualMachine {
         this.emit();
     }
 
-    /**
-     * User has made a choice.
-     */
     public sealRitual(finalOutfitId: string) {
         console.log(`[RitualMachine] Transitioning: RITUAL -> SEAL (Locked: ${finalOutfitId})`);
-
-        // Find outfit before state update
         const outfit = this.state.candidateOutfits.find(o => o.id === finalOutfitId);
-
         this.state = {
             ...this.state,
             phase: 'SEAL',
             lockedOutfitId: finalOutfitId,
             lastSealTime: Date.now(),
         };
-
         InventoryStore.getInstance().recordSeal(finalOutfitId);
-
-        // The instruction was to add this call, but it was already present.
-        // Assuming the intent was to ensure it's there and correctly placed.
         if (outfit) {
             this.cloud.recordRitual(outfit);
         }
-
         this.emit();
     }
 
-    /**
-     * EMERGENCY: System violation or interruption detected.
-     */
     public triggerSafety() {
         console.log('[RitualMachine] ALERT: Routing to SAFETY');
         this.state = {
@@ -190,11 +204,12 @@ export class RitualMachine {
         this.emit();
     }
 
-    /**
-     * Reset 
-     */
     public resetToHome() {
-        this.state = { ...INITIAL_STATE, phase: 'HOME' };
+        this.state = {
+            ...INITIAL_STATE,
+            phase: 'HOME',
+            candidateOutfits: [] // Explicitly clear
+        };
         this.emit();
     }
 
@@ -217,5 +232,4 @@ export class RitualMachine {
     }
 }
 
-// Singleton instance for the app
 export const ritualMachine = new RitualMachine();

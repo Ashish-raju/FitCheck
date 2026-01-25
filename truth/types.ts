@@ -13,7 +13,7 @@ export interface Piece {
     warmth: number; // 1-5
     formality: number; // 1-5
     color: string;
-    imageUri?: string;
+    imageUri?: string | number; // string for URI, number for require()
     processedImageUri?: string; // Background removed
     status: PieceStatus;
     currentUses: number;
@@ -23,6 +23,17 @@ export interface Piece {
     styleTags?: string[]; // e.g. "Minimalist", "Workwear"
     wearHistory?: number[]; // Array of timestamps worn
     isFavorite?: boolean;
+
+    // Extended properties for explainable recommendations
+    name?: string;
+    brand?: string;
+    subcategory?: string;
+    material?: string;
+    pattern?: "solid" | "striped" | "check" | "graphic" | "print" | "other";
+    fit?: "slim" | "regular" | "oversized" | "relaxed";
+    season?: ("spring" | "summer" | "fall" | "winter")[];
+    price?: number;
+    notes?: string;
 }
 
 export interface Outfit {
@@ -41,7 +52,7 @@ export interface Context {
     occasion: string;
 }
 
-export interface Inventory {
+export type Inventory = {
     pieces: Record<PieceID, Piece>;
-    outfits: Record<OutfitID, Outfit>;
-}
+    outfits?: Record<OutfitID, Outfit>; // Optional - allows empty initial state
+};

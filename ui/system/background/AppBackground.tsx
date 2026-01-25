@@ -1,235 +1,261 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, memo } from 'react';
 import { StyleSheet, View, Dimensions } from 'react-native';
-import Svg, { Path, Defs, LinearGradient, Stop, Rect, Mask, Pattern } from 'react-native-svg';
+import Svg, { Defs, LinearGradient, Stop, Rect, Path, G, Mask } from 'react-native-svg';
 import Animated, {
-    useAnimatedProps,
     useSharedValue,
+    useAnimatedStyle,
     withRepeat,
     withTiming,
+    withSequence,
     Easing,
     interpolate,
-    useDerivedValue,
-    interpolateColor,
-    Extrapolate
+    Extrapolation,
 } from 'react-native-reanimated';
 import { COLORS } from '../../tokens/color.tokens';
 import { useBackgroundMotion } from './BackgroundContext';
 
-const { width, height } = Dimensions.get('window');
+const { width: WINDOW_WIDTH, height: WINDOW_HEIGHT } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('screen');
 
-// --- CONSTANTS ---
-const ANI_DURATION = 8000;
-const VIGNETTE_INTENSITY = 0.8;
+const width = SCREEN_WIDTH;
+const height = SCREEN_HEIGHT;
 
-const AnimatedRect = Animated.createAnimatedComponent(Rect);
 
-// --- STATIC GRID GENERATION ---
-// Symmetric Cross Grid
-const generateGrid = () => {
-    let d = "";
-    // Vertical Lines (Symmetric from center)
-    const cols = 8; // Fewer cols for cleaner look
-    const stepX = width / cols;
+const CELL_SIZE = 40;
+const JUNCTION_SIZE = 4;
+const SWIPE_THRESHOLD = WINDOW_WIDTH * 0.3;
 
-    for (let i = 1; i < cols; i++) {
-        const x = i * stepX;
-        d += `M${x},0 L${x},${height} `;
+
+// Pre-compute paths at module level (runs once, not per render)
+const computePaths = () => {
+    let gridD = '';
+    let junctionD = '';
+
+    const numCols = Math.ceil(width / CELL_SIZE) + 4;
+    const numRows = Math.ceil(height / CELL_SIZE) + 4;
+
+    // Diagonal lines
+    for (let i = -numRows; i <= numCols + numRows; i++) {
+        const startX = i * CELL_SIZE;
+        gridD += `M${startX},0 L${startX + height},${height} `;
+        gridD += `M${startX},0 L${startX - height},${height} `;
     }
 
-    // Horizontal Lines
-    const rows = 12;
-    const stepY = height / rows;
-    for (let i = 1; i < rows; i++) {
-        const y = i * stepY;
-        d += `M0,${y} L${width},${y} `;
+    // Junction X marks
+    for (let row = 0; row <= numRows * 2 + 4; row++) {
+        const y = row * (CELL_SIZE / 2);
+        const xOffset = (row % 2) * (CELL_SIZE / 2);
+
+        for (let col = -2; col <= numCols + 2; col++) {
+            const x = col * CELL_SIZE + xOffset;
+            junctionD += `M${x - JUNCTION_SIZE},${y - JUNCTION_SIZE} L${x + JUNCTION_SIZE},${y + JUNCTION_SIZE} `;
+            junctionD += `M${x + JUNCTION_SIZE},${y - JUNCTION_SIZE} L${x - JUNCTION_SIZE},${y + JUNCTION_SIZE} `;
+        }
     }
 
-    return d;
+    return { gridPath: gridD, junctionPath: junctionD };
 };
-const GRID_PATH_DATA = generateGrid();
 
-export const AppBackground: React.FC = () => {
-    const { panX } = useBackgroundMotion();
-    const pulseY = useSharedValue(height);
+const PATHS = computePaths();
+
+// Static SVG layer - rendered once, never updates
+const StaticGrid = memo(() => (
+    <Svg width={width} height={height} style={StyleSheet.absoluteFill}>
+        <Defs>
+            <LinearGradient id="fadeMask" x1="0" y1="0" x2="0" y2="1">
+                <Stop offset="0" stopColor="black" stopOpacity="0" />
+                <Stop offset="0.4" stopColor="black" stopOpacity="0" />
+                <Stop offset="0.7" stopColor="white" stopOpacity="0.6" />
+                <Stop offset="1" stopColor="white" stopOpacity="1" />
+            </LinearGradient>
+            <Mask id="gridMask">
+                <Rect x="0" y="0" width={width} height={height} fill="url(#fadeMask)" />
+            </Mask>
+        </Defs>
+
+        {/* Black Background */}
+        <Rect width={width} height={height} fill="#000000" />
+
+        {/* Static Grid */}
+        <G mask="url(#gridMask)">
+            <Path
+                d={PATHS.gridPath}
+                stroke="#FFFFFF"
+                strokeWidth="0.6"
+                strokeOpacity={0.08}
+                fill="none"
+            />
+            {/* Base X marks - always visible at low opacity */}
+            <Path
+                d={PATHS.junctionPath}
+                stroke="#FFFFFF"
+                strokeWidth="1.2"
+                strokeOpacity={0.12}
+                fill="none"
+            />
+        </G>
+    </Svg>
+));
+
+// Animated overlay - just opacity animation, no SVG manipulation
+const AnimatedOverlay = memo(() => {
+    const progress = useSharedValue(0);
 
     useEffect(() => {
-        // Idle Pulse (Rising Tide)
-        pulseY.value = withRepeat(
-            withTiming(-height * 0.5, {
-                duration: ANI_DURATION,
-                easing: Easing.linear
-            }),
+        progress.value = withRepeat(
+            withSequence(
+                withTiming(0, { duration: 0 }),
+                withTiming(1, { duration: 1500, easing: Easing.out(Easing.ease) }),
+                withTiming(1, { duration: 300 }),
+                withTiming(0, { duration: 1500, easing: Easing.in(Easing.ease) })
+            ),
             -1,
-            false // Do not reverse, just loop
+            false
         );
     }, []);
 
-    // --- ANIMATION PROPS ---
-
-    // 1. Idle Pulse Props
-    const pulseProps = useAnimatedProps(() => {
-        return {
-            y: pulseY.value,
-            opacity: 0.3 // Subtle
-        };
-    });
-
-    // 2. Swipe Wave Props
-    const waveProps = useAnimatedProps(() => {
-        // Map panX to vertical progress of the wave
-        // Swipe > 0 (Right/Accept) -> Move Up
-        // Swipe < 0 (Left/Reject) -> Move Up
-        // Range: 0 to width/2
-
-        const swipeMag = Math.abs(panX.value);
-        const progress = interpolate(swipeMag, [0, width * 0.3], [height, 0], Extrapolate.CLAMP); // Start at bottom, go to top
-
-        return {
-            y: progress - (height * 0.5), // Offset to center the gradient beam
-            opacity: interpolate(swipeMag, [0, 50], [0, 1], Extrapolate.CLAMP)
-        };
-    });
-
-    // 3. Dynamic Gradient Colors based on Direction
-    const waveGradientProps = useAnimatedProps(() => {
-        const color = panX.value > 0 ? '#4CAF50' : '#F44336'; // Green or Red
-        // We can't easily animate the stops inside <Stop> with props in this setup without deeper reanimated support or state.
-        // Strategy: Use Two rectangles (Red and Green) and fade them in/out?
-        // OR just use a derived color string if supported?
-        // Reanimated supports colors on 'fill' but maybe not gradient stops easily.
-        // Easier approach: Two wave rects. One Red, One Green. Opacity controls which one shows.
-        return {};
-    });
-
-    const redOpacity = useDerivedValue(() => {
-        return panX.value < 0 ? 1 : 0;
-    });
-
-    const greenOpacity = useDerivedValue(() => {
-        return panX.value > 0 ? 1 : 0;
-    });
-
-    const redWaveProps = useAnimatedProps(() => {
-        const swipeMag = Math.abs(panX.value);
-        // Map swipe distance to wave vertical position (Bottom -> Top)
-        const yPos = interpolate(swipeMag, [0, width * 0.4], [height, -height * 0.2], Extrapolate.CLAMP);
-        const op = interpolate(swipeMag, [10, 100], [0, 0.8], Extrapolate.CLAMP);
-        return {
-            y: yPos,
-            opacity: op * redOpacity.value
-        };
-    });
-
-    const greenWaveProps = useAnimatedProps(() => {
-        const swipeMag = Math.abs(panX.value);
-        const yPos = interpolate(swipeMag, [0, width * 0.4], [height, -height * 0.2], Extrapolate.CLAMP);
-        const op = interpolate(swipeMag, [10, 100], [0, 0.8], Extrapolate.CLAMP);
-        return {
-            y: yPos,
-            opacity: op * greenOpacity.value
-        };
-    });
+    const overlayStyle = useAnimatedStyle(() => ({
+        opacity: interpolate(progress.value, [0, 1], [0, 1]),
+    }));
 
     return (
-        <View style={styles.container} pointerEvents="none">
-            <Svg width={width} height={height} style={StyleSheet.absoluteFill}>
+        <Animated.View style={[StyleSheet.absoluteFill, overlayStyle]} pointerEvents="none">
+            <Svg width={width} height={height}>
                 <Defs>
-                    <LinearGradient id="bgGradient" x1="0" y1="0" x2="0" y2="1">
-                        <Stop offset="0" stopColor={COLORS.ABYSSAL_BLUE} stopOpacity="1" />
-                        <Stop offset="1" stopColor="#050510" stopOpacity="1" />
+                    <LinearGradient id="fadeMask2" x1="0" y1="0" x2="0" y2="1">
+                        <Stop offset="0" stopColor="black" stopOpacity="0" />
+                        <Stop offset="0.4" stopColor="black" stopOpacity="0" />
+                        <Stop offset="0.7" stopColor="white" stopOpacity="0.6" />
+                        <Stop offset="1" stopColor="white" stopOpacity="1" />
                     </LinearGradient>
+                    <Mask id="gridMask2">
+                        <Rect x="0" y="0" width={width} height={height} fill="url(#fadeMask2)" />
+                    </Mask>
+                </Defs>
+                {/* Bright X marks - fades in/out */}
+                <G mask="url(#gridMask2)">
+                    <Path
+                        d={PATHS.junctionPath}
+                        stroke="#FFFFFF"
+                        strokeWidth="1.5"
+                        strokeOpacity={0.25}
+                        fill="none"
+                    />
+                </G>
+            </Svg>
+        </Animated.View>
+    );
+});
 
-                    {/* Blue/Silver Idle Pulse */}
-                    <LinearGradient id="idlePulse" x1="0" y1="0" x2="0" y2="1">
-                        <Stop offset="0" stopColor="transparent" stopOpacity="0" />
-                        <Stop offset="0.5" stopColor={COLORS.ELECTRIC_COBALT} stopOpacity="0.2" />
-                        <Stop offset="1" stopColor="transparent" stopOpacity="0" />
-                    </LinearGradient>
 
-                    {/* RED Wave Gradient */}
-                    <LinearGradient id="redWave" x1="0" y1="0" x2="0" y2="1">
-                        <Stop offset="0" stopColor="transparent" stopOpacity="0" />
-                        <Stop offset="0.2" stopColor="#FF0000" stopOpacity="0.8" />
-                        <Stop offset="1" stopColor="transparent" stopOpacity="0" />
-                    </LinearGradient>
+// Swipe Direction Glow - RED for left, GREEN for right
+const SwipeGlow = memo(() => {
+    const { panX } = useBackgroundMotion();
 
-                    {/* GREEN Wave Gradient */}
-                    <LinearGradient id="greenWave" x1="0" y1="0" x2="0" y2="1">
-                        <Stop offset="0" stopColor="transparent" stopOpacity="0" />
-                        <Stop offset="0.2" stopColor="#00FF00" stopOpacity="0.8" />
-                        <Stop offset="1" stopColor="transparent" stopOpacity="0" />
-                    </LinearGradient>
+    // Green glow (right swipe)
+    const greenGlowStyle = useAnimatedStyle(() => ({
+        opacity: interpolate(
+            panX.value,
+            [0, SWIPE_THRESHOLD * 0.5, SWIPE_THRESHOLD * 1.2],
+            [0, 0.3, 0.7],
+            Extrapolation.CLAMP
+        ),
+    }));
 
-                    <Mask id="gridMask">
+    // Red glow (left swipe)
+    const redGlowStyle = useAnimatedStyle(() => ({
+        opacity: interpolate(
+            panX.value,
+            [-SWIPE_THRESHOLD * 1.2, -SWIPE_THRESHOLD * 0.5, 0],
+            [0.7, 0.3, 0],
+            Extrapolation.CLAMP
+        ),
+    }));
+
+    return (
+        <>
+            {/* Green Glow Overlay (Right Swipe) */}
+            <Animated.View style={[StyleSheet.absoluteFill, greenGlowStyle]} pointerEvents="none">
+                <Svg width={width} height={height}>
+                    <Defs>
+                        <LinearGradient id="greenFade" x1="0" y1="0" x2="0" y2="1">
+                            <Stop offset="0" stopColor="black" stopOpacity="0" />
+                            <Stop offset="0.4" stopColor="black" stopOpacity="0" />
+                            <Stop offset="0.7" stopColor="white" stopOpacity="0.6" />
+                            <Stop offset="1" stopColor="white" stopOpacity="1" />
+                        </LinearGradient>
+                        <Mask id="greenMask">
+                            <Rect x="0" y="0" width={width} height={height} fill="url(#greenFade)" />
+                        </Mask>
+                    </Defs>
+                    <G mask="url(#greenMask)">
                         <Path
-                            d={GRID_PATH_DATA}
-                            stroke="white"
-                            strokeWidth="1.5"
+                            d={PATHS.gridPath}
+                            stroke={COLORS.SUCCESS_MINT}
+                            strokeWidth="0.8"
+                            strokeOpacity={0.5}
                             fill="none"
                         />
-                    </Mask>
+                        <Path
+                            d={PATHS.junctionPath}
+                            stroke={COLORS.SUCCESS_MINT}
+                            strokeWidth="2"
+                            strokeOpacity={0.8}
+                            fill="none"
+                        />
+                    </G>
+                </Svg>
+            </Animated.View>
 
-                    <LinearGradient id="vignette" x1="0.5" y1="0.5" x2="1" y2="1">
-                        <Stop offset="0.3" stopColor="transparent" stopOpacity="0" />
-                        <Stop offset="1" stopColor="black" stopOpacity={VIGNETTE_INTENSITY} />
-                    </LinearGradient>
-                </Defs>
+            {/* Red Glow Overlay (Left Swipe) */}
+            <Animated.View style={[StyleSheet.absoluteFill, redGlowStyle]} pointerEvents="none">
+                <Svg width={width} height={height}>
+                    <Defs>
+                        <LinearGradient id="redFade" x1="0" y1="0" x2="0" y2="1">
+                            <Stop offset="0" stopColor="black" stopOpacity="0" />
+                            <Stop offset="0.4" stopColor="black" stopOpacity="0" />
+                            <Stop offset="0.7" stopColor="white" stopOpacity="0.6" />
+                            <Stop offset="1" stopColor="white" stopOpacity="1" />
+                        </LinearGradient>
+                        <Mask id="redMask">
+                            <Rect x="0" y="0" width={width} height={height} fill="url(#redFade)" />
+                        </Mask>
+                    </Defs>
+                    <G mask="url(#redMask)">
+                        <Path
+                            d={PATHS.gridPath}
+                            stroke={COLORS.ERROR_ROSE}
+                            strokeWidth="0.8"
+                            strokeOpacity={0.5}
+                            fill="none"
+                        />
+                        <Path
+                            d={PATHS.junctionPath}
+                            stroke={COLORS.ERROR_ROSE}
+                            strokeWidth="2"
+                            strokeOpacity={0.8}
+                            fill="none"
+                        />
+                    </G>
+                </Svg>
+            </Animated.View>
+        </>
+    );
+});
 
-                {/* Base Background */}
-                <Rect width={width} height={height} fill="url(#bgGradient)" />
-
-                {/* --- GRID MASKED LAYERS --- */}
-
-                {/* 1. Base Static Grid (Very Faint) */}
-                <Path
-                    d={GRID_PATH_DATA}
-                    stroke={COLORS.KINETIC_SILVER}
-                    strokeWidth="1"
-                    strokeOpacity="0.05" // Barely visible base
-                    fill="none"
-                />
-
-                {/* 2. Idle Upward Pulse (Masked by Grid) */}
-                <AnimatedRect
-                    x="0"
-                    width={width}
-                    height={height * 1.5}
-                    fill="url(#idlePulse)"
-                    mask="url(#gridMask)"
-                    animatedProps={pulseProps}
-                />
-
-                {/* 3. Interaction Waves (Masked by Grid) */}
-                <AnimatedRect
-                    x="0"
-                    width={width}
-                    height={height * 1.5}
-                    fill="url(#redWave)"
-                    mask="url(#gridMask)"
-                    animatedProps={redWaveProps}
-                />
-                <AnimatedRect
-                    x="0"
-                    width={width}
-                    height={height * 1.5}
-                    fill="url(#greenWave)"
-                    mask="url(#gridMask)"
-                    animatedProps={greenWaveProps}
-                />
-
-
-                {/* Vignette Overlay */}
-                <Rect width={width} height={height} fill="url(#vignette)" />
-
-            </Svg>
+// Main background component - combines static, animated, and swipe glow layers
+export const AppBackground: React.FC = memo(() => {
+    return (
+        <View style={styles.container} pointerEvents="none">
+            <StaticGrid />
+            <AnimatedOverlay />
+            <SwipeGlow />
         </View>
     );
-};
+});
 
 const styles = StyleSheet.create({
     container: {
         ...StyleSheet.absoluteFillObject,
-        zIndex: -1,
-        backgroundColor: COLORS.ABYSSAL_BLUE,
     },
 });
