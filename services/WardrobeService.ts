@@ -1,7 +1,7 @@
-import { FIREBASE_DB, FIREBASE_AUTH } from '../firebase/firebaseConfig';
+import { FIREBASE_DB, FIREBASE_AUTH } from '../system/firebase/firebaseConfig';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';
-import { Piece, PieceID } from '../../truth/types';
+import { Piece, PieceID } from '../truth/types';
 
 export interface WardrobeServiceOptions {
     limit?: number;

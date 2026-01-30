@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, memo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Pressable, Dimensions, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Pressable, Dimensions, ScrollView, RefreshControl } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import * as Haptics from 'expo-haptics';
 import { useFocusEffect } from '@react-navigation/native';
@@ -9,7 +9,8 @@ import { TYPOGRAPHY } from '../tokens';
 import { SPACING } from '../tokens/spacing.tokens';
 import { ritualMachine } from '../state/ritualMachine';
 import { useRitualState } from '../state/ritualProvider';
-import { InventoryStore } from '../../state/inventory/inventoryStore';
+import { WardrobeRepo, CategorySummary } from '../../data/repos';
+import { FIREBASE_AUTH } from '../../system/firebase/firebaseConfig';
 import { WardrobeDetailModal } from './WardrobeDetailModal';
 import { Image } from 'expo-image';
 import { WardrobeItemCard } from '../components/WardrobeItemCard';
@@ -23,8 +24,7 @@ const GAP = 20; // Increased spacing (Uniform with Gutter)
 const ITEM_SIZE = (width - (GUTTER * 2) - GAP) / 2;
 // const ITEM_SIZE = (width - GUTTER * 3) / 2; // Old logic
 
-// Categories
-const CATEGORIES = ['All', 'Top', 'Bottom', 'Shoes', 'Outerwear'] as const;
+// Categories will be loaded dynamically from wardrobe data
 
 // Memoized Category Tab
 const CategoryTab = memo(({
@@ -82,61 +82,71 @@ const EmptyState = memo(({ category, onAdd }: { category: string; onAdd: () => v
 export const WardrobeScreen: React.FC = () => {
     const { activeWardrobeTab } = useRitualState();
     const [selectedPiece, setSelectedPiece] = React.useState<Piece | null>(null);
-    const [isLoading, setIsLoading] = React.useState(true); // Start true to prevent empty flash
+    const [isLoading, setIsLoading] = React.useState(true);
+    const [refreshing, setRefreshing] = React.useState(false);
+    const [pieces, setPieces] = React.useState<Piece[]>([]);
+    const [categories, setCategories] = React.useState<CategorySummary[]>([]);
 
     // Animation State
     const [direction, setDirection] = React.useState<'left' | 'right'>('right');
     const prevTabRef = React.useRef(activeWardrobeTab);
 
-    const store = InventoryStore.getInstance();
-    const [inventoryData, setInventoryData] = React.useState(store.getInventory());
+    // Get current user ID
+    const userId = FIREBASE_AUTH.currentUser?.uid || 'guest';
+
+    // Load wardrobe data from WardrobeRepo
+    const loadWardrobe = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const [garments, cats] = await Promise.all([
+                WardrobeRepo.listGarments(userId, {
+                    category: activeWardrobeTab !== 'All' && activeWardrobeTab !== 'Favourites' ? activeWardrobeTab : undefined,
+                    isFavorite: activeWardrobeTab === 'Favourites' ? true : undefined
+                }),
+                WardrobeRepo.getCategories(userId)
+            ]);
+            setPieces(garments);
+            setCategories(cats);
+        } catch (error) {
+            console.error('[WardrobeScreen] Failed to load wardrobe:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [userId, activeWardrobeTab]);
 
     React.useEffect(() => {
-        // Seed if inventory is small (< 50 items)
-        const init = async () => {
-            const currentSize = Object.keys(store.getInventory().pieces).length;
-            console.log('[WardrobeScreen] Current inventory size:', currentSize);
-            if (currentSize < 50) {
-                console.log('[WardrobeScreen] Seeding mock data...');
-                await store.seedMockData();
-                setInventoryData({ ...store.getInventory() });
-                console.log('[WardrobeScreen] Seeding complete, inventory size:', Object.keys(store.getInventory().pieces).length);
-            }
-            setIsLoading(false); // Done loading
-        };
-        init();
-    }, []);
+        loadWardrobe();
+    }, [loadWardrobe]);
 
-    // Filtered pieces
-    const pieces = useMemo(() => {
-        return Object.values(inventoryData.pieces)
-            .filter(p => p.status !== 'Ghost')
-            .filter(p => activeWardrobeTab === 'All' || p.category === activeWardrobeTab)
-            .sort((a, b) => (b.dateAdded || 0) - (a.dateAdded || 0));
-    }, [inventoryData, activeWardrobeTab]);
+    // Pieces are already filtered by loadWardrobe via WardrobeRepo
 
-    // Stats
+    // Stats computed from categories and pieces
     const stats = useMemo(() => {
-        const allPieces = Object.values(inventoryData.pieces).filter(p => p.status !== 'Ghost');
-        const totalItems = allPieces.length;
+        const totalItems = categories.find(c => c.category === 'All')?.count || 0;
+        const currentCount = categories.find(c => c.category === activeWardrobeTab)?.count || pieces.length;
 
-        // Count items in current tab
-        const currentCount = activeWardrobeTab === 'All'
-            ? totalItems
-            : allPieces.filter(p => p.category === activeWardrobeTab).length;
-
-        // Mocking estimated value for now
-        const estValue = `$${(totalItems * 124.50).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+        // Compute estimated value from actual garment data (if available)
+        const estValue = pieces.reduce((sum, g: any) => sum + (g.estimatedValue || 0), 0);
+        const estValueStr = estValue > 0
+            ? `$${estValue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
+            : '—'; // Show dash if no values available
 
         console.log(`[WardrobeScreen] Stats: ${currentCount}/${totalItems} (Tab: ${activeWardrobeTab})`);
 
-        return { totalItems, currentCount, estValue };
-    }, [inventoryData, activeWardrobeTab]);
+        return { totalItems, currentCount, estValue: estValueStr };
+    }, [categories, pieces, activeWardrobeTab]);
 
     // Handlers
     const refreshInventory = useCallback(() => {
-        setInventoryData({ ...store.getInventory() });
-    }, [store]);
+        loadWardrobe();
+    }, [loadWardrobe]);
+
+    // Pull-to-refresh handler
+    const handleRefresh = useCallback(async () => {
+        setRefreshing(true);
+        await loadWardrobe();
+        setRefreshing(false);
+    }, [loadWardrobe]);
 
     // Refresh on focus
     useFocusEffect(
@@ -146,31 +156,74 @@ export const WardrobeScreen: React.FC = () => {
     );
 
     const handleTabPress = useCallback((tab: string) => {
-        const oldIndex = CATEGORIES.indexOf(activeWardrobeTab as any);
-        const newIndex = CATEGORIES.indexOf(tab as any);
+        const categoryNames = categories.map(c => c.category);
+        const oldIndex = categoryNames.indexOf(activeWardrobeTab);
+        const newIndex = categoryNames.indexOf(tab);
         setDirection(newIndex > oldIndex ? 'right' : 'left');
 
         Haptics.selectionAsync();
         ritualMachine.setWardrobeTab(tab);
-    }, [activeWardrobeTab]);
+    }, [activeWardrobeTab, categories]);
 
     const handlePress = useCallback((piece: Piece) => {
         setSelectedPiece(piece);
     }, []);
 
     const handleFavorite = useCallback(async (piece: Piece) => {
-        await store.toggleFavorite(piece.id);
+        // Optimistic Update: Update UI immediately
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+        // Update local state right away
         setSelectedPiece(prev => prev ? { ...prev, isFavorite: !prev.isFavorite } : null);
-        refreshInventory();
-    }, [store, refreshInventory]);
+
+        // Update via WardrobeRepo in background
+        try {
+            await WardrobeRepo.toggleFavorite(userId, piece.id);
+        } catch (error) {
+            // Rollback on error
+            setSelectedPiece(prev => prev ? { ...prev, isFavorite: !prev.isFavorite } : null);
+            console.error('[WardrobeScreen] Failed to toggle favorite:', error);
+        }
+
+        // Refresh after short delay
+        setTimeout(refreshInventory, 100);
+    }, [userId, refreshInventory]);
 
     const handleDelete = useCallback(async (piece: Piece) => {
-        await store.deletePiece(piece.id);
-        setSelectedPiece(null);
-        refreshInventory();
+        // Optimistic Delete: Close modal and remove from UI immediately
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    }, [store, refreshInventory]);
+
+        // 1. Close Modal Immediately
+        setSelectedPiece(null);
+
+        // 2. Delete via WardrobeRepo
+        try {
+            await WardrobeRepo.deleteGarment(userId, piece.id);
+        } catch (error) {
+            console.error('[WardrobeScreen] Failed to delete garment:', error);
+        }
+
+        // 3. Refresh List
+        refreshInventory();
+    }, [userId, refreshInventory]);
+
+    const handleNextPiece = useCallback(() => {
+        if (!selectedPiece || pieces.length <= 1) return;
+        const currentIndex = pieces.findIndex(p => p.id === selectedPiece.id);
+        if (currentIndex === -1) return;
+
+        const nextIndex = (currentIndex + 1) % pieces.length;
+        setSelectedPiece(pieces[nextIndex]);
+    }, [pieces, selectedPiece]);
+
+    const handlePreviousPiece = useCallback(() => {
+        if (!selectedPiece || pieces.length <= 1) return;
+        const currentIndex = pieces.findIndex(p => p.id === selectedPiece.id);
+        if (currentIndex === -1) return;
+
+        const prevIndex = (currentIndex - 1 + pieces.length) % pieces.length;
+        setSelectedPiece(pieces[prevIndex]);
+    }, [pieces, selectedPiece]);
 
     const handleAddItem = useCallback(() => {
         ritualMachine.toCamera();
@@ -210,12 +263,12 @@ export const WardrobeScreen: React.FC = () => {
                     showsHorizontalScrollIndicator={false}
                     contentContainerStyle={styles.tabsContainer}
                 >
-                    {CATEGORIES.map(category => (
+                    {categories.map(cat => (
                         <CategoryTab
-                            key={category}
-                            category={category}
-                            isActive={activeWardrobeTab === category}
-                            onPress={() => handleTabPress(category)}
+                            key={cat.category}
+                            category={`${cat.category} (${cat.count})`}
+                            isActive={activeWardrobeTab === cat.category}
+                            onPress={() => handleTabPress(cat.category)}
                         />
                     ))}
                 </ScrollView>
@@ -225,20 +278,20 @@ export const WardrobeScreen: React.FC = () => {
 
     // Swipe Logic
     const handleSwipe = useCallback((direction: number) => {
-        // Cast to any to avoid strict literal type mismatch if RitualState has extra categories
-        const currentIndex = CATEGORIES.indexOf(activeWardrobeTab as any);
+        const categoryNames = categories.map(c => c.category);
+        const currentIndex = categoryNames.indexOf(activeWardrobeTab);
         if (currentIndex === -1) return;
 
         let nextIndex = currentIndex + direction;
 
         // Clamp index
         if (nextIndex < 0) nextIndex = 0;
-        if (nextIndex >= CATEGORIES.length) nextIndex = CATEGORIES.length - 1;
+        if (nextIndex >= categoryNames.length) nextIndex = categoryNames.length - 1;
 
         if (nextIndex !== currentIndex) {
-            handleTabPress(CATEGORIES[nextIndex]);
+            handleTabPress(categoryNames[nextIndex]);
         }
-    }, [activeWardrobeTab, handleTabPress]);
+    }, [activeWardrobeTab, handleTabPress, categories]);
 
     // Track if we've already triggered haptic for this gesture
     const hasTriggeredHaptic = React.useRef(false);
@@ -308,8 +361,17 @@ export const WardrobeScreen: React.FC = () => {
                         contentContainerStyle={styles.listContent}
                         columnWrapperStyle={{ justifyContent: 'space-between' }}
                         ListEmptyComponent={<EmptyState category={activeWardrobeTab} onAdd={handleAddItem} />}
-                        // Add some performance props for FlashList
+                        // Performance optimizations
                         drawDistance={width}
+                        // Pull-to-refresh
+                        refreshControl={
+                            <RefreshControl
+                                refreshing={refreshing}
+                                onRefresh={handleRefresh}
+                                tintColor={COLORS.ELECTRIC_BLUE}
+                                colors={[COLORS.ELECTRIC_BLUE]}
+                            />
+                        }
                     />
                 </Animated.View>
 
@@ -327,6 +389,8 @@ export const WardrobeScreen: React.FC = () => {
                     visible={!!selectedPiece}
                     piece={selectedPiece}
                     onClose={() => setSelectedPiece(null)}
+                    onNext={handleNextPiece}
+                    onPrevious={handlePreviousPiece}
                     onDelete={handleDelete}
                     onFavorite={handleFavorite}
                     onEdit={() => { }}

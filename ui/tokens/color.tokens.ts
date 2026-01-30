@@ -50,8 +50,10 @@ export const COLORS = {
     // Missing Keys Patch
     RITUAL_RED: '#FF3B30',
     ROYAL_GOLD: '#FFD700',
+    GOLD_ACCENT: '#FFD700',
     EMERALD_DUSK: '#005C4B',
     SURFACE_GLASS_HIGHLIGHT: 'rgba(255, 255, 255, 0.15)',
+    RITUAL_BLACK: '#050508',
 } as const;
 
 export const MATERIAL = {

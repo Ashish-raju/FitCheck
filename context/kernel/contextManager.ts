@@ -1,6 +1,6 @@
-import { INITIAL_CONTEXT, createSnapshot } from './contextSnapshot.ts';
-import type { ContextVector } from './contextSnapshot.ts';
-import { ContextValidator } from './contextValidator.ts';
+import { INITIAL_CONTEXT, createSnapshot } from './contextSnapshot';
+import type { ContextVector } from './contextSnapshot';
+import { ContextValidator } from './contextValidator';
 
 type ContextListener = (ctx: ContextVector) => void;
 

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Background Removal Bridge</title>
+    <script type="module">
+        import imglyRemoveBackground from 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/dist/browser.mjs';
+
+        let isReady = false;
+        let isProcessing = false;
+
+        // Notify React Native that we're ready
+        function sendMessage(data) {
+            if (window.ReactNativeWebView) {
+                window.ReactNativeWebView.postMessage(JSON.stringify(data));
+            }
+        }
+
+        // Initialize
+        async function init() {
+            try {
+                console.log('[BGRemoval Bridge] Initializing...');
+                // The library auto-initializes on first use
+                isReady = true;
+                sendMessage({ type: 'ready' });
+                console.log('[BGRemoval Bridge] Ready!');
+            } catch (error) {
+                console.error('[BGRemoval Bridge] Init failed:', error);
+                sendMessage({ type: 'error', message: error.message });
+            }
+        }
+
+        // Process image
+        async function processImage(base64Image) {
+            if (!isReady) {
+                sendMessage({ type: 'error', message: 'Bridge not ready' });
+                return;
+            }
+
+            if (isProcessing) {
+                sendMessage({ type: 'error', message: 'Already processing an image' });
+                return;
+            }
+
+            try {
+                isProcessing = true;
+                sendMessage({ type: 'progress', stage: 'loading' });
+
+                // Convert base64 to blob
+                const byteString = atob(base64Image.split(',')[1] || base64Image);
+                const mimeString = base64Image.split(',')[0].split(':')[1].split(';')[0] || 'image/jpeg';
+                const ab = new ArrayBuffer(byteString.length);
+                const ia = new Uint8Array(ab);
+                for (let i = 0; i < byteString.length; i++) {
+                    ia[i] = byteString.charCodeAt(i);
+                }
+                const blob = new Blob([ab], { type: mimeString });
+
+                sendMessage({ type: 'progress', stage: 'processing' });
+
+                // Process with @imgly/background-removal
+                const resultBlob = await imglyRemoveBackground(blob, {
+                    model: 'medium', // Balance between quality and speed
+                    output: {
+                        format: 'image/png',
+                        quality: 0.9
+                    }
+                });
+
+                sendMessage({ type: 'progress', stage: 'converting' });
+
+                // Convert result blob to base64
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    const base64Result = reader.result;
+                    sendMessage({
+                        type: 'success',
+                        data: base64Result
+                    });
+                    isProcessing = false;
+                };
+                reader.onerror = () => {
+                    sendMessage({ type: 'error', message: 'Failed to convert result to base64' });
+                    isProcessing = false;
+                };
+                reader.readAsDataURL(resultBlob);
+
+            } catch (error) {
+                console.error('[BGRemoval Bridge] Processing failed:', error);
+                sendMessage({ type: 'error', message: error.message || 'Processing failed' });
+                isProcessing = false;
+            }
+        }
+
+        // Listen for messages from React Native
+        window.addEventListener('message', (event) => {
+            try {
+                const message = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+                
+                if (message.type === 'process') {
+                    processImage(message.imageData);
+                }
+            } catch (error) {
+                console.error('[BGRemoval Bridge] Message handler error:', error);
+                sendMessage({ type: 'error', message: 'Invalid message format' });
+            }
+        });
+
+        // Handle Android message format
+        document.addEventListener('message', (event) => {
+            try {
+                const message = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+                
+                if (message.type === 'process') {
+                    processImage(message.imageData);
+                }
+            } catch (error) {
+                console.error('[BGRemoval Bridge] Message handler error:', error);
+                sendMessage({ type: 'error', message: 'Invalid message format' });
+            }
+        });
+
+        // Initialize when page loads
+        init();
+    </script>
+</head>
+<body style="margin: 0; padding: 0; background: #000;">
+    <div style="color: #fff; padding: 20px; font-family: monospace; font-size: 10px;">
+        Background Removal Bridge Active
+    </div>
+</body>
+</html>

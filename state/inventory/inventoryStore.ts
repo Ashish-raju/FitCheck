@@ -1,10 +1,16 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+/**
+ * Inventory Store V2 - SQLite Edition
+ * Replaces AsyncStorage with SQLite for robust offline persistence
+ */
+
 import { Piece, PieceID, Inventory } from "../../truth/types";
 import { INITIAL_INVENTORY } from "./initialInventory";
 import { CloudStore } from "../../system/firebase/CloudStore";
-// MOCK_PIECES imported dynamically in seedMockData() to avoid blocking main thread
+import { garmentRepository } from "../../database/repositories/GarmentRepository";
+import { getDatabase, DataMigration } from "../../database";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const STORAGE_KEY = '@fit_check_inventory_v3'; // Bump version to clear old data with wrong labels
+const SEAL_DATA_KEY = '@fit_check_seal_data';
 
 export class InventoryStore {
     private static instance: InventoryStore;
@@ -27,45 +33,93 @@ export class InventoryStore {
         return InventoryStore.instance;
     }
 
+    /**
+     * Initialize database and load inventory
+     */
     public async initialize(): Promise<void> {
         if (this.isInitialized) return;
 
         try {
-            const stored = await AsyncStorage.getItem(STORAGE_KEY);
-            if (stored) {
-                const data = JSON.parse(stored);
-                // Backward compatibility check
-                if (data.inventory) {
-                    this.inventory = data.inventory;
-                    this.lockedOutfitId = data.lockedOutfitId || null;
-                    this.lastSealTime = data.lastSealTime || null;
-                } else {
-                    this.inventory = data; // Old format
-                }
-                console.log('[InventoryStore] Memory restored from vault.');
-            } else {
-                console.log('[InventoryStore] Initializing fresh vault.');
-                // await this.seedDummyData(); // DISABLE RANDOM SEEDING - Use INITIAL_INVENTORY only
-                this.save(); // Save the initial state immediately
+            console.log('[InventoryStore] Initializing SQLite-backed inventory...');
+
+            // Initialize database
+            await getDatabase().initialize();
+
+            // Run migration from AsyncStorage if needed
+            const migrationResult = await DataMigration.migrate();
+            if (migrationResult.success && migrationResult.garmentsMigrated > 0) {
+                console.log(`[InventoryStore] Migrated ${migrationResult.garmentsMigrated} garments from AsyncStorage`);
             }
-        } catch (e) {
-            console.error('[InventoryStore] Failed to access vault:', e);
-        } finally {
+
+            // Load seal data from AsyncStorage (small metadata)
+            await this.loadSealData();
+
+            // Load inventory from SQLite
+            await this.loadInventory();
+
+            // AUTO-SEED: If inventory is empty, seed mock data
+            if (Object.keys(this.inventory.pieces).length === 0) {
+                console.log('[InventoryStore] Inventory empty, auto-seeding mock data...');
+                await this.seedMockData();
+            }
+
+            this.isInitialized = true;
+            console.log('[InventoryStore] Initialization complete');
+        } catch (error) {
+            console.error('[InventoryStore] Initialization failed:', error);
+            // Fallback to empty inventory
+            this.inventory = { ...INITIAL_INVENTORY };
             this.isInitialized = true;
         }
     }
 
-    private async save(): Promise<void> {
+    /**
+     * Load seal data from AsyncStorage
+     */
+    private async loadSealData(): Promise<void> {
         try {
-            const data = {
-                inventory: this.inventory,
-                lockedOutfitId: this.lockedOutfitId,
-                lastSealTime: this.lastSealTime
-            };
-            await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-        } catch (e) {
-            console.error('[InventoryStore] Vault write failure:', e);
+            const sealData = await AsyncStorage.getItem(SEAL_DATA_KEY);
+            if (sealData) {
+                const parsed = JSON.parse(sealData);
+                this.lockedOutfitId = parsed.lockedOutfitId || null;
+                this.lastSealTime = parsed.lastSealTime || null;
+            }
+        } catch (error) {
+            console.error('[InventoryStore] Failed to load seal data:', error);
         }
+    }
+
+    /**
+     * Save seal data to AsyncStorage
+     */
+    private async saveSealData(): Promise<void> {
+        try {
+            await AsyncStorage.setItem(SEAL_DATA_KEY, JSON.stringify({
+                lockedOutfitId: this.lockedOutfitId,
+                lastSealTime: this.lastSealTime,
+            }));
+        } catch (error) {
+            console.error('[InventoryStore] Failed to save seal data:', error);
+        }
+    }
+
+    /**
+     * Load inventory from SQLite
+     */
+    private async loadInventory(): Promise<void> {
+        const pieces = await garmentRepository.getAll();
+        this.inventory.pieces = {};
+        pieces.forEach(piece => {
+            this.inventory.pieces[piece.id] = piece;
+        });
+        console.log(`[InventoryStore] Loaded ${pieces.length} pieces from SQLite`);
+    }
+
+    /**
+     * Refresh inventory from database (call after bulk operations)
+     */
+    public async refresh(): Promise<void> {
+        await this.loadInventory();
     }
 
     public getSealData() {
@@ -75,7 +129,7 @@ export class InventoryStore {
     public async recordSeal(outfitId: string) {
         this.lockedOutfitId = outfitId;
         this.lastSealTime = Date.now();
-        await this.save();
+        await this.saveSealData();
     }
 
     public getInventory(): Inventory {
@@ -98,7 +152,15 @@ export class InventoryStore {
             } else {
                 piece.status = "Dirty";
             }
-            await this.save();
+
+            // Update in SQLite
+            await garmentRepository.update(id, {
+                currentUses: piece.currentUses,
+                lastWorn: piece.lastWorn,
+                status: piece.status,
+            });
+
+            // Optional cloud sync
             await this.cloud.syncPiece(piece);
         }
     }
@@ -108,14 +170,26 @@ export class InventoryStore {
         if (piece) {
             piece.currentUses = 0;
             piece.status = "Clean";
-            await this.save();
+
+            // Update in SQLite
+            await garmentRepository.update(id, {
+                currentUses: 0,
+                status: "Clean",
+            });
+
+            // Optional cloud sync
             await this.cloud.syncPiece(piece);
         }
     }
 
     public async addPiece(piece: Piece) {
+        // Add to SQLite
+        await garmentRepository.add(piece);
+
+        // Update in-memory
         this.inventory.pieces[piece.id] = piece;
-        await this.save();
+
+        // Optional cloud sync
         await this.cloud.syncPiece(piece);
     }
 
@@ -123,13 +197,19 @@ export class InventoryStore {
         const piece = this.inventory.pieces[id];
         if (piece) {
             piece.maxUses = maxUses;
-            await this.save();
+
+            // Update in SQLite
+            await garmentRepository.update(id, { maxUses });
+
+            // Optional cloud sync
             await this.cloud.syncPiece(piece);
         }
     }
 
     public async setGlobalMaxUses(uses: number) {
         this.globalMaxUses = uses;
+
+        // Update all pieces without explicit maxUses
         Object.values(this.inventory.pieces).forEach(piece => {
             if (piece.maxUses === undefined) {
                 if (piece.currentUses >= this.globalMaxUses) {
@@ -141,23 +221,28 @@ export class InventoryStore {
                 }
             }
         });
-        await this.save();
-    }
 
+        // Note: For efficiency, we don't update all pieces in SQLite here
+        // They will be updated individually when next modified
+    }
 
     public async archivePiece(id: PieceID) {
         const piece = this.inventory.pieces[id];
         if (piece) {
             piece.status = 'Ghost';
-            await this.save();
+
+            // Update in SQLite
+            await garmentRepository.update(id, { status: 'Ghost' });
         }
     }
 
     public async deletePiece(id: PieceID) {
         if (this.inventory.pieces[id]) {
+            // Delete from SQLite
+            await garmentRepository.delete(id);
+
+            // Delete from in-memory
             delete this.inventory.pieces[id];
-            await this.save();
-            // await this.cloud.deletePiece(id); // TODO: Implement cloud delete
         }
     }
 
@@ -167,23 +252,26 @@ export class InventoryStore {
             if (!piece.styleTags) piece.styleTags = [];
             if (!piece.styleTags.includes(tag)) {
                 piece.styleTags.push(tag);
-                await this.save();
+
+                // Update in SQLite
+                await garmentRepository.update(id, { styleTags: piece.styleTags });
             }
         }
     }
-
 
     public async toggleFavorite(id: PieceID) {
         const piece = this.inventory.pieces[id];
         if (piece) {
             piece.isFavorite = !piece.isFavorite;
-            await this.save();
+
+            // Update in SQLite
+            await garmentRepository.update(id, { isFavorite: piece.isFavorite });
         }
     }
 
     public getMostWorn(limit: number = 5): Piece[] {
         return Object.values(this.inventory.pieces)
-            .sort((a, b) => (b.currentUses || 0) - (a.currentUses || 0)) // Fallback to currentUses if wearHistory not populated yet
+            .sort((a, b) => (b.currentUses || 0) - (a.currentUses || 0))
             .slice(0, limit);
     }
 
@@ -223,11 +311,12 @@ export class InventoryStore {
             });
         }
 
-        dummyItems.forEach(item => {
-            this.inventory.pieces[item.id] = item;
-        });
+        // Batch add to SQLite
+        await garmentRepository.batchAdd(dummyItems);
 
-        await this.save();
+        // Refresh in-memory inventory
+        await this.loadInventory();
+
         console.log('[InventoryStore] Seeding Complete.');
     }
 
@@ -237,19 +326,17 @@ export class InventoryStore {
         // Dynamic import to avoid blocking main thread on app startup
         const { MOCK_PIECES } = require('../../assets/mock-data/mockPieces');
 
-        // Clear existing
-        this.inventory.pieces = {};
+        // Batch add to SQLite
+        await garmentRepository.batchAdd(MOCK_PIECES);
 
-        MOCK_PIECES.forEach((p: Piece) => {
-            this.inventory.pieces[p.id] = p;
-        });
+        // Refresh in-memory inventory
+        await this.loadInventory();
 
-        await this.save();
         console.log('[InventoryStore] Seeding Complete. Total pieces:', Object.keys(this.inventory.pieces).length);
 
-        // CRITICAL: Reinitialize engine with new inventory
+        // FIRE-AND-FORGET: Reinitialize engine in background
         const { EngineBinder } = require('../../bridge/engineBinder');
-        await EngineBinder.reinitialize(this.inventory);
-        console.log('[InventoryStore] Engine ready with 150 items');
+        void EngineBinder.reinitialize(this.inventory);
+        console.log('[InventoryStore] Engine reinitialization triggered in background');
     }
 }

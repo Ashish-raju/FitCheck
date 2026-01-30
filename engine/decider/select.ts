@@ -1,16 +1,16 @@
-import type { Inventory, Context, Outfit, PieceID, OutfitID, Piece } from "../../truth/types.js";
-import { InventoryGraph } from "../../state/inventory/inventoryGraph.js";
-import { CONSTRAINTS } from "../../truth/constraints.js";
+import type { Inventory, Context, Outfit, PieceID, OutfitID, Piece } from "../../truth/types";
+import { InventoryGraph } from "../../state/inventory/inventoryGraph";
+import { CONSTRAINTS } from "../../truth/constraints";
 
 // PURE FUNCTION: SELECT
 // deterministic(Inventory, Context) -> Outfit
 export function selectOutfit(inventory: Inventory, context: Context): Outfit {
-    const validPieces = Object.values(inventory.pieces).filter(p => p.status === "clean");
+    const validPieces = Object.values(inventory.pieces).filter(p => p.status === "Clean" || !p.status);
 
-    const tops = validPieces.filter(p => p.category === "top");
-    const bottoms = validPieces.filter(p => p.category === "bottom");
-    const shoes = validPieces.filter(p => p.category === "shoes");
-    const outerwear = validPieces.filter(p => p.category === "outerwear");
+    const tops = validPieces.filter(p => p.category === "Top");
+    const bottoms = validPieces.filter(p => p.category === "Bottom");
+    const shoes = validPieces.filter(p => p.category === "Shoes");
+    const outerwear = validPieces.filter(p => p.category === "Outerwear");
 
     if (tops.length === 0 || bottoms.length === 0 || shoes.length === 0) {
         throw new Error("PHYSICAL_LAW_VIOLATION: Missing essential categories (top, bottom, shoes).");
@@ -55,6 +55,7 @@ export function selectOutfit(inventory: Inventory, context: Context): Outfit {
     return {
         id: outfitId,
         items,
+        pieces: [selectedTop, selectedBottom, selectedShoes, ...(context.temperature < 15 && outerwear.length > 0 ? [pickBest(outerwear)] : [])],
         score: 1.0
     };
 }

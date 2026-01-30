@@ -1,4 +1,5 @@
 import { Garment, UserProfile, Color, GarmentType, Pattern, Fit } from '../engine/outfit/models';
+import { GarmentMeta } from '../engine/types';
 import { Piece, PieceID, Category } from '../truth/types';
 import { WardrobeService } from './WardrobeService';
 
@@ -94,7 +95,7 @@ export class FirebaseGarmentRepository {
     async getAllUserGarments(userId: string): Promise<Garment[]> {
         try {
             const pieces = await this.wardrobeService.getAllPieces();
-            return pieces.map(piece => this.pieceToGarment(piece));
+            return Object.values(pieces).map(piece => this.pieceToGarment(piece));
         } catch (error) {
             console.error('[FirebaseGarmentRepository] Error fetching garments:', error);
             return [];
@@ -122,5 +123,14 @@ export class FirebaseGarmentRepository {
                 wP: 0.5
             }
         };
+    }
+
+    /**
+     * Save Stylist Engine Metadata (Phase 3)
+     */
+    async saveGarmentMeta(id: string, meta: GarmentMeta): Promise<void> {
+        await this.wardrobeService.updatePiece(id as PieceID, {
+            stylistMeta: meta
+        });
     }
 }

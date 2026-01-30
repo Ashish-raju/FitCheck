@@ -16,16 +16,16 @@ export class RitualDirector {
         this.memory = new RejectionMemory();
     }
 
-    public startRitual(context: Context): Outfit {
+    public async startRitual(context: Context): Promise<Outfit> {
         this.memory.clear();
-        const outfit = this.getNextCandidate(context);
+        const outfit = await this.getNextCandidate(context);
 
         // If we are starting a ritual and it's conservative but confidence is low, 
         // we might already be in a "trust repair" or "low evidence" state.
         return outfit;
     }
 
-    public rejectResult(outfit: Outfit, context: Context): Outfit {
+    public async rejectResult(outfit: Outfit, context: Context): Promise<Outfit> {
         this.memory.recordRejection(outfit);
 
         const count = this.memory.getRejectionCount();
@@ -36,10 +36,10 @@ export class RitualDirector {
             return UniformSelector.selectSafetyUniform(this.inventory, context);
         }
 
-        return this.getNextCandidate(context);
+        return await this.getNextCandidate(context);
     }
 
-    private getNextCandidate(context: Context): Outfit {
+    private async getNextCandidate(context: Context): Promise<Outfit> {
         const rejectionCount = this.memory.getRejectionCount();
         let stage: CalibrationStage = "CONSERVATIVE";
 
@@ -51,7 +51,7 @@ export class RitualDirector {
             if (rejectionCount === 2) stage = "SIMPLIFICATION";
         }
 
-        const ranked = this.orchestrator.generateAndRank(context, stage);
+        const ranked = await this.orchestrator.generateAndRank(context, stage);
 
         // Find first non-rejected option
         for (const outfit of ranked) {
@@ -59,7 +59,7 @@ export class RitualDirector {
                 // INTERNAL CONFIDENCE GATE
                 if (outfit.confidence && outfit.confidence < 0.4 && stage !== "SIMPLIFICATION") {
                     console.log(`[RitualDirector] Low confidence (${outfit.confidence}). Escalating to SIMPLIFICATION.`);
-                    return this.getSimplifiedFallback(context);
+                    return await this.getSimplifiedFallback(context);
                 }
                 return outfit;
             }
@@ -70,8 +70,8 @@ export class RitualDirector {
         return UniformSelector.selectSafetyUniform(this.inventory, context);
     }
 
-    private getSimplifiedFallback(context: Context): Outfit {
-        const simplified = this.orchestrator.generateAndRank(context, "SIMPLIFICATION");
+    private async getSimplifiedFallback(context: Context): Promise<Outfit> {
+        const simplified = await this.orchestrator.generateAndRank(context, "SIMPLIFICATION");
         return simplified[0] || UniformSelector.selectSafetyUniform(this.inventory, context);
     }
 }

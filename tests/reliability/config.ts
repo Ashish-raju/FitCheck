@@ -1,20 +1,19 @@
+export const ReliabilityConfig = {
+    // Run Configuration
+    SEED: parseInt(process.env.RELIABILITY_SEED || '12345'),
+    MODE: process.env.RELIABILITY_MODE || 'SYNTHETIC_FUZZ', // REAL_DB, REAL_DB_SAMPLED, SYNTHETIC_FUZZ
+    USER_ID: process.env.RELIABILITY_USER_ID || 'u1',
 
-export const TestConfig = {
-    // Mode
-    // REAL_DB: Connect to actual dev DB (read-only)
-    // FIXTURES: Use purely synthetic data
-    DB_MODE: process.env.DB_MODE || 'FIXTURES',
+    // Thresholds
+    THRESHOLDS: {
+        LATENCY_P95_MS: 200, // Strict latency budget
+        MAX_HARD_FAILS: 0,
+        MAX_WARNING_RATE: 0.01 // 1%
+    },
 
-    // Target User ID for real DB sampling
-    TARGET_USER_ID: process.env.TARGET_USER_ID,
-
-    // Count
-    TEST_COUNT: process.env.TEST_COUNT ? parseInt(process.env.TEST_COUNT) : 100000,
-
-    // Performance Thresholds (ms)
-    MAX_LATENCY_SMALL: 2000, // Wardrobe size 200 (P95)
-    MAX_LATENCY_LARGE: 3000, // Wardrobe size 1000 (P95)
-
-    // Seeds
-    MASTER_SEED: 12345,
+    // Paths
+    PATHS: {
+        REPORT: './tests/reliability/REPORT.md',
+        FAILURES: './tests/reliability/failures.jsonl'
+    }
 };

@@ -1,5 +1,5 @@
-import { Chronos } from './chronos.ts';
-import { RitualWindow } from './ritualWindow.ts';
+import { Chronos } from './chronos';
+import { RitualWindow } from './ritualWindow';
 
 export class DayBoundary {
     private lastCheckTime: number;

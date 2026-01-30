@@ -1,4 +1,5 @@
 import { ContextManager } from '../context/kernel/contextManager';
+import { InteractionManager } from 'react-native';
 import type { Inventory } from '../truth/types';
 import { RitualDirector } from '../engine/ritual/ritualDirector';
 import { ritualMachine } from '../ui/state/ritualMachine';
@@ -64,7 +65,39 @@ export class EngineBinder {
         }
     }
 
-    static rejectCurrent(context: any) {
+    /**
+     * ON-DEMAND GENERATION TRIGGER
+     * Called by TodayScreen when user clicks "Reveal"
+     */
+    static async generateNow(): Promise<import('../truth/types').Outfit[]> {
+        if (!this.director) {
+            console.warn('[EngineBinder] Cannot generate: Director not initialized');
+            return [];
+        }
+
+        const ctx = ContextManager.getInstance().getCurrent();
+        const pre = PrecomputeEngine.getInstance();
+
+        console.log('[EngineBinder] Requested generation. Waiting for UI lane to clear...');
+
+        // EXPERIMENTAL: Traffic Control
+        // Wait for all interactions (touches, animations) to finish before starting the heavy engine.
+        // This ensures the "Reveal" button animation finishes smoothly before we hog the CPU.
+        return new Promise((resolve) => {
+            InteractionManager.runAfterInteractions(async () => {
+                console.log('[EngineBinder] UI lane clear. Starting logic engine.');
+
+                // Force fill slab (will yield internally for UI smoothness)
+                await pre.fillSlab(ctx.weather);
+
+                const outfits = pre.getAllCached();
+                console.log(`[EngineBinder] On-Demand Generation complete: ${outfits.length} outfits`);
+                resolve(outfits);
+            });
+        });
+    }
+
+    static async rejectCurrent(context: any) {
         if (this.director) {
             const state = ritualMachine.getState();
             const currentOutfit = state.candidateOutfits[state.currentOutfitIndex];
@@ -74,7 +107,7 @@ export class EngineBinder {
 
             const start = performanceSeal.startTimeToGlass();
 
-            const nextOutfit = this.director.rejectResult(currentOutfit, context);
+            const nextOutfit = await this.director.rejectResult(currentOutfit, context);
 
             performanceSeal.endTimeToGlass(start);
             performanceSeal.monitorVeto(performance.now() - start);
@@ -94,17 +127,20 @@ export class EngineBinder {
      * Reinitialize the engine with updated inventory (e.g., after seeding mock data)
      */
     static async reinitialize(inventory: Inventory) {
-        console.log('[EngineBinder] Reinitializing engine with updated inventory...');
-        const director = new RitualDirector(inventory);
-        this.setDirector(director);
+        // ON-DEMAND ONLY: Do not auto-run. 
+        // We simply update the inventory reference here.
+        // The actual computation will be triggered by the user in TodayScreen.
+        console.log('[EngineBinder] Updating inventory reference...');
         this.inventory = inventory;
 
-        // CRITICAL: Clear old precomputed outfits and regenerate with new inventory
+        // Also update the director with new inventory, but do NOT fill slab yet.
+        const director = new RitualDirector(inventory);
+        this.setDirector(director);
+
+        // Clear old slab to ensure freshness when user does click Reveal
         const pre = PrecomputeEngine.getInstance();
         pre.clearSlab();
-        const ctx = ContextManager.getInstance().getCurrent();
-        await pre.fillSlab(ctx.weather);
 
-        console.log('[EngineBinder] Engine reinitialized successfully with fresh outfits');
+        console.log('[EngineBinder] Engine inventory updated. Waiting for Reveal trigger.');
     }
 }

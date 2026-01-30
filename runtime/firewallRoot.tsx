@@ -13,7 +13,8 @@ import { PersistentNav } from '../ui/primitives/PersistentNav';
 import { AppBackground } from '../ui/system/background/AppBackground';
 import { AuthProvider, useAuth } from '../context/auth/AuthProvider';
 
-import { AppStack, NAV_THEME, RootStackParamList } from '../ui/navigation/AppNavigator';
+import { AppStack, NAV_THEME } from '../ui/navigation/AppNavigator';
+import { RootStackParamList } from '../ui/navigation/types';
 
 // Sync Component: Bridges Ritual Machine State -> Native Navigation
 const NavigationSync: React.FC = memo(() => {
@@ -28,11 +29,11 @@ const NavigationSync: React.FC = memo(() => {
             case 'INTRO': navigation.navigate('Intro'); break;
             case 'ONBOARDING': navigation.navigate('Onboarding'); break;
             case 'AUTH': navigation.navigate('Auth'); break;
-            case 'HOME': navigation.navigate('Home'); break;
+            case 'HOME': navigation.navigate('Home', { screen: 'RitualTab' }); break;
             case 'RITUAL': navigation.navigate('RitualDeck'); break;
             case 'SEAL': navigation.navigate('Seal'); break;
-            case 'WARDROBE': navigation.navigate('Wardrobe'); break;
-            case 'PROFILE': navigation.navigate('Profile'); break;
+            case 'WARDROBE': navigation.navigate('Home', { screen: 'WardrobeTab' }); break;
+            case 'PROFILE': navigation.navigate('Home', { screen: 'ProfileTab' }); break;
             case 'CAMERA': navigation.navigate('Camera'); break;
             case 'ITEM_PREVIEW': navigation.navigate('ItemPreview'); break;
             case 'FRIENDS_FEED': navigation.navigate('Social'); break;
@@ -73,9 +74,13 @@ const SystemController: React.FC = memo(() => {
             ritualMachine.toSplash();
 
             // Do minimal boot process only
-            console.log('[SystemController] Starting boot loader...');
+            // console.log('[SystemController] Starting boot loader...');
             await BootLoader.boot();
             console.log('[SystemController] Boot complete. System Live.');
+
+            // WIRE THE BRAIN (Lightweight wiring only)
+            // This initializes the Director and Binder so that on-demand generation works
+            RuntimeOrchestrator.orchestrate();
 
             // NOTE: Orchestration is INTENTIONALLY SKIPPED at boot
             // The heavy outfit generation (getAllPossibleOutfits) blocks the JS thread
@@ -113,7 +118,7 @@ export const FirewallRoot: React.FC = () => {
                     <StatusBar style="light" backgroundColor="transparent" translucent />
 
                     {/* Content Layer - Renders on top of background */}
-                    <SafeAreaView style={styles.container}>
+                    <View style={styles.container}>
                         <NavigationContainer
                             theme={NAV_THEME}
                             ref={navigationRef}
@@ -129,7 +134,7 @@ export const FirewallRoot: React.FC = () => {
                                 <SystemController />
                             </View>
                         </NavigationContainer>
-                    </SafeAreaView>
+                    </View>
                 </View>
             </RitualProvider>
         </AuthProvider>

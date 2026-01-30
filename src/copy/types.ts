@@ -50,6 +50,7 @@ export interface CopyDictionary {
         loggedLabel: string;
         identitySecure: string;
         userAuth: string;
+        processing: string;
     };
     wardrobe: {
         title: string;

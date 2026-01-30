@@ -45,6 +45,11 @@ export class OutfitBuilder {
      * Warning: Cartesian product can be large.
      * Now with sampling to cap at maxCombos for performance.
      */
+    /**
+     * For simulation/generative purposes, creates *all* possible valid base combinations.
+     * Warning: Cartesian product can be large.
+     * Now with sampling to cap at maxCombos for performance.
+     */
     public getAllPossibleOutfits(maxCombos: number = 4000): Outfit[] {
         const tops = this.graph.getPiecesByCategory("Top");
         const bottoms = this.graph.getPiecesByCategory("Bottom");
@@ -54,14 +59,33 @@ export class OutfitBuilder {
 
         console.log(`[OutfitBuilder] Wardrobe size: ${tops.length} tops × ${bottoms.length} bottoms × ${shoes.length} shoes = ${totalPossible} possible combinations`);
 
-        // If too many combinations, use sampling
-        if (totalPossible > maxCombos) {
-            console.log(`[OutfitBuilder] Sampling ${maxCombos} combinations from ${totalPossible} to prevent performance issues`);
-            return this.sampleOutfits(tops, bottoms, shoes, maxCombos);
+        // OPTIMIZATION: If total combinations are manageable (e.g., < 50k), 
+        // it is faster and more uniform to generate ALL and shuffle/slice, 
+        // rather than random sampling which suffers from collision performance decay.
+        const GENERATION_THRESHOLD = 50000;
+
+        if (totalPossible <= GENERATION_THRESHOLD) {
+            return this.generateAllAndShuffle(tops, bottoms, shoes, maxCombos);
         }
 
-        // Generate all combinations if under limit
+        // If truly huge, fall back to sampling
+        console.log(`[OutfitBuilder] Space too large (${totalPossible}), using random sampling for ${maxCombos} items`);
+        return this.sampleOutfits(tops, bottoms, shoes, maxCombos);
+    }
+
+    /**
+     * Deterministic generation of all combinations followed by Fisher-Yates shuffle.
+     * Guaranteed to finish in linear time relative to totalPossible.
+     */
+    private generateAllAndShuffle(
+        tops: import("../../truth/types").Piece[],
+        bottoms: import("../../truth/types").Piece[],
+        shoes: import("../../truth/types").Piece[],
+        limit: number
+    ): Outfit[] {
         const outfits: Outfit[] = [];
+
+        // 1. Generate ALL (Fast for < 50k)
         for (const top of tops) {
             for (const bottom of bottoms) {
                 for (const shoe of shoes) {
@@ -72,7 +96,15 @@ export class OutfitBuilder {
                 }
             }
         }
-        return outfits;
+
+        // 2. Fisher-Yates Shuffle
+        for (let i = outfits.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [outfits[i], outfits[j]] = [outfits[j], outfits[i]];
+        }
+
+        // 3. Slice
+        return outfits.slice(0, limit);
     }
 
     /**
@@ -87,7 +119,12 @@ export class OutfitBuilder {
         const outfits: Outfit[] = [];
         const seen = new Set<string>();
 
-        while (outfits.length < maxCombos) {
+        // Safety break to prevent infinite loops if RNG is bad
+        let attempts = 0;
+        const maxAttempts = maxCombos * 10;
+
+        while (outfits.length < maxCombos && attempts < maxAttempts) {
+            attempts++;
             const top = tops[Math.floor(Math.random() * tops.length)];
             const bottom = bottoms[Math.floor(Math.random() * bottoms.length)];
             const shoe = shoes[Math.floor(Math.random() * shoes.length)];

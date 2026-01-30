@@ -1,3 +1,5 @@
+import { GarmentMeta } from '../engine/types';
+
 export type BrandString<K, T> = K & { __brand: T };
 
 export type OutfitID = BrandString<string, "OutfitID">;
@@ -27,6 +29,7 @@ export interface Piece {
     isFavorite?: boolean;
 
     // Extended properties for explainable recommendations
+    // Extended properties for explainable recommendations
     name?: string;
     brand?: string;
     subcategory?: string;
@@ -37,6 +40,13 @@ export interface Piece {
     price?: number;
     notes?: string;
 
+    // Advanced Fit Meta (High Features)
+    necklineType?: string; // e.g., 'Crew', 'V-Neck', 'Collared', 'Boat'
+    sleeveType?: string;   // e.g., 'Short', 'Long', '3/4', 'Sleeveless'
+    lengthCategory?: string; // e.g., 'Crop', 'Waist', 'Hip', 'Thigh'
+    riseType?: string; // e.g., 'Low', 'Mid', 'High'
+    silhouetteType?: string; // e.g., 'Fitted', 'Boxy', 'A-Line'
+
     // Image processing metadata
     processingMetadata?: {
         processingTimeMs: number;
@@ -44,6 +54,23 @@ export interface Piece {
         height: number;
         fileSize: number;
     };
+
+    /**
+     * STYLIST ENGINE METADATA (New Engine)
+     * Persisted analysis from the Phase 2+ engine.
+     */
+    stylistMeta?: GarmentMeta;
+}
+
+export interface TravelPack {
+    id: string;
+    destination: string;
+    durationDays: number;
+    purpose: string;
+    items: Piece[];
+    outfits?: Outfit[];
+    createdAt: number;
+    weatherForecast?: string;
 }
 
 export interface Outfit {

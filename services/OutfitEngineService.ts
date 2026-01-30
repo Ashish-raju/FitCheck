@@ -8,6 +8,9 @@ import { WardrobeService } from './WardrobeService';
 /**
  * Service that integrates the outfit suggestion engine with the app
  */
+/**
+ * @deprecated Replaced by EngineService. Use EngineService.getSuggestions() instead.
+ */
 export class OutfitEngineService {
     private static instance: OutfitEngineService;
     private repository: FirebaseGarmentRepository;
@@ -82,7 +85,8 @@ export class OutfitEngineService {
         const appOutfits: Outfit[] = [];
 
         // Get all pieces for lookup
-        const allPieces = await this.wardrobeService.getAllPieces();
+        const allPiecesRecord = await this.wardrobeService.getAllPieces();
+        const allPieces = Object.values(allPiecesRecord);
         const piecesMap = new Map<string, Piece>(allPieces.map(p => [p.id as string, p]));
 
         for (const engineOutfit of engineOutfits) {
@@ -129,7 +133,8 @@ export class OutfitEngineService {
      */
     private async getFallbackOutfits(): Promise<Outfit[]> {
         try {
-            const pieces = await this.wardrobeService.getAllPieces();
+            const piecesRecord = await this.wardrobeService.getAllPieces();
+            const pieces = Object.values(piecesRecord);
 
             if (pieces.length < 3) {
                 return [];

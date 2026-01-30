@@ -30,19 +30,31 @@ export class PrecomputeEngine {
     public async fillSlab(context: Context) {
         if (!this.director) return;
 
-        return new Promise<void>((resolve) => {
-            setTimeout(() => {
-                // Generate next five candidates for the carousel
-                const next1 = this.director!.startRitual(context);
-                const next2 = this.director!.rejectResult(next1, context);
-                const next3 = this.director!.rejectResult(next2, context);
-                const next4 = this.director!.rejectResult(next3, context);
-                const next5 = this.director!.rejectResult(next4, context);
+        console.log('[Precompute] Filling slab via Background Worker...');
 
-                this.slab = [next1, next2, next3, next4, next5];
-                resolve();
-            }, 0);
-        });
+        try {
+            this.slab = []; // Reset slab
+
+            // 1. Initial Candidate
+            // Now fully non-blocking thanks to background worker
+            let current = await this.director.startRitual(context);
+            this.slab.push(current);
+
+            // 2. Generate rest (Total 5)
+            // We can run these sequentially or parallel. Sequential is safer for "Rejection" logic chain.
+            for (let i = 0; i < 4; i++) {
+                current = await this.director.rejectResult(current, context);
+                this.slab.push(current);
+            }
+
+            console.log(`[Precompute] Slab filled with ${this.slab.length} outfits.`);
+
+        } catch (e) {
+            console.error('[Precompute] Failed to fill slab:', e);
+            // Fallback: If background worker fails, we might have an empty slab.
+            // The getNext() method handles empty slab with a safe synchronous fallback if needed (though that would block).
+            // Ideal production hardening: Trigger a "Toast" or "Retry".
+        }
     }
 
     /**
@@ -59,7 +71,7 @@ export class PrecomputeEngine {
     /**
      * Serves a cached candidate or triggers emergency background generation.
      */
-    public getNext(context: Context): Outfit {
+    public async getNext(context: Context): Promise<Outfit> {
         if (this.slab.length > 0) {
             const next = this.slab.shift()!;
             // Trigger refill in background
@@ -68,8 +80,8 @@ export class PrecomputeEngine {
         }
 
         // FALLBACK: Conservative candidate served while backgrounding
-        console.warn('[Precompute] Slab empty. Serving immediate conservative fallback.');
-        return this.director!.startRitual(context);
+        console.warn('[Precompute] Slab empty. Serving immediate conservative fallback (Async).');
+        return await this.director!.startRitual(context);
     }
 
     public getSafetyUniform(): Outfit | null {

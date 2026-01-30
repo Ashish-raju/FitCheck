@@ -15,6 +15,7 @@ export class ScoringOrchestrator {
     private graph: InventoryGraph;
     private builder: OutfitBuilder;
     private wardrobeIndex: WardrobeIndex;
+    private cachedOutfits: Outfit[] | null = null;
 
     constructor(inventory: Inventory) {
         this.graph = new InventoryGraph(inventory);
@@ -28,40 +29,22 @@ export class ScoringOrchestrator {
         EngineDebugger.logSampleItems(this.wardrobeIndex, 5);
     }
 
-    public generateAndRank(context: Context, stage: CalibrationStage = "CONSERVATIVE"): OutfitWithBreakdown[] {
+    public async generateAndRank(context: Context, stage: CalibrationStage = "CONSERVATIVE"): Promise<OutfitWithBreakdown[]> {
         const startTime = performance.now();
 
-        const allOutfits = this.builder.getAllPossibleOutfits(4000); // Cap at 4000
-        const validOutfits: OutfitWithBreakdown[] = [];
+        // Use Background Worker to generate and rank outfits
+        // This offloads the heavy loop to a separate thread
+        const { runScoringPipeline } = require("../runtime/backgroundWorker");
+        const allPieces = this.graph.getAllPieces();
 
-        for (const outfit of allOutfits) {
-            const pieces = outfit.items.map(id => this.graph.getPiece(id)).filter((p): p is import("../../truth/types").Piece => !!p);
-
-            // Apply Hard Filter Gates
-            const allPassed = pieces.every(p => FilterGateway.filterPiece(p, context));
-            if (!allPassed) continue;
-
-            // Score with explainable breakdown
-            outfit.pieces = pieces;
-            const { score, breakdown } = AestheticRules.scoreOutfit(outfit, pieces, context, stage);
-            outfit.score = score;
-            (outfit as OutfitWithBreakdown).breakdown = breakdown;
-
-            validOutfits.push(outfit as OutfitWithBreakdown);
-        }
-
-        // Sort deterministic (Score desc, then ID to break ties)
-        const sorted = validOutfits.sort((a, b) => {
-            if (b.score !== a.score) return b.score - a.score;
-            return a.id.localeCompare(b.id);
-        });
+        const sorted = await runScoringPipeline(allPieces, context, stage);
 
         const endTime = performance.now();
 
         // Log performance metrics
         EngineDebugger.logPerformanceMetrics(
-            allOutfits.length,
-            validOutfits.length,
+            sorted.length, // Total generated matches valid ones here since worker filters internaly
+            sorted.length,
             endTime - startTime
         );
 

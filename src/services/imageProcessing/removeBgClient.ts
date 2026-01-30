@@ -2,7 +2,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import { ProcessingError, RemoveBgResponse } from './types';
 
 // API Configuration
-const REMOVE_BG_API_KEY = 'd4BsDbV4196ubyvqVS4uFyjV';
+const REMOVE_BG_API_KEY = 'MOCK';
 const API_URL = 'https://api.remove.bg/v1.0/removebg';
 const REQUEST_TIMEOUT_MS = 15000;
 const MAX_RETRIES = 2;

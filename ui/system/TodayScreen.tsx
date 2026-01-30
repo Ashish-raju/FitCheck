@@ -16,65 +16,10 @@ import { t } from '../../src/copy';
 import { ritualMachine } from '../state/ritualMachine';
 import { useRitualState } from '../state/ritualProvider';
 import { Outfit } from '../../truth/types';
+import { ProfileRepo, DerivedStats, UserProfile } from '../../data/repos';
+import { FIREBASE_AUTH } from '../../system/firebase/firebaseConfig';
 
-// Mock Data for Demo (using real mock images to avoid blank screens)
-const MOCK_OUTFITS: Outfit[] = [
-    {
-        id: 'void_runner_01' as OutfitID,
-        score: 0.98,
-        confidence: 0.95,
-        items: ['p1' as PieceID, 'p2' as PieceID, 'p3' as PieceID],
-        pieces: [
-            { id: 'p1' as PieceID, category: 'Top', name: 'White T-Shirt', color: '#FFFFFF', warmth: 3, formality: 3, status: 'Clean', currentUses: 0, imageUri: require('../../assets/mock-data/images/shirt_white_minimalist_1769291380313.png') },
-            { id: 'p2' as PieceID, category: 'Bottom', name: 'Navy Chinos', color: '#0F0F12', warmth: 3, formality: 3, status: 'Clean', currentUses: 0, imageUri: require('../../assets/mock-data/images/pants_beige_chinos_1769291832497.png') },
-            { id: 'p3' as PieceID, category: 'Shoes', name: 'White Sneakers', color: '#22222E', warmth: 3, formality: 3, status: 'Clean', currentUses: 0, imageUri: require('../../assets/mock-data/images/shoes_white_sneakers_1769291896158.png') }
-        ] as any
-    },
-    {
-        id: 'neon_scholar_02' as OutfitID,
-        score: 0.92,
-        confidence: 0.88,
-        items: ['p4' as PieceID, 'p5' as PieceID, 'p6' as PieceID],
-        pieces: [
-            { id: 'p4' as PieceID, category: 'Top', name: 'Black T-Shirt', color: '#2E2E3A', warmth: 3, formality: 3, status: 'Clean', currentUses: 0, imageUri: require('../../assets/mock-data/images/shirt_black_tshirt_1769291392637.png') },
-            { id: 'p5' as PieceID, category: 'Bottom', name: 'Black Jeans', color: '#121215', warmth: 3, formality: 3, status: 'Clean', currentUses: 0, imageUri: require('../../assets/mock-data/images/pants_black_cropped_1769291818202.png') },
-            { id: 'p6' as PieceID, category: 'Shoes', name: 'Black Boots', color: '#2E5CFF', warmth: 3, formality: 3, status: 'Clean', currentUses: 0, imageUri: require('../../assets/mock-data/images/shoes_black_boots_1769291909320.png') }
-        ] as any
-    },
-    {
-        id: 'grey_ghost_03' as OutfitID,
-        score: 0.88,
-        confidence: 0.85,
-        items: ['p7' as PieceID, 'p8' as PieceID, 'p9' as PieceID],
-        pieces: [
-            { id: 'p7' as PieceID, category: 'Top', name: 'Navy Oxford', color: '#000080', warmth: 3, formality: 4, status: 'Clean', currentUses: 0, imageUri: require('../../assets/mock-data/images/shirt_blue_oxford_1769291405660.png') },
-            { id: 'p8' as PieceID, category: 'Bottom', name: 'Grey Trousers', color: '#808080', warmth: 3, formality: 4, status: 'Clean', currentUses: 0, imageUri: require('../../assets/mock-data/images/pants_grey_wool_1769291853652.png') },
-            { id: 'p9' as PieceID, category: 'Shoes', name: 'Brown Loafers', color: '#8B4513', warmth: 3, formality: 4, status: 'Clean', currentUses: 0, imageUri: require('../../assets/mock-data/images/shoes_brown_loafers_1769291923879.png') }
-        ] as any
-    },
-    {
-        id: 'obsidian_04' as OutfitID,
-        score: 0.85,
-        confidence: 0.82,
-        items: ['p10' as PieceID, 'p11' as PieceID, 'p12' as PieceID],
-        pieces: [
-            { id: 'p10' as PieceID, category: 'Top', name: 'Casual Shirt', color: '#2E2E3A', warmth: 3, formality: 3, status: 'Clean', currentUses: 0, imageUri: require('../../assets/mock-data/images/shirt_patterned_casual_1769291418890.png') },
-            { id: 'p11' as PieceID, category: 'Bottom', name: 'Olive Cargo', color: '#121215', warmth: 3, formality: 3, status: 'Clean', currentUses: 0, imageUri: require('../../assets/mock-data/images/pants_olive_cargo_1769291882181.png') },
-            { id: 'p12' as PieceID, category: 'Shoes', name: 'Grey Runners', color: '#2E5CFF', warmth: 3, formality: 3, status: 'Clean', currentUses: 0, imageUri: require('../../assets/mock-data/images/shoes_grey_runners_1769291938062.png') }
-        ] as any
-    },
-    {
-        id: 'midnight_05' as OutfitID,
-        score: 0.82,
-        confidence: 0.80,
-        items: ['p13' as PieceID, 'p14' as PieceID, 'p15' as PieceID],
-        pieces: [
-            { id: 'p13' as PieceID, category: 'Top', name: 'Flannel', color: '#2E2E3A', warmth: 4, formality: 2, status: 'Clean', currentUses: 0, imageUri: require('../../assets/mock-data/images/shirt_flannel_streetwear_1769291433914.png') },
-            { id: 'p14' as PieceID, category: 'Bottom', name: 'Denim Indigo', color: '#121215', warmth: 3, formality: 2, status: 'Clean', currentUses: 0, imageUri: require('../../assets/mock-data/images/pants_denim_indigo_1769291869436.png') },
-            { id: 'p15' as PieceID, category: 'Shoes', name: 'Black Derbies', color: '#2E5CFF', warmth: 3, formality: 3, status: 'Clean', currentUses: 0, imageUri: require('../../assets/mock-data/images/shoes_black_derbies_1769291955831.png') }
-        ] as any
-    }
-];
+// MOCK_OUTFITS removed - show proper error states instead
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
@@ -84,27 +29,87 @@ export const TodayScreen: React.FC = () => {
     const { candidateOutfits } = useRitualState();
     const navigation = useNavigation<NavigationProp>();
 
+    // Get current user
+    const userId = FIREBASE_AUTH.currentUser?.uid || 'guest';
+
+    // State
+    const [isGenerating, setIsGenerating] = React.useState(false);
+    const [profile, setProfile] = React.useState<UserProfile | null>(null);
+    const [stats, setStats] = React.useState<DerivedStats | null>(null);
+    const [generationError, setGenerationError] = React.useState<string | null>(null);
+
+    // Load user profile and stats
+    React.useEffect(() => {
+        const loadUserData = async () => {
+            try {
+                const [userProfile, userStats] = await Promise.all([
+                    ProfileRepo.getProfile(userId),
+                    ProfileRepo.getStats(userId)
+                ]);
+                setProfile(userProfile);
+                setStats(userStats);
+            } catch (error) {
+                console.error('[TodayScreen] Failed to load user data:', error);
+            }
+        };
+        loadUserData();
+    }, [userId]);
+
     // Button Animation
     const buttonScale = useSharedValue(1);
     const buttonTranslateY = useSharedValue(0);
 
     const handleRevealPressIn = () => {
+        if (isGenerating) return;
         buttonScale.value = withSpring(0.95, { damping: 10, stiffness: 300 });
         buttonTranslateY.value = withSpring(4, { damping: 10, stiffness: 300 }); // Push down effect
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     };
-    const handleRevealPressOut = () => {
+
+    const handleRevealPressOut = async () => {
+        if (isGenerating) return;
+
+        // Animate Button Release
         buttonScale.value = withSpring(1, { damping: 12, stiffness: 200 });
         buttonTranslateY.value = withSpring(0, { damping: 12, stiffness: 200 });
 
-        // Use engine outfits if available, otherwise fallback to mock
-        const outfitsToUser = (candidateOutfits && candidateOutfits.length > 0) ? candidateOutfits : MOCK_OUTFITS;
-        console.log(`[TodayScreen] Entering Ritual with ${outfitsToUser.length} outfits`);
+        // START GENERATION
+        setIsGenerating(true);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
-        // Force a fresh reference to ensure RitualDeckScreen's useEffect triggers
-        ritualMachine.enterRitual([...outfitsToUser]);
+        // Dynamic require to avoid circular deps if any, or just valid import usage
+        const { EngineBinder } = require('../../bridge/engineBinder');
 
-        // Remove manual navigation to avoid race conditions with NavigationSync
+        // Allow UI to update to "Loading" state before freezing on any micro-task
+        await new Promise(r => setTimeout(r, 50));
+
+        try {
+            const outfits = await EngineBinder.generateNow();
+            console.log(`[TodayScreen] Generation done. Outfits: ${outfits.length}`);
+
+            if (outfits.length > 0) {
+                ritualMachine.enterRitual([...outfits]);
+                setGenerationError(null);
+            } else {
+                // Show error instead of falling back to mocks
+                const wardrobeCount = stats?.wardrobeCount || 0;
+                if (wardrobeCount < 10) {
+                    setGenerationError(`Not enough items in wardrobe (${wardrobeCount}/10 minimum). Add more pieces to generate outfits.`);
+                } else {
+                    setGenerationError('Unable to generate outfits. Please try again.');
+                }
+            }
+        } catch (e) {
+            console.error('[TodayScreen] Engine generation failed:', e);
+            const wardrobeCount = stats?.wardrobeCount || 0;
+            if (wardrobeCount < 10) {
+                setGenerationError(`Not enough items in wardrobe (${wardrobeCount}/10 minimum). Upload more pieces to get started.`);
+            } else {
+                setGenerationError('Generation failed. Please try again later.');
+            }
+        } finally {
+            setIsGenerating(false);
+        }
     };
 
     const loadRitual = () => {
@@ -118,7 +123,9 @@ export const TodayScreen: React.FC = () => {
         ] as any
     }));
 
-    const timeGreeting = t('home.greeting.evening', { name: 'Ash' });
+    // Dynamic greeting with real user name
+    const userName = profile?.displayName || 'There';
+    const timeGreeting = t('home.greeting.evening', { name: userName });
     const vibe = t('home.vibe');
 
     return (
@@ -191,22 +198,41 @@ export const TodayScreen: React.FC = () => {
                                 end={{ x: 0, y: 1 }}
                                 style={styles.buttonGradient}
                             >
-                                <Text style={styles.buttonText}>{t('home.revealButton')}</Text>
+                                <Text style={styles.buttonText}>
+                                    {isGenerating ? t('home.processing', { defaultValue: 'ANALYZING WARDROBE...' }) : t('home.revealButton')}
+                                </Text>
                             </LinearGradient>
                             <View style={styles.buttonEdge} />
                         </TouchableOpacity>
                     </Animated.View>
+
+                    {/* Error Message */}
+                    {generationError && (
+                        <View style={styles.errorCard}>
+                            <Text style={styles.errorText}>⚠️ {generationError}</Text>
+                            <TouchableOpacity
+                                style={styles.errorButton}
+                                onPress={() => navigation.navigate('Wardrobe' as any)}
+                            >
+                                <Text style={styles.errorButtonText}>Go to Closet</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
                 </View>
 
                 {/* Secondary Actions / Stats */}
                 <View style={styles.quickActions}>
                     <View style={styles.miniCard}>
                         <Text style={styles.miniCardLabel}>{t('home.streakLabel')}</Text>
-                        <Text style={styles.miniCardValue}>{t('ritual.streak.days', { count: 3 })} 🔥</Text>
+                        <Text style={styles.miniCardValue}>
+                            {stats ? `${stats.streakCount} ${stats.streakCount === 1 ? 'day' : 'days'}` : '—'} 🔥
+                        </Text>
                     </View>
                     <View style={styles.miniCard}>
                         <Text style={styles.miniCardLabel}>{t('home.loggedLabel')}</Text>
-                        <Text style={styles.miniCardValue}>Yesterday</Text>
+                        <Text style={styles.miniCardValue}>
+                            {stats?.lastSealedAt ? new Date(stats.lastSealedAt).toLocaleDateString() : 'Never'}
+                        </Text>
                     </View>
                 </View>
 
@@ -431,5 +457,34 @@ const styles = StyleSheet.create({
         color: MATERIAL.TEXT_MAIN,
         fontSize: 18,
         fontWeight: TYPOGRAPHY.WEIGHTS.BOLD,
+    },
+
+    // Error States
+    errorCard: {
+        marginTop: 20,
+        padding: 20,
+        backgroundColor: 'rgba(255, 59, 48, 0.1)',
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 59, 48, 0.3)',
+    },
+    errorText: {
+        color: '#FF3B30',
+        fontSize: 14,
+        marginBottom: 12,
+        lineHeight: 20,
+    },
+    errorButton: {
+        backgroundColor: 'rgba(255, 59, 48, 0.2)',
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 8,
+        alignSelf: 'flex-start',
+    },
+    errorButtonText: {
+        color: '#FF3B30',
+        fontWeight: TYPOGRAPHY.WEIGHTS.BOLD,
+        fontSize: 12,
+        letterSpacing: 0.5,
     },
 });

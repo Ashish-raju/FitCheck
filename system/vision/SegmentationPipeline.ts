@@ -27,8 +27,7 @@ export class SegmentationPipeline {
         const imageType = options.forceType || await ImageTypeClassifier.classify(imageUri);
         console.log(`[SegmentationPipeline] Detected type: ${imageType}`);
 
-        // STEP 2: Primary Segmentation
-        // We use the existing RemoveBgClient as the primary provider
+        // STEP 2: Primary Segmentation using MOCK (temporary until WebView is fixed)
         const removeBgClient = RemoveBgClient.getInstance();
         let segmentationResult;
 

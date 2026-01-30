@@ -4,18 +4,17 @@ import React from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StyleSheet } from 'react-native';
-import { clearAllInventoryData } from './state/inventory/clearData';
-
-// EMERGENCY: Clear cached data on boot to fix label mismatch
-clearAllInventoryData();
+import { SafeZone } from './ui/system/SafeZone';
 
 export default function App() {
     return (
         <GestureHandlerRootView style={styles.container}>
             <SafeAreaProvider>
-                <BackgroundProvider>
-                    <FirewallRoot />
-                </BackgroundProvider>
+                <SafeZone name="Root">
+                    <BackgroundProvider>
+                        <FirewallRoot />
+                    </BackgroundProvider>
+                </SafeZone>
             </SafeAreaProvider>
         </GestureHandlerRootView>
     );

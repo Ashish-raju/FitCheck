@@ -1,4 +1,4 @@
-import { Chronos } from './chronos.ts';
+import { Chronos } from './chronos';
 
 export class RitualWindow {
     // 4 AM to 10 AM

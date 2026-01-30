@@ -23,7 +23,7 @@ export type RitualPhase =
     | 'AI_STYLIST_CHAT' // Phase 2: AI interaction
     | 'SAFETY';   // Emergency fallback state
 
-export type WardrobeTab = 'Top' | 'Bottom' | 'Shoes' | 'Outerwear' | 'Accessory' | 'All';
+export type WardrobeTab = 'Top' | 'Bottom' | 'Shoes' | 'Outerwear' | 'Accessory' | 'Favourites' | 'All';
 
 import { Outfit, Piece } from '../../truth/types';
 

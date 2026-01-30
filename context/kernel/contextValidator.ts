@@ -1,5 +1,5 @@
-import type { ContextVector } from './contextSnapshot.ts';
-import { CONSTRAINTS } from '../../truth/constraints.ts';
+import type { ContextVector } from './contextSnapshot';
+import { CONSTRAINTS } from '../../truth/constraints';
 
 export class ContextValidator {
     static validate(vector: ContextVector): boolean {

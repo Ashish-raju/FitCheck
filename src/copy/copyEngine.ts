@@ -48,6 +48,7 @@ const copyDictionary: CopyDictionary = {
         loggedLabel: 'LOGGED',
         identitySecure: 'IDENTITY: SECURE CHANNEL',
         userAuth: 'USER: {userId} // AUTH_VERIFIED',
+        processing: 'ANALYZING WARDROBE...',
     },
 
     wardrobe: {

@@ -20,31 +20,35 @@ export const PersistentNav: React.FC<PersistentNavProps> = ({ activeRouteName })
     const navigation = useNavigation<NavigationProp>();
 
     // Hide if in immersive screens
-    const HIDDEN_ROUTES = ['Ritual', 'Seal', 'Camera', 'Void', 'Splash', 'Intro', 'Onboarding', 'RitualDeck', 'ItemPreview'];
+    const HIDDEN_ROUTES = ['Ritual', 'Seal', 'Camera', 'Void', 'Splash', 'Intro', 'Onboarding', 'RitualDeck', 'ItemPreview', 'CreateOutfit', 'OutfitDetail', 'ItemDetailSheet'];
     if (HIDDEN_ROUTES.includes(activeRouteName)) {
         return null;
     }
 
-    const navItems: { label: string; icon: string; route: keyof RootStackParamList }[] = [
-        { label: 'Today', icon: '○', route: 'Home' },
-        { label: 'Closet', icon: '□', route: 'Wardrobe' },
-        { label: 'Circle', icon: '◇', route: 'Social' },
-        { label: 'Insights', icon: '△', route: 'Profile' },
+    const navItems = [
+        { label: 'Today', icon: '○', match: 'RitualTab', route: 'Home', params: { screen: 'RitualTab' } },
+        { label: 'Closet', icon: '□', match: 'WardrobeTab', route: 'Home', params: { screen: 'WardrobeTab' } },
+        { label: 'Outfits', icon: '∞', match: 'Outfits', route: 'Outfits', params: undefined },
+        { label: 'Insights', icon: '△', match: 'ProfileTab', route: 'Home', params: { screen: 'ProfileTab' } },
     ];
 
-    const handleNavigate = (route: keyof RootStackParamList) => {
-        navigation.navigate(route);
+    const handleNavigate = (route: string, params?: any) => {
+        // @ts-ignore - Dynamic navigation
+        navigation.navigate(route, params);
     };
 
     return (
         <View style={styles.container}>
             {navItems.map((item) => {
-                const isActive = activeRouteName === item.route;
+                // If we are in 'Home' (root) but unknown tab, default check? 
+                // Actually activeRouteName is likely the leaf name (RitualTab, etc)
+                const isActive = activeRouteName === item.match || (activeRouteName === 'Home' && item.match === 'RitualTab');
+
                 return (
                     <TouchableOpacity
                         key={item.label}
                         style={styles.navItem}
-                        onPress={() => handleNavigate(item.route)}
+                        onPress={() => handleNavigate(item.route, item.params)}
                         activeOpacity={0.7}
                     >
                         <Text style={[styles.icon, isActive && styles.activeIcon]}>{item.icon}</Text>

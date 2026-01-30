@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, TextInput, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
-import { Gesture, GestureDetector, Directions } from 'react-native-gesture-handler';
-import Animated, { FadeIn, FadeOut, SlideInLeft, SlideInRight, runOnJS } from 'react-native-reanimated';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, TextInput, KeyboardAvoidingView, Platform } from 'react-native'; // Removed ScrollView
+import { useRoute, useNavigation } from '@react-navigation/native';
+import { Gesture, GestureDetector, Directions, ScrollView as GHScrollView } from 'react-native-gesture-handler';
+import Animated, { FadeIn, FadeOut, SlideInLeft, SlideInRight, runOnJS, useAnimatedStyle, useSharedValue, useAnimatedScrollHandler, useAnimatedRef } from 'react-native-reanimated';
 import { useRitualState } from '../state/ritualProvider';
 import { ritualMachine } from '../state/ritualMachine';
 import { WardrobeItemCard } from '../components/WardrobeItemCard';
@@ -16,12 +17,26 @@ const GUTTER = 20;
 const CARD_WIDTH = width - (GUTTER * 2);
 const CARD_HEIGHT = CARD_WIDTH / 0.92;
 
+// Create an Animated version of the GestureHandler ScrollView
+const AnimatedScrollView = Animated.createAnimatedComponent(GHScrollView);
+
 export const ItemPreviewScreen: React.FC = () => {
+    const route = useRoute();
+    const navigation = useNavigation();
     const { draftItem } = useRitualState();
+
+    // @ts-ignore
+    const viewParams = route.params || {};
+    const viewItem = viewParams.item;
+    const isReadOnly = viewParams.readonly || false;
+
+    // Use viewItem (from params) OR draftItem (from context)
+    const targetItem = viewItem || draftItem;
+
     const [isSaving, setIsSaving] = useState(false);
-    const [name, setName] = useState(draftItem?.name || '');
-    const [category, setCategory] = useState(draftItem?.category || 'Top');
-    const [price, setPrice] = useState('');
+    const [name, setName] = useState(targetItem?.name || '');
+    const [category, setCategory] = useState(targetItem?.category || 'Top');
+    const [price, setPrice] = useState(targetItem?.price ? String(targetItem.price) : '');
 
     const CATEGORIES: any[] = ['Top', 'Bottom', 'Shoes', 'Outerwear', 'Accessory'];
 
@@ -29,6 +44,7 @@ export const ItemPreviewScreen: React.FC = () => {
     const [direction, setDirection] = React.useState<'left' | 'right'>('right');
 
     const changeCategory = React.useCallback((dir: 1 | -1) => {
+        if (isReadOnly) return; // Disable in read-only
         const currentIndex = CATEGORIES.indexOf(category);
         let nextIndex = currentIndex + dir;
 
@@ -39,19 +55,31 @@ export const ItemPreviewScreen: React.FC = () => {
         setDirection(dir === 1 ? 'right' : 'left');
         setCategory(CATEGORIES[nextIndex]);
         Haptics.selectionAsync();
-    }, [category]);
+    }, [category, isReadOnly]);
 
     const swipeLeft = Gesture.Fling().direction(Directions.LEFT).onEnd(() => runOnJS(changeCategory)(1));
     const swipeRight = Gesture.Fling().direction(Directions.RIGHT).onEnd(() => runOnJS(changeCategory)(-1));
     const composedGesture = Gesture.Simultaneous(swipeLeft, swipeRight);
 
     React.useEffect(() => {
-        if (!draftItem) {
+        // Only redirect if we are NOT in view mode and NO draft exists
+        if (!viewItem && !draftItem) {
             ritualMachine.toWardrobe();
         }
-    }, [draftItem]);
+    }, [draftItem, viewItem]);
 
-    if (!draftItem) return null;
+    // Define handleCancel for BOTH modes
+    const handleCancel = () => {
+        Haptics.selectionAsync();
+        if (isReadOnly) {
+            navigation.goBack();
+        } else {
+            ritualMachine.clearDraftItem();
+            ritualMachine.toCamera();
+        }
+    };
+
+    if (!targetItem) return null;
 
     const handleAddToWardrobe = async () => {
         if (isSaving) return;
@@ -87,14 +115,124 @@ export const ItemPreviewScreen: React.FC = () => {
         ritualMachine.toCamera();
     };
 
-    const handleCancel = () => {
-        Haptics.selectionAsync();
-        ritualMachine.clearDraftItem();
-        ritualMachine.toWardrobe();
+    // --- SHEET LOGIC (Read Only) ---
+    const sheetStyle = useAnimatedStyle(() => {
+        return {
+            transform: [{ translateY: 0 }]
+        };
+    });
+
+    const handleSheetClose = () => {
+        navigation.goBack();
     };
 
+    // Track Scroll Position
+    const scrollY = useSharedValue(0);
+    // Use AnimatedRef for the GH ScrollView
+    const scrollRef = useAnimatedRef<any>();
+
+    const scrollHandler = useAnimatedScrollHandler({
+        onScroll: (event) => {
+            scrollY.value = event.contentOffset.y;
+        },
+    });
+
+    // Hard Swipe To Close Logic
+    const panGesture = Gesture.Pan()
+        // Simultaneous with the scroll view reference (works best with GHScrollView)
+        .simultaneousWithExternalGesture(scrollRef)
+        .onEnd((e) => {
+            // "Hard Swipe" check:
+            // 1. High velocity downward (1500 is firm but achievable)
+            // 2. We are at or near the top (<= 5px tolerance)
+            if (e.velocityY > 1500 && scrollY.value <= 5) {
+                runOnJS(handleSheetClose)();
+            }
+        });
+
+    // If Read Only, we render a Bottom Sheet style
+    if (isReadOnly) {
+        return (
+            <View style={[styles.container, { justifyContent: 'flex-end', backgroundColor: 'transparent' }]}>
+                {/* Backdrop */}
+                <TouchableOpacity
+                    style={StyleSheet.absoluteFill}
+                    activeOpacity={1}
+                    onPress={handleSheetClose}
+                >
+                    <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)' }} />
+                </TouchableOpacity>
+
+                {/* Sheet Content (60%) */}
+                <GestureDetector gesture={panGesture}>
+                    <Animated.View style={[styles.sheetContainer, sheetStyle]}>
+                        {/* Drag Handle */}
+                        <View style={styles.dragHandle} />
+
+                        <AnimatedScrollView
+                            ref={scrollRef}
+                            showsVerticalScrollIndicator={false}
+                            contentContainerStyle={{ paddingBottom: 40 }}
+                            onScroll={scrollHandler}
+                            scrollEventThrottle={16}
+                            bounces={true} // Bounces feel better on iOS
+                        >
+                            {/* Preview Card - No Bounce Animation */}
+                            <View style={[styles.previewContainer, { marginTop: 20 }]}>
+                                <WardrobeItemCard
+                                    item={{
+                                        id: targetItem.id,
+                                        name: name || `${targetItem.color || ''} ${category}`.trim() || 'Untitled Item',
+                                        category: category.toUpperCase(),
+                                        imageUri: targetItem.imageUri,
+                                        color: targetItem.color,
+                                        brand: targetItem.brand,
+                                        wornCount: targetItem.wearHistory?.length || 0
+                                    }}
+                                    onPress={() => { }}
+                                    width={CARD_WIDTH * 0.9} // Slightly smaller in sheet
+                                    height={(CARD_WIDTH * 0.9) / 0.92}
+                                />
+                            </View>
+
+                            {/* Details - Simplified */}
+                            <View style={styles.detailsContainer}>
+                                <View style={styles.detailRow}>
+                                    <Text style={styles.detailLabel}>CATEGORY</Text>
+                                    <Text style={styles.detailValue}>{category.toUpperCase()}</Text>
+                                </View>
+                                <View style={styles.detailRow}>
+                                    <Text style={styles.detailLabel}>COLOR</Text>
+                                    <Text style={styles.detailValue}>{targetItem.color || 'Unknown'}</Text>
+                                </View>
+                                <View style={styles.detailRow}>
+                                    <Text style={styles.detailLabel}>PRICE</Text>
+                                    <Text style={styles.detailValue}>${price || '0.00'}</Text>
+                                </View>
+                                {targetItem.brand && (
+                                    <View style={styles.detailRow}>
+                                        <Text style={styles.detailLabel}>BRAND</Text>
+                                        <Text style={styles.detailValue}>{targetItem.brand}</Text>
+                                    </View>
+                                )}
+                                <View style={styles.detailRow}>
+                                    <Text style={styles.detailLabel}>TIMES WORN</Text>
+                                    <Text style={styles.detailValue}>{targetItem.wearHistory?.length || 0}</Text>
+                                </View>
+
+                                {/* Dummy content to ensure scrollability if needed */}
+                                <View style={{ height: 20 }} />
+                            </View>
+                        </AnimatedScrollView>
+                    </Animated.View>
+                </GestureDetector>
+            </View>
+        );
+    }
+
+    // --- STANDARD FULL SCREEN (Camera / Edit) ---
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: COLORS.RITUAL_BLACK }]}>
             {/* Header - Fixed at Top */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={handleCancel} style={styles.closeButton}>
@@ -102,7 +240,7 @@ export const ItemPreviewScreen: React.FC = () => {
                 </TouchableOpacity>
                 <View style={styles.headerTextContainer}>
                     <Text style={styles.headerLabel}>PREVIEW</Text>
-                    <Text style={styles.headerTitle}>New Item</Text>
+                    <Text style={styles.headerTitle}>{name || 'Item'}</Text>
                 </View>
                 <View style={styles.closeButton} />
             </View>
@@ -111,11 +249,11 @@ export const ItemPreviewScreen: React.FC = () => {
                 behavior={Platform.OS === "ios" ? "padding" : "height"}
                 style={{ flex: 1 }}
             >
-                <ScrollView
+                <AnimatedScrollView
                     contentContainerStyle={styles.scrollContent}
                     showsVerticalScrollIndicator={false}
                 >
-                    {/* Preview Card - REUSED COMPONENT */}
+                    {/* Preview Card */}
                     <View style={styles.previewContainer}>
                         <GestureDetector gesture={composedGesture}>
                             <Animated.View
@@ -125,13 +263,13 @@ export const ItemPreviewScreen: React.FC = () => {
                             >
                                 <WardrobeItemCard
                                     item={{
-                                        id: draftItem.id,
-                                        name: name || `${draftItem.color || ''} ${category}`.trim() || 'Untitled Item',
+                                        id: targetItem.id,
+                                        name: name || `${targetItem.color || ''} ${category}`.trim() || 'Untitled Item',
                                         category: category.toUpperCase(),
-                                        imageUri: draftItem.imageUri,
-                                        color: draftItem.color,
-                                        brand: draftItem.brand,
-                                        wornCount: 0
+                                        imageUri: targetItem.imageUri,
+                                        color: targetItem.color,
+                                        brand: targetItem.brand,
+                                        wornCount: targetItem.wearHistory?.length || 0
                                     }}
                                     onPress={() => { }}
                                     width={CARD_WIDTH}
@@ -141,7 +279,7 @@ export const ItemPreviewScreen: React.FC = () => {
                         </GestureDetector>
                     </View>
 
-                    {/* Item Details */}
+                    {/* Item Details (Editable) */}
                     <View style={styles.detailsContainer}>
                         <TouchableOpacity
                             style={styles.detailRow}
@@ -157,7 +295,7 @@ export const ItemPreviewScreen: React.FC = () => {
                         </TouchableOpacity>
                         <View style={styles.detailRow}>
                             <Text style={styles.detailLabel}>COLOR</Text>
-                            <Text style={styles.detailValue}>{draftItem.color || 'Unknown'}</Text>
+                            <Text style={styles.detailValue}>{targetItem.color || 'Unknown'}</Text>
                         </View>
                         <View style={styles.detailRow}>
                             <Text style={styles.detailLabel}>PRICE</Text>
@@ -203,7 +341,7 @@ export const ItemPreviewScreen: React.FC = () => {
                             </TouchableOpacity>
                         </View>
                     </View>
-                </ScrollView>
+                </AnimatedScrollView>
             </KeyboardAvoidingView>
         </View>
     );
@@ -338,5 +476,23 @@ const styles = StyleSheet.create({
         minWidth: 60,
         textAlign: 'right',
         padding: 0,
+    },
+    // Sheet Styles
+    sheetContainer: {
+        height: '60%',
+        backgroundColor: COLORS.RITUAL_BLACK,
+        borderTopLeftRadius: 30,
+        borderTopRightRadius: 30,
+        overflow: 'hidden',
+        paddingTop: 10,
+    },
+    dragHandle: {
+        width: 40,
+        height: 5,
+        backgroundColor: '#444',
+        borderRadius: 2.5,
+        alignSelf: 'center',
+        marginBottom: 10,
+        marginTop: 5,
     },
 });
