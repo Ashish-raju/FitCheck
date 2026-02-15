@@ -18,32 +18,32 @@ const MOCK_GARMENTS: Garment[] = [
         id: "g1", type: "top", subtype: "shirt", gender: "men", fabric: "cotton", pattern: "solid", fit: "regular", formality: 2,
         colors: [{ hex: "#FFFFFF", h: 0, s: 0, l: 100, lab: [100, 0, 0], dictColorId: 10 }],
         seasonScore: { summer: 1, monsoon: 0.5, winter: 0.2 },
-        bodyScore: { rectangle: 1.0 }, styleTags: ["minimal"], layerWeight: 1, wornCount: 0
+        bodyScore: { rectangle: 1.0 }, styleTags: ["minimal"], layerWeight: 1, wornCount: 0, status: "Clean"
     },
     {
         id: "g2", type: "bottom", subtype: "chinos", gender: "men", fabric: "cotton", pattern: "solid", fit: "regular", formality: 2,
         colors: [{ hex: "#000000", h: 0, s: 0, l: 0, lab: [0, 0, 0], dictColorId: 20 }],
         seasonScore: { summer: 1, monsoon: 0.8, winter: 0.5 },
-        bodyScore: { rectangle: 1.0 }, styleTags: ["chic"], layerWeight: 1, wornCount: 2
+        bodyScore: { rectangle: 1.0 }, styleTags: ["chic"], layerWeight: 1, wornCount: 2, status: "Clean"
     },
     {
         id: "g3", type: "top", subtype: "t-shirt", gender: "men", fabric: "cotton", pattern: "graphic", fit: "regular", formality: 0, // Loud pattern
         colors: [{ hex: "#FF0000", h: 0, s: 100, l: 50, lab: [50, 50, 50], dictColorId: 30 }],
         seasonScore: { summer: 1, monsoon: 0.5, winter: 0.1 },
-        bodyScore: { rectangle: 1.0 }, styleTags: ["casual"], layerWeight: 1, wornCount: 0
+        bodyScore: { rectangle: 1.0 }, styleTags: ["casual"], layerWeight: 1, wornCount: 0, status: "Clean"
     },
     {
         id: "g4", type: "footwear", subtype: "sneakers", gender: "men", fabric: "leather", pattern: "solid", fit: "regular", formality: 1,
         colors: [{ hex: "#FFFFFF", h: 0, s: 0, l: 100, lab: [100, 0, 0], dictColorId: 10 }],
         seasonScore: { summer: 1, monsoon: 0.2, winter: 0.8 },
-        bodyScore: {}, styleTags: [], layerWeight: 1, wornCount: 5
+        bodyScore: {}, styleTags: [], layerWeight: 1, wornCount: 5, status: "Clean"
     },
     // Invalid Suede item for Monsoon
     {
         id: "g_suede", type: "footwear", subtype: "loafers", gender: "men", fabric: "suede", pattern: "solid", fit: "regular", formality: 2,
         colors: [],
         seasonScore: { summer: 0.8, monsoon: 0.1, winter: 0.8 },
-        bodyScore: {}, styleTags: [], layerWeight: 1, wornCount: 0
+        bodyScore: {}, styleTags: [], layerWeight: 1, wornCount: 0, status: "Clean"
     }
 ];
 

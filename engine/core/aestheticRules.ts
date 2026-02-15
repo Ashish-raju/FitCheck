@@ -1,4 +1,5 @@
 import type { Outfit, Context, Piece, CalibrationStage } from "../../truth/types";
+import { ColorHarmony, type ColorHSL } from "./colorHarmony";
 
 export interface ScoreBreakdown {
     colorHarmony: number;        // 0-30
@@ -31,22 +32,25 @@ export class AestheticRules {
             reasons: []
         };
 
-        // 1. COLOR HARMONY (0-30 points)
-        const colors = pieces.map(p => p.color.toLowerCase());
-        const uniqueColors = new Set(colors);
+        // 1. COLOR HARMONY (0-30 points) - Using Color Wheel Theory
+        const colorHSLs = pieces
+            .map(p => {
+                try {
+                    return ColorHarmony.hexToHSL(p.color);
+                } catch (e) {
+                    // Fallback for invalid colors
+                    return null;
+                }
+            })
+            .filter((c): c is ColorHSL => c !== null);
 
-        if (uniqueColors.size === 1) {
-            breakdown.colorHarmony = 30;
-            breakdown.reasons.push(`Monochrome outfit (${colors[0]}) - maximum harmony`);
-        } else if (uniqueColors.size === 2) {
-            breakdown.colorHarmony = 20;
-            breakdown.reasons.push(`Two-color palette - good coordination`);
-        } else if (uniqueColors.size === 3) {
-            breakdown.colorHarmony = 10;
-            breakdown.reasons.push(`Three colors - acceptable variety`);
+        if (colorHSLs.length === 0) {
+            breakdown.colorHarmony = 5;
+            breakdown.reasons.push(`Unable to analyze colors`);
         } else {
-            breakdown.colorHarmony = 0;
-            breakdown.reasons.push(`Too many colors (${uniqueColors.size}) - lacks cohesion`);
+            const harmonyResult = ColorHarmony.analyzeHarmony(colorHSLs);
+            breakdown.colorHarmony = harmonyResult.score;
+            breakdown.reasons.push(harmonyResult.reasoning);
         }
 
         // 2. FORMALITY ALIGNMENT (0-20 points)
@@ -126,7 +130,12 @@ export class AestheticRules {
 
         // STAGE-SPECIFIC ADJUSTMENTS
         if (stage === "CONSERVATIVE") {
-            if (uniqueColors.size === 1) {
+            // Get harmony type from the analysis we did earlier
+            const harmonyResult = colorHSLs.length > 0
+                ? ColorHarmony.analyzeHarmony(colorHSLs)
+                : null;
+
+            if (harmonyResult?.type === 'MONOCHROMATIC') {
                 breakdown.colorHarmony += 10; // Extra bonus for monochrome
                 breakdown.reasons.push(`Conservative mode: favoring safe monochrome`);
             }
@@ -140,9 +149,11 @@ export class AestheticRules {
             breakdown.formalityAlignment = Math.max(0, 25 - (formalityDiff * 8));
         }
 
+
         if (stage === "SIMPLIFICATION") {
             // Bias for simplicity
-            breakdown.colorHarmony -= (uniqueColors.size - 1) * 5;
+            const numColors = colorHSLs.length;
+            breakdown.colorHarmony -= (numColors - 1) * 5;
             if (avgFormality < 3) {
                 breakdown.formalityAlignment += 10;
                 breakdown.reasons.push(`Simplification mode: favoring casual ease`);
@@ -160,7 +171,8 @@ export class AestheticRules {
 
         // CONFIDENCE CALCULATION
         const formalityConfidence = 1.0 - (formalityDiff / 5);
-        const colorConfidence = uniqueColors.size <= 2 ? 0.4 : 0.1;
+        const numColors = colorHSLs.length;
+        const colorConfidence = numColors <= 2 ? 0.4 : 0.1;
         const styleConfidence = maxTagCount >= 2 ? 0.2 : 0;
         outfit.confidence = Math.min(1.0, formalityConfidence + colorConfidence + styleConfidence);
 

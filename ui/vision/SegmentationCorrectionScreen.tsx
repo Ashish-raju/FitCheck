@@ -18,7 +18,8 @@ interface Props {
 export const SegmentationCorrectionScreen = () => {
     const navigation = useNavigation();
     const route = useRoute();
-    const { imageUri, maskUri } = route.params as Props || {};
+    const params = route.params as Props | undefined;
+    const { imageUri, maskUri } = params || {};
 
     const [paths, setPaths] = useState<string[]>([]);
     const [currentPath, setCurrentPath] = useState('');
@@ -49,7 +50,7 @@ export const SegmentationCorrectionScreen = () => {
 
             <View style={styles.editorContainer} {...panResponder.panHandlers}>
                 {/* Background Layer: Original Image (dimmed) */}
-                <Image source={{ uri: imageUri }} style={StyleSheet.absoluteFill} resizeMode="contain" opacity={0.5} />
+                <Image source={{ uri: imageUri }} style={[StyleSheet.absoluteFill, { opacity: 0.5 }]} resizeMode="contain" />
 
                 {/* Foreground Layer: The Masked Result */}
                 <Image source={{ uri: maskUri }} style={StyleSheet.absoluteFill} resizeMode="contain" />

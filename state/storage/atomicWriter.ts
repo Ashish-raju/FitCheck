@@ -14,7 +14,7 @@ export async function writeAtomically(filePath: string, content: string): Promis
 
         // 1. Write to temp file
         await FileSystem.writeAsStringAsync(tempPath, content, {
-            encoding: FileSystem.EncodingType.UTF8,
+            encoding: 'utf8',
         });
 
         // 2. Move temp file to actual path (atomic rename on most FS)

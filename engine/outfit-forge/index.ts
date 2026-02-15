@@ -1,6 +1,7 @@
 import { GarmentMeta, ContextSpec, UserProfileMeta, OutfitCandidate, OutfitResult, OutfitSlot } from '../types';
 import { RetrievalResult } from '../retrieval';
-import { ScoringEngine } from '../scoring';
+import { AestheticRules } from '../core/aestheticRules';
+import { ENGINE_CONFIG } from '../outfit/config';
 
 export class OutfitForge {
 
@@ -25,8 +26,8 @@ export class OutfitForge {
                 // Note: In real world, we might iterate all shoes. 
                 // Optimization: Just pick best 3 matching shoes for this Top+Bottom combo
                 // to avoid combinatorial explosion (50 tops * 50 bottoms * 50 shoes = 125,000!)
-                // Heuristic: Take top 3 shoes from ingredients
-                const bestShoes = ingredients.shoes.slice(0, 3);
+                // Take configured number of shoes to balance variety with performance
+                const bestShoes = ingredients.shoes.slice(0, ENGINE_CONFIG.SHOES_PER_COMBO);
 
                 for (const shoe of bestShoes) {
                     const outfit: OutfitCandidate = {
@@ -40,14 +41,21 @@ export class OutfitForge {
                     };
 
                     // Score immediately
-                    outfit.totalScore = ScoringEngine.scoreOutfit(outfit, context, userProfile);
+                    // Score using unified scoring system
+                    const scoreResult = AestheticRules.scoreOutfit(
+                        { id: outfit.id, items: outfit.items.map(i => i.id), pieces: outfit.items, score: 0 } as any,
+                        outfit.items as any[],
+                        context as any,
+                        'CONSERVATIVE'
+                    );
+                    outfit.totalScore = scoreResult.score / 100; // Normalize to 0-1
                     rawCandidates.push(outfit);
                 }
 
                 // --- FORMULA 2: Top + Bottom + Layer + Shoes ---
                 // Only if context suggests layering (e.g. Winter / AC)
                 if (context.weather.tempC < 20 || context.formalityTarget >= 7) {
-                    const bestLayers = ingredients.layers.slice(0, 3);
+                    const bestLayers = ingredients.layers.slice(0, ENGINE_CONFIG.LAYERS_PER_COMBO);
                     for (const layer of bestLayers) {
                         // Check layerability
                         if (!layer.cantBeLayeredUnder) {
@@ -63,7 +71,13 @@ export class OutfitForge {
                                     missingSlots: [],
                                     warnings: []
                                 };
-                                outfit.totalScore = ScoringEngine.scoreOutfit(outfit, context, userProfile);
+                                const scoreResult = AestheticRules.scoreOutfit(
+                                    { id: outfit.id, items: outfit.items.map(i => i.id), pieces: outfit.items, score: 0 } as any,
+                                    outfit.items as any[],
+                                    context as any,
+                                    'CONSERVATIVE'
+                                );
+                                outfit.totalScore = scoreResult.score / 100; // Normalize to 0-1
                                 rawCandidates.push(outfit);
                             }
                         }
@@ -74,7 +88,7 @@ export class OutfitForge {
 
         // --- FORMULA 3: One Piece + Shoes (+ Layer) ---
         for (const onePiece of ingredients.onePieces) {
-            const bestShoes = ingredients.shoes.slice(0, 3);
+            const bestShoes = ingredients.shoes.slice(0, ENGINE_CONFIG.SHOES_PER_COMBO);
             for (const shoe of bestShoes) {
                 const outfit: OutfitCandidate = {
                     id: `gen_${onePiece.id}_${shoe.id}`,
@@ -85,7 +99,13 @@ export class OutfitForge {
                     missingSlots: [],
                     warnings: []
                 };
-                outfit.totalScore = ScoringEngine.scoreOutfit(outfit, context, userProfile);
+                const scoreResult = AestheticRules.scoreOutfit(
+                    { id: outfit.id, items: outfit.items.map(i => i.id), pieces: outfit.items, score: 0 } as any,
+                    outfit.items as any[],
+                    context as any,
+                    'CONSERVATIVE'
+                );
+                outfit.totalScore = scoreResult.score / 100; // Normalize to 0-1
                 rawCandidates.push(outfit);
             }
         }
@@ -111,18 +131,17 @@ export class OutfitForge {
     private static ensureDiversity(candidates: OutfitCandidate[]): OutfitCandidate[] {
         const usedDominantIds = new Set<string>(); // Top ID or OnePiece ID
         const result: OutfitCandidate[] = [];
-        const MAX_PER_ITEM = 2; // Max 2 outfits with same shirt
         const itemUseCounts = new Map<string, number>();
 
         for (const outfit of candidates) {
-            if (result.length >= 10) break; // Hard limit for UI
+            if (result.length >= ENGINE_CONFIG.MAX_OUTFITS_TO_USER) break; // Hard limit for UI
 
             // Identify dominant piece (Top or OnePiece)
             const dominant = outfit.items.find(i => i.type === OutfitSlot.Top || i.type === OutfitSlot.OnePiece);
             if (!dominant) continue;
 
             const currentCount = itemUseCounts.get(dominant.id) || 0;
-            if (currentCount < MAX_PER_ITEM) {
+            if (currentCount < ENGINE_CONFIG.MAX_REUSE_PER_ITEM) {
                 result.push(outfit);
                 itemUseCounts.set(dominant.id, currentCount + 1);
             }
@@ -139,20 +158,26 @@ export class OutfitForge {
         context: ContextSpec,
         userProfile: UserProfileMeta
     ): OutfitCandidate {
-        // Use ScoringEngine to compute score
-        const totalScore = ScoringEngine.scoreOutfit(candidate, context, userProfile);
+        // Use unified AestheticRules to compute score
+        const scoreResult = AestheticRules.scoreOutfit(
+            { id: candidate.id, items: candidate.items.map(i => i.id), pieces: candidate.items, score: 0 } as any,
+            candidate.items as any[],
+            context as any,
+            'CONSERVATIVE'
+        );
 
-        // For now, return candidate with updated score
-        // In future, can populate detailed subscores
+        const totalScore = scoreResult.score / 100; // Normalize to 0-1
+
+        // Return candidate with updated score and breakdown
         return {
             ...candidate,
             totalScore,
             subscores: {
-                colorHarmony: totalScore * 0.2,
-                contextMatch: totalScore * 0.3,
-                bodyFlattery: totalScore * 0.2,
-                seasonality: totalScore * 0.15,
-                stylistPick: totalScore * 0.15
+                colorHarmony: scoreResult.breakdown.colorHarmony / 30,  // Normalize each component
+                contextMatch: scoreResult.breakdown.formalityAlignment / 20,
+                bodyFlattery: scoreResult.breakdown.styleCoherence / 20,
+                seasonality: scoreResult.breakdown.seasonSuitability / 15,
+                stylistPick: totalScore  // Overall score
             }
         };
     }

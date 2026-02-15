@@ -22,31 +22,28 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
 const { width } = Dimensions.get('window');
 
+import { FeedSection } from '../social/FeedSection';
+
+// ... (previous imports)
+
 export const TodayScreen: React.FC = () => {
+    // ... (previous hooks and state)
     const { candidateOutfits } = useRitualState();
     const navigation = useNavigation<NavigationProp>();
-
-    // Use reactive auth state
     const { user, loading: authLoading } = useAuth();
     const userId = user?.uid;
-
-    // State
     const [isGenerating, setIsGenerating] = React.useState(false);
     const [profile, setProfile] = React.useState<UserProfile | null>(null);
     const [stats, setStats] = React.useState<DerivedStats | null>(null);
     const [generationError, setGenerationError] = React.useState<string | null>(null);
     const [isSeeding, setIsSeeding] = React.useState(false);
 
-    // Load user profile and stats
+    // ... (useEffect for data loading - same as before)
     React.useEffect(() => {
         if (authLoading || !userId) return;
-
         const loadUserData = async () => {
             try {
-                // Check and seed dummy data if needed (Temporary Demo Mode)
                 await Seeder.seedIfEmpty(userId);
-
-                // Refresh data
                 const [userProfile, userStats] = await Promise.all([
                     ProfileRepo.getProfile(userId),
                     ProfileRepo.getStats(userId)
@@ -60,13 +57,12 @@ export const TodayScreen: React.FC = () => {
         loadUserData();
     }, [userId, authLoading]);
 
-    // Manual Seed Trigger (Debug)
+    // ... (handleForceSeed - same as before)
     const handleForceSeed = async () => {
         if (!userId) return;
         setIsSeeding(true);
         try {
             await Seeder.seedAll(userId);
-            // Reload
             const [userProfile, userStats] = await Promise.all([
                 ProfileRepo.getProfile(userId),
                 ProfileRepo.getStats(userId)
@@ -81,35 +77,30 @@ export const TodayScreen: React.FC = () => {
         }
     };
 
-    // Button Animation
+    // ... (Animation values - same as before)
     const buttonScale = useSharedValue(1);
     const buttonTranslateY = useSharedValue(0);
 
     const handleRevealPressIn = () => {
         if (isGenerating) return;
         buttonScale.value = withSpring(0.95, { damping: 10, stiffness: 300 });
-        buttonTranslateY.value = withSpring(4, { damping: 10, stiffness: 300 }); // Push down effect
+        buttonTranslateY.value = withSpring(4, { damping: 10, stiffness: 300 });
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     };
 
     const handleRevealPressOut = async () => {
         if (isGenerating) return;
-
-        // Animate Button Release
         buttonScale.value = withSpring(1, { damping: 12, stiffness: 200 });
         buttonTranslateY.value = withSpring(0, { damping: 12, stiffness: 200 });
-
-        // START GENERATION
         setIsGenerating(true);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
-        // Dynamic require to avoid circular deps if any, or just valid import usage
-        const { EngineBinder } = require('../../bridge/engineBinder');
-
-        // Allow UI to update to "Loading" state before freezing on any micro-task
+        // Allow UI update
         await new Promise(r => setTimeout(r, 50));
 
         try {
+            // Dynamic require
+            const { EngineBinder } = require('../../bridge/engineBinder');
             const outfits = await EngineBinder.generateNow();
             console.log(`[TodayScreen] Generation done. Outfits: ${outfits.length}`);
 
@@ -117,10 +108,9 @@ export const TodayScreen: React.FC = () => {
                 ritualMachine.enterRitual([...outfits]);
                 setGenerationError(null);
             } else {
-                // Show error instead of falling back to mocks
                 const wardrobeCount = stats?.wardrobeCount || 0;
                 if (wardrobeCount < 10) {
-                    setGenerationError(`Not enough items in wardrobe (${wardrobeCount}/10 minimum). Add more pieces to generate outfits.`);
+                    setGenerationError(`Not enough items in wardrobe (${wardrobeCount}/10 minimum). Add more pieces.`);
                 } else {
                     setGenerationError('Unable to generate outfits. Please try again.');
                 }
@@ -129,17 +119,13 @@ export const TodayScreen: React.FC = () => {
             console.error('[TodayScreen] Engine generation failed:', e);
             const wardrobeCount = stats?.wardrobeCount || 0;
             if (wardrobeCount < 10) {
-                setGenerationError(`Not enough items in wardrobe (${wardrobeCount}/10 minimum). Upload more pieces to get started.`);
+                setGenerationError(`Not enough items (${wardrobeCount}/10). Upload more.`);
             } else {
-                setGenerationError('Generation failed. Please try again later.');
+                setGenerationError('Generation failed. Try again later.');
             }
         } finally {
             setIsGenerating(false);
         }
-    };
-
-    const loadRitual = () => {
-        handleRevealPressOut();
     };
 
     const animatedButtonStyle = useAnimatedStyle(() => ({
@@ -149,152 +135,118 @@ export const TodayScreen: React.FC = () => {
         ] as any
     }));
 
-    // Dynamic greeting with real user name
     const userName = profile?.displayName || 'There';
     const timeGreeting = t('home.greeting.evening', { name: userName });
     const vibe = t('home.vibe');
 
+    const renderHeader = () => (
+        <View>
+            <View style={styles.header}>
+                <Text style={styles.greeting}>{timeGreeting}</Text>
+                <Text style={styles.subGreeting}>{vibe}</Text>
+            </View>
+
+            {userId?.startsWith('demo_') && (
+                <View style={{
+                    position: 'absolute',
+                    top: 10,
+                    right: 0,
+                    backgroundColor: '#FFD700',
+                    paddingHorizontal: 8,
+                    paddingVertical: 4,
+                    borderRadius: 4,
+                    zIndex: 100
+                }}>
+                    <Text style={{ color: '#000', fontSize: 10, fontWeight: 'bold' }}>DEMO MODE</Text>
+                </View>
+            )}
+
+            {/* IDENTITY SECTION */}
+            <View style={styles.identityContainer}>
+                <Text style={styles.identityLabel}>{t('home.identitySecure')}</Text>
+                <Text style={styles.identityId}>{t('home.userAuth', { userId: userId || 'GUEST' })}</Text>
+            </View>
+
+            {/* REVEAL ACTION SECTION */}
+            <View style={styles.revealSection}>
+                <Animated.View style={[styles.buttonWrapper, animatedButtonStyle]}>
+                    <TouchableOpacity
+                        activeOpacity={1}
+                        onPressIn={handleRevealPressIn}
+                        onPressOut={handleRevealPressOut}
+                        style={styles.revealButton3D}
+                    >
+                        <LinearGradient
+                            colors={[COLORS.ELECTRIC_VIOLET, '#5B21B6']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 0, y: 1 }}
+                            style={styles.buttonGradient}
+                        >
+                            <Text style={styles.buttonText}>
+                                {isGenerating ? t('home.processing', { defaultValue: 'ANALYZING...' }) : t('home.revealButton')}
+                            </Text>
+                        </LinearGradient>
+                        <View style={styles.buttonEdge} />
+                    </TouchableOpacity>
+                </Animated.View>
+
+                {/* Error Message */}
+                {generationError && (
+                    <View style={styles.errorCard}>
+                        <Text style={styles.errorText}>⚠️ {generationError}</Text>
+                        <TouchableOpacity
+                            style={styles.errorButton}
+                            onPress={() => navigation.navigate('Wardrobe' as any)}
+                        >
+                            <Text style={styles.errorButtonText}>Go to Closet</Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
+            </View>
+
+            {/* QUICK ACTIONS */}
+            <View style={styles.quickActions}>
+                <View style={styles.miniCard}>
+                    <Text style={styles.miniCardLabel}>{t('home.streakLabel')}</Text>
+                    <Text style={styles.miniCardValue}>
+                        {stats ? `${stats.streakCount} ${stats.streakCount === 1 ? 'day' : 'days'}` : '—'} 🔥
+                    </Text>
+                </View>
+                <View style={styles.miniCard}>
+                    <Text style={styles.miniCardLabel}>{t('home.loggedLabel')}</Text>
+                    <Text style={styles.miniCardValue}>
+                        {stats?.lastSealedAt ? new Date(stats.lastSealedAt).toLocaleDateString() : 'Never'}
+                    </Text>
+                </View>
+            </View>
+
+            {/* DEBUG: Force Seed */}
+            {(!stats || stats.wardrobeCount === 0) && userId && (
+                <View style={[styles.errorCard, { marginBottom: 40 }]}>
+                    <Text style={styles.errorText}>Debug Mode: No wardrobe data.</Text>
+                    <TouchableOpacity
+                        style={[styles.errorButton, { backgroundColor: 'rgba(52, 199, 89, 0.2)' }]}
+                        onPress={handleForceSeed}
+                        disabled={isSeeding}
+                    >
+                        <Text style={[styles.errorButtonText, { color: '#34C759' }]}>
+                            {isSeeding ? 'Seeding...' : '🌱 Force Seed Demo Data'}
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+            )}
+
+            <View style={styles.divider} />
+            <Text style={styles.feedHeader}>FRIENDS FITS</Text>
+        </View>
+    );
+
     return (
         <View style={styles.container}>
             <StatusBar style="light" />
-            <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-                {/* Header Section */}
-                <View style={styles.header}>
-                    <Text style={styles.greeting}>{timeGreeting}</Text>
-                    <Text style={styles.subGreeting}>{vibe}</Text>
-                </View>
-
-                {/* Demo Mode Indicator */}
-                {userId?.startsWith('demo_') && (
-                    <View style={{
-                        position: 'absolute',
-                        top: 10,
-                        right: 0,
-                        backgroundColor: '#FFD700',
-                        paddingHorizontal: 8,
-                        paddingVertical: 4,
-                        borderRadius: 4,
-                        zIndex: 100
-                    }}>
-                        <Text style={{ color: '#000', fontSize: 10, fontWeight: 'bold' }}>DEMO MODE</Text>
-                    </View>
-                )}
-
-                {/* 1) MINIMAL LUXE STACKED CARD UI */}
-                <TouchableOpacity
-                    activeOpacity={0.9}
-                    onPress={handleRevealPressOut}
-                    style={styles.stackContainer}
-                >
-                    {/* Layer 0: Main Card (Tall) */}
-                    <View style={styles.mainCard}>
-                        <SmartImage
-                            source={{ uri: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?q=80&w=1936&auto=format&fit=crop' }} // Vapor Grey Coat
-                            style={styles.fullImage}
-                            contentFit="cover"
-                        />
-                        <LinearGradient
-                            colors={['transparent', 'rgba(0,0,0,0.4)', 'rgba(0,0,0,0.8)']}
-                            style={styles.cardGradient}
-                        />
-                    </View>
-
-                    {/* Layer 1: Context Card (Top Square) */}
-                    <View style={styles.topSquareCard}>
-                        <View style={styles.brandBadge}>
-                            <Text style={styles.brandText}>{t('home.seasonBadge')}</Text>
-                        </View>
-                        <SmartImage
-                            source={{ uri: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1000&auto=format&fit=crop' }} // Obsidian Top
-                            style={styles.squareImage}
-                            contentFit="cover"
-                        />
-                    </View>
-
-                    {/* Layer 2: Detail Pill (Bottom) */}
-                    <View style={styles.detailPill}>
-                        <Text style={styles.pillLabel}>{t('home.styleTag')}</Text>
-                        <View style={styles.pillDot} />
-                        <Text style={styles.pillValue}>{t('home.weather', { temp: 12 })}</Text>
-                    </View>
-                </TouchableOpacity>
-
-                {/* 2) IDENTITY SECTION */}
-                <View style={styles.identityContainer}>
-                    <Text style={styles.identityLabel}>{t('home.identitySecure')}</Text>
-                    <Text style={styles.identityId}>{t('home.userAuth', { userId: userId || 'GUEST' })}</Text>
-                </View>
-
-                {/* 3) REVEAL ACTION SECTION */}
-                <View style={styles.revealSection}>
-                    <Animated.View style={[styles.buttonWrapper, animatedButtonStyle]}>
-                        <TouchableOpacity
-                            activeOpacity={1}
-                            onPressIn={handleRevealPressIn}
-                            onPressOut={handleRevealPressOut}
-                            style={styles.revealButton3D}
-                        >
-                            <LinearGradient
-                                colors={[COLORS.ELECTRIC_VIOLET, '#5B21B6']}
-                                start={{ x: 0, y: 0 }}
-                                end={{ x: 0, y: 1 }}
-                                style={styles.buttonGradient}
-                            >
-                                <Text style={styles.buttonText}>
-                                    {isGenerating ? t('home.processing', { defaultValue: 'ANALYZING WARDROBE...' }) : t('home.revealButton')}
-                                </Text>
-                            </LinearGradient>
-                            <View style={styles.buttonEdge} />
-                        </TouchableOpacity>
-                    </Animated.View>
-
-                    {/* Error Message */}
-                    {generationError && (
-                        <View style={styles.errorCard}>
-                            <Text style={styles.errorText}>⚠️ {generationError}</Text>
-                            <TouchableOpacity
-                                style={styles.errorButton}
-                                onPress={() => navigation.navigate('Wardrobe' as any)}
-                            >
-                                <Text style={styles.errorButtonText}>Go to Closet</Text>
-                            </TouchableOpacity>
-                        </View>
-                    )}
-                </View>
-
-                {/* Secondary Actions / Stats */}
-                <View style={styles.quickActions}>
-                    <View style={styles.miniCard}>
-                        <Text style={styles.miniCardLabel}>{t('home.streakLabel')}</Text>
-                        <Text style={styles.miniCardValue}>
-                            {stats ? `${stats.streakCount} ${stats.streakCount === 1 ? 'day' : 'days'}` : '—'} 🔥
-                        </Text>
-                    </View>
-                    <View style={styles.miniCard}>
-                        <Text style={styles.miniCardLabel}>{t('home.loggedLabel')}</Text>
-                        <Text style={styles.miniCardValue}>
-                            {stats?.lastSealedAt ? new Date(stats.lastSealedAt).toLocaleDateString() : 'Never'}
-                        </Text>
-                    </View>
-                </View>
-
-                {/* DEBUG: Force Seed (Temporary) */}
-                {(!stats || stats.wardrobeCount === 0) && userId && (
-                    <View style={[styles.errorCard, { marginBottom: 40 }]}>
-                        <Text style={styles.errorText}>Debug Mode: No wardrobe data found.</Text>
-                        <TouchableOpacity
-                            style={[styles.errorButton, { backgroundColor: 'rgba(52, 199, 89, 0.2)' }]}
-                            onPress={handleForceSeed}
-                            disabled={isSeeding}
-                        >
-                            <Text style={[styles.errorButtonText, { color: '#34C759' }]}>
-                                {isSeeding ? 'Seeding...' : '🌱 Force Seed Demo Data'}
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-                )}
-
-            </ScrollView>
+            <View style={styles.scrollContent}>
+                <FeedSection headerComponent={renderHeader()} />
+            </View>
         </View>
     );
 };
@@ -324,109 +276,7 @@ const styles = StyleSheet.create({
         color: MATERIAL.TEXT_MUTED,
         fontWeight: TYPOGRAPHY.WEIGHTS.LIGHT,
     },
-    // STACKED CARD SYSTEM
-    stackContainer: {
-        height: 440,
-        width: '100%',
-        marginBottom: 32,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    mainCard: {
-        width: width * 0.72,
-        height: 400,
-        backgroundColor: COLORS.DEEP_OBSIDIAN,
-        borderRadius: 32,
-        overflow: 'hidden',
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.08)',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 20 },
-        shadowOpacity: 0.4,
-        shadowRadius: 30,
-        elevation: 10,
-    },
-    fullImage: {
-        width: '100%',
-        height: '100%',
-    },
-    cardGradient: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: 160,
-    },
-    topSquareCard: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: 130,
-        height: 130,
-        backgroundColor: COLORS.CARBON_BLACK,
-        borderRadius: 24,
-        overflow: 'hidden',
-        borderWidth: 1.5,
-        borderColor: 'rgba(255,255,255,0.12)',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.3,
-        shadowRadius: 15,
-        elevation: 8,
-    },
-    squareImage: {
-        width: '100%',
-        height: '100%',
-    },
-    brandBadge: {
-        position: 'absolute',
-        top: 12,
-        left: 12,
-        backgroundColor: 'rgba(0,0,0,0.6)',
-        paddingVertical: 4,
-        paddingHorizontal: 8,
-        borderRadius: 6,
-        zIndex: 10,
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.2)',
-    },
-    brandText: {
-        color: COLORS.RITUAL_WHITE,
-        fontSize: 10,
-        fontWeight: '700',
-        letterSpacing: 1,
-    },
-    detailPill: {
-        position: 'absolute',
-        bottom: 20,
-        right: -10,
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: 'rgba(255,255,255,0.1)',
-        paddingVertical: 10,
-        paddingHorizontal: 16,
-        borderRadius: 30,
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.2)',
-    },
-    pillLabel: {
-        color: COLORS.RITUAL_WHITE,
-        fontSize: 11,
-        fontWeight: '700',
-        letterSpacing: 1,
-    },
-    pillDot: {
-        width: 4,
-        height: 4,
-        borderRadius: 2,
-        backgroundColor: COLORS.ELECTRIC_BLUE,
-        marginHorizontal: 8,
-    },
-    pillValue: {
-        color: COLORS.KINETIC_SILVER,
-        fontSize: 11,
-        fontWeight: '600',
-    },
+
 
     // IDENTITY
     identityContainer: {
@@ -545,4 +395,18 @@ const styles = StyleSheet.create({
         fontSize: 12,
         letterSpacing: 0.5,
     },
+    divider: {
+        height: 1,
+        backgroundColor: 'rgba(255,255,255,0.1)',
+        marginVertical: 32,
+    },
+    feedHeader: {
+        color: COLORS.RITUAL_WHITE,
+        fontSize: 12,
+        fontWeight: 'bold',
+        letterSpacing: 2,
+        marginBottom: 20,
+        opacity: 0.7,
+        textAlign: 'center'
+    }
 });

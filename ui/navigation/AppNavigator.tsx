@@ -116,7 +116,7 @@ export const AppStack: React.FC = () => {
             />
             <Stack.Screen
                 name="StylingCanvas"
-                component={StylingCanvasScreen} // Use Lazy if needed, or import
+                component={StylingCanvasScreen}
                 options={{
                     animation: 'fade',
                     headerShown: false,

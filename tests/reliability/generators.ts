@@ -1,7 +1,7 @@
 
+
 import { Piece, PieceID, Category } from '../../truth/types';
 import { Context, UserProfile, GarmentType, Pattern, Fit, Gender } from '../../engine/outfit/models';
-import { TestConfig } from './config';
 
 class SeededRNG {
     private seed: number;

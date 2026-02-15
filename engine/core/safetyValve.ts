@@ -6,8 +6,8 @@ export class SafetyValve {
     /**
      * Guaranteed to return a valid outfit or throw a catastrophic error if physically impossible.
      */
-    public static ensureResult(orchestrator: ScoringOrchestrator, context: Context, inventory: Inventory): Outfit {
-        const ranked = orchestrator.generateAndRank(context, "SIMPLIFICATION");
+    public static async ensureResult(orchestrator: ScoringOrchestrator, context: Context, inventory: Inventory): Promise<Outfit> {
+        const ranked = await orchestrator.generateAndRank(context, "SIMPLIFICATION");
 
         if (ranked.length > 0) {
             return ranked[0];

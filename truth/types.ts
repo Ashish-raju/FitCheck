@@ -15,10 +15,12 @@ export interface Piece {
     warmth: number; // 1-5
     formality: number; // 1-5
     color: string;
+    secondaryColors?: string[]; // Additional colors in the garment
     imageUri?: string | number; // string for URI, number for require()
     processedImageUri?: string; // Background removed + white background
     thumbnailUri?: string; // Small thumbnail for lists/previews
     transparentUri?: string; // Raw transparent PNG from remove.bg
+    backgroundRemoved?: boolean; // Whether background has been removed
     status: PieceStatus;
     currentUses: number;
     maxUses?: number; // Override for universal threshold
@@ -34,11 +36,19 @@ export interface Piece {
     brand?: string;
     subcategory?: string;
     material?: string;
+    fabric?: string; // Alias/alternative for material
+    texture?: string; // Surface texture of the fabric
     pattern?: "solid" | "striped" | "check" | "graphic" | "print" | "other";
     fit?: "slim" | "regular" | "oversized" | "relaxed";
+    fitType?: string; // Alternative fit descriptor
     season?: ("spring" | "summer" | "fall" | "winter")[];
+    seasons?: ("spring" | "summer" | "fall" | "winter")[]; // Plural alias
     price?: number;
+    purchaseDate?: number; // Timestamp of purchase
     notes?: string;
+    weight?: number; // Fabric weight/thickness
+    breathability?: number; // Breathability rating
+    comfortRating?: number; // Comfort score
 
     // Advanced Fit Meta (High Features)
     necklineType?: string; // e.g., 'Crew', 'V-Neck', 'Collared', 'Boat'
@@ -54,6 +64,10 @@ export interface Piece {
         height: number;
         fileSize: number;
     };
+
+    // Timestamps
+    createdAt?: number; // When the piece was created
+    updatedAt?: number; // Last update timestamp
 
     /**
      * STYLIST ENGINE METADATA (New Engine)

@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, TextInput, KeyboardAvoidingView, Platform } from 'react-native'; // Removed ScrollView
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator, Alert } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { Gesture, GestureDetector, Directions, ScrollView as GHScrollView } from 'react-native-gesture-handler';
 import Animated, { FadeIn, FadeOut, SlideInLeft, SlideInRight, runOnJS, useAnimatedStyle, useSharedValue, useAnimatedScrollHandler, useAnimatedRef } from 'react-native-reanimated';
 import { useRitualState } from '../state/ritualProvider';
 import { ritualMachine } from '../state/ritualMachine';
 import { WardrobeItemCard } from '../components/WardrobeItemCard';
-import { InventoryStore } from '../../state/inventory/inventoryStore';
+import { WardrobeRepo } from '../../data/repos/wardrobeRepo';
+import { useAuth } from '../../context/auth/AuthProvider';
 import { COLORS } from '../tokens/color.tokens';
 import { TYPOGRAPHY } from '../tokens';
 import { SPACING } from '../tokens/spacing.tokens';
 import * as Haptics from 'expo-haptics';
+import { OpenAIVisionService } from '../../services/OpenAIVisionService';
 
 const { width } = Dimensions.get('window');
 const GUTTER = 20;
@@ -24,16 +26,20 @@ export const ItemPreviewScreen: React.FC = () => {
     const route = useRoute();
     const navigation = useNavigation();
     const { draftItem } = useRitualState();
+    const { user } = useAuth();
 
     // @ts-ignore
-    const viewParams = route.params || {};
+    const viewParams: any = route.params || {};
     const viewItem = viewParams.item;
     const isReadOnly = viewParams.readonly || false;
 
     // Use viewItem (from params) OR draftItem (from context)
     const targetItem = viewItem || draftItem;
 
+    // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
     const [isSaving, setIsSaving] = useState(false);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [aiMetadata, setAiMetadata] = useState<any>(null);
     const [name, setName] = useState(targetItem?.name || '');
     const [category, setCategory] = useState(targetItem?.category || 'Top');
     const [price, setPrice] = useState(targetItem?.price ? String(targetItem.price) : '');
@@ -61,8 +67,8 @@ export const ItemPreviewScreen: React.FC = () => {
     const swipeRight = Gesture.Fling().direction(Directions.RIGHT).onEnd(() => runOnJS(changeCategory)(-1));
     const composedGesture = Gesture.Simultaneous(swipeLeft, swipeRight);
 
+    // Redirect effect - only runs if no item is available
     React.useEffect(() => {
-        // Only redirect if we are NOT in view mode and NO draft exists
         if (!viewItem && !draftItem) {
             ritualMachine.toWardrobe();
         }
@@ -79,43 +85,8 @@ export const ItemPreviewScreen: React.FC = () => {
         }
     };
 
-    if (!targetItem) return null;
-
-    const handleAddToWardrobe = async () => {
-        if (isSaving) return;
-
-        setIsSaving(true);
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-
-        try {
-            // Optimistically add to inventory
-            const finalPiece = {
-                ...draftItem,
-                name: name || `${draftItem.color || ''} ${category}`.trim() || 'New Item',
-                category: category,
-                price: price ? parseFloat(price) : undefined,
-            };
-            await InventoryStore.getInstance().addPiece(finalPiece);
-
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-
-            // Clear draft and navigate to wardrobe
-            ritualMachine.clearDraftItem();
-            ritualMachine.toWardrobe();
-        } catch (error) {
-            console.error('[ItemPreviewScreen] Failed to save item:', error);
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-            setIsSaving(false);
-        }
-    };
-
-    const handleRetake = () => {
-        Haptics.selectionAsync();
-        ritualMachine.clearDraftItem();
-        ritualMachine.toCamera();
-    };
-
-    // --- SHEET LOGIC (Read Only) ---
+    // --- ALL ANIMATION/SHEET HOOKS MUST BE CALLED BEFORE EARLY RETURN ---
+    // Sheet Logic (Read Only)
     const sheetStyle = useAnimatedStyle(() => {
         return {
             transform: [{ translateY: 0 }]
@@ -149,6 +120,107 @@ export const ItemPreviewScreen: React.FC = () => {
                 runOnJS(handleSheetClose)();
             }
         });
+
+    // NOW it's safe to return early AFTER ALL HOOKS have been called
+    if (!targetItem) {
+        return null;
+    }
+
+    const userId = user?.uid || 'guest';
+
+    const handleAddToWardrobe = async () => {
+        if (isSaving) return;
+
+        setIsSaving(true);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+        try {
+            // Create garment using WardrobeRepo (use targetItem, not draftItem)
+            const finalPiece = {
+                ...targetItem,
+                name: name || `${targetItem.color || ''} ${category}`.trim() || 'New Item',
+                category: category,
+                price: price ? parseFloat(price) : undefined,
+            };
+
+            // Save to WardrobeRepo (this is what WardrobeScreen reads from)
+            await WardrobeRepo.createGarment(userId, finalPiece);
+
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+            // Clear draft and navigate to wardrobe
+            ritualMachine.clearDraftItem();
+            ritualMachine.toWardrobe();
+        } catch (error) {
+            console.error('[ItemPreviewScreen] Failed to save item:', error);
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+            setIsSaving(false);
+        }
+    };
+
+    const handleRetake = () => {
+        Haptics.selectionAsync();
+        ritualMachine.clearDraftItem();
+        ritualMachine.toCamera();
+    };
+
+    /**
+     * AI Photo Analysis - Extracts metadata using GPT-4 Vision
+     */
+    const handleAnalyzePhoto = async () => {
+        if (!targetItem?.imageUri || isAnalyzing) return;
+
+        setIsAnalyzing(true);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+        try {
+            console.log('[ItemPreviewScreen] Starting GPT-4o analysis...');
+            const metadata = await OpenAIVisionService.analyzeGarment(targetItem.imageUri);
+
+            console.log('[ItemPreviewScreen] AI analysis complete:', metadata);
+
+            // Store metadata
+            setAiMetadata(metadata);
+
+            // Auto-fill form with AI suggestions
+            if (metadata.type) {
+                const categoryMap: Record<string, string> = {
+                    'top': 'Top',
+                    'bottom': 'Bottom',
+                    'shoes': 'Shoes',
+                    'layer': 'Outerwear',
+                    'accessory': 'Accessory'
+                };
+                const suggestedCategory = categoryMap[metadata.type] || 'Top';
+                setCategory(suggestedCategory);
+            }
+
+            if (metadata.aiDescription) {
+                // Use AI description as name if not set
+                setName(metadata.aiDescription.split(',')[0] || name);
+            }
+
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+            Alert.alert(
+                '✨ Analysis Complete!',
+                `AI detected: ${metadata.aiDescription}\n\nConfidence: ${Math.round((metadata.aiConfidence || 0.9) * 100)}%\n\nReview and confirm the details below.`,
+                [{ text: 'OK', style: 'default' }]
+            );
+
+        } catch (error) {
+            console.error('[ItemPreviewScreen] AI analysis failed:', error);
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+
+            Alert.alert(
+                'Analysis Failed',
+                error instanceof Error ? error.message : 'Could not analyze photo. Please enter details manually.',
+                [{ text: 'OK', style: 'cancel' }]
+            );
+        } finally {
+            setIsAnalyzing(false);
+        }
+    };
 
     // If Read Only, we render a Bottom Sheet style
     if (isReadOnly) {
@@ -278,6 +350,35 @@ export const ItemPreviewScreen: React.FC = () => {
                             </Animated.View>
                         </GestureDetector>
                     </View>
+
+                    {/* AI Analysis Button */}
+                    {!isReadOnly && (
+                        <View style={styles.aiButtonContainer}>
+                            <TouchableOpacity
+                                style={[styles.aiButton, isAnalyzing && styles.aiButtonDisabled]}
+                                onPress={handleAnalyzePhoto}
+                                disabled={isAnalyzing}
+                                activeOpacity={0.8}
+                            >
+                                {isAnalyzing ? (
+                                    <>
+                                        <ActivityIndicator size="small" color={COLORS.RITUAL_BLACK} style={{ marginRight: 8 }} />
+                                        <Text style={styles.aiButtonText}>Analyzing Photo...</Text>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Text style={styles.aiButtonIcon}>✨</Text>
+                                        <Text style={styles.aiButtonText}>Analyze with AI</Text>
+                                    </>
+                                )}
+                            </TouchableOpacity>
+                            {aiMetadata && aiMetadata.aiConfidence && (
+                                <Text style={styles.confidenceText}>
+                                    {Math.round(aiMetadata.aiConfidence * 100)}% confident
+                                </Text>
+                            )}
+                        </View>
+                    )}
 
                     {/* Item Details (Editable) */}
                     <View style={styles.detailsContainer}>
@@ -494,5 +595,47 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         marginBottom: 10,
         marginTop: 5,
+    },
+    // AI Analysis Styles
+    aiButtonContainer: {
+        paddingHorizontal: GUTTER,
+        marginBottom: 20,
+        alignItems: 'center',
+    },
+    aiButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#A78BFA',  // Purple gradient
+        paddingVertical: 14,
+        paddingHorizontal: 24,
+        borderRadius: 20,
+        shadowColor: '#A78BFA',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.4,
+        shadowRadius: 10,
+        elevation: 6,
+    },
+    aiButtonDisabled: {
+        opacity: 0.6,
+    },
+    aiButtonIcon: {
+        fontSize: 18,
+        marginRight: 8,
+    },
+    aiButtonText: {
+        fontFamily: TYPOGRAPHY.STACKS.PRIMARY,
+        fontSize: 14,
+        fontWeight: '700',
+        color: COLORS.RITUAL_BLACK,
+        letterSpacing: 0.5,
+    },
+    confidenceText: {
+        fontFamily: TYPOGRAPHY.STACKS.PRIMARY,
+        fontSize: 11,
+        fontWeight: '500',
+        color: '#A78BFA',
+        marginTop: 8,
+        letterSpacing: 0.5,
     },
 });

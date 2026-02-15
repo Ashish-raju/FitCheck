@@ -1,111 +1,261 @@
-import { ContextSpec, GarmentMeta, UserProfileMeta, OutfitSlot } from '../types';
-
 /**
- * INDIA RULES PACK
- * Deterministic rules for Indian cultural context.
+ * INDIA PACK - Cultural Fashion Rules
  * 
- * Includes:
- * - Temple Modesty (No shorts, no sleeveless, no short skirts)
- * - Monsoon (No suede, no floor-length dragging hems)
- * - Cultural Colors (Avoid white/black for weddings depending on culture)
- * - Office Formal (Strict no-jeans in formal settings)
+ * Handles Indian cultural context, festivals, regional variations,
+ * fabric formality tiers, and modesty guidelines.
  */
 
-export class IndiaRulesPack {
+import { GarmentMeta, ContextSpec, UserProfileMeta } from '../types';
+import { INDIA_PACK } from '../outfit/config';
+
+export interface CulturalRule {
+    id: string;
+    name: string;
+    description: string;
+    apply: (garment: GarmentMeta, context: ContextSpec, user: UserProfileMeta) => { allowed: boolean; reason?: string };
+}
+
+export class IndiaPack {
 
     /**
-     * Check if a garment is allowed in the current context
+     * Check if garment is appropriate for Indian cultural context
      */
-    static checkGarment(
+    static validateForCulture(
         garment: GarmentMeta,
         context: ContextSpec,
-        userProfile: UserProfileMeta
+        user: UserProfileMeta
     ): { allowed: boolean; reason?: string } {
 
-        // 1. Modesty Check (Temples, Mosques, Conservative Family Events)
-        if (this.requiresModesty(context)) {
-            if (!this.isModestyCompliant(garment, userProfile.modestyLevel)) {
-                return { allowed: false, reason: 'Too revealing for this context' };
+        // 1. Festival-specific rules
+        const festivalCheck = this.checkFestivalRules(garment, context);
+        if (!festivalCheck.allowed) return festivalCheck;
+
+        // 2. Regional appropriateness
+        const regionalCheck = this.checkRegionalRules(garment, context);
+        if (!regionalCheck.allowed) return regionalCheck;
+
+        // 3. Modesty requirements
+        const modestyCheck = this.checkModestyRules(garment, user);
+        if (!modestyCheck.allowed) return modestyCheck;
+
+        // 4. Fabric-formality matching
+        const fabricCheck = this.checkFabricFormality(garment, context);
+        if (!fabricCheck.allowed) return fabricCheck;
+
+        return { allowed: true };
+    }
+
+    /**
+     * Festival-specific clothing rules
+     */
+    private static checkFestivalRules(
+        garment: GarmentMeta,
+        context: ContextSpec
+    ): { allowed: boolean; reason?: string } {
+        const event = context.eventType.toLowerCase();
+
+        // DIWALI: Prefer bright colors, avoid dull/dark unless very formal
+        if (event.includes('diwali')) {
+            // Check if colors are bright (high saturation)
+            const isBright = garment.colors.some(c => c.saturation > 60 && c.value > 40);
+            if (!isBright && context.formalityTarget < 7) {
+                return {
+                    allowed: false,
+                    reason: 'Diwali prefers bright, festive colors'
+                };
             }
         }
 
-        // 2. Weather Check (Monsoon / Heat)
-        if (!this.isWeatherAppropriate(garment, context)) {
-            return { allowed: false, reason: 'Not suitable for current weather condition' };
+        // HOLI: Avoid white and expensive fabrics (they'll get stained!)
+        if (event.includes('holi')) {
+            const isWhite = garment.colors.some(c => c.value > 90 && c.saturation < 10);
+            if (isWhite) {
+                return {
+                    allowed: false,
+                    reason: 'White not recommended for Holi (color festival)'
+                };
+            }
+
+            const expensiveFabrics = ['silk', 'brocade', 'velvet', 'satin'];
+            if (expensiveFabrics.includes(garment.fabric.toLowerCase())) {
+                return {
+                    allowed: false,
+                    reason: 'Save expensive fabrics from Holi colors'
+                };
+            }
         }
 
-        // 3. Cultural Color Check
-        if (!this.isCultureAppropriate(garment, context)) {
-            return { allowed: false, reason: 'Color inappropriate for this cultural event' };
+        // EID: High formality + high modesty
+        if (event.includes('eid')) {
+            const avgFormality = (garment.formalityRange[0] + garment.formalityRange[1]) / 2;
+            if (avgFormality < 7) {
+                return {
+                    allowed: false,
+                    reason: 'Eid requires formal attire'
+                };
+            }
+        }
+
+        // WEDDING (as guest): No white, no black (traditionally)
+        if (event.includes('wedding') && event.includes('guest')) {
+            const isWhite = garment.colors.some(c => c.value > 90 && c.saturation < 10);
+            const isBlack = garment.colors.some(c => c.value < 20 && c.saturation < 20);
+
+            if (isWhite || isBlack) {
+                return {
+                    allowed: false,
+                    reason: 'Avoid white/black as wedding guest (cultural tradition)'
+                };
+            }
+        }
+
+        // POOJA/TEMPLE: Modest, traditional, no loud graphics
+        if (event.includes('temple') || event.includes('pooja')) {
+            if (garment.pattern === 'graphic') {
+                return {
+                    allowed: false,
+                    reason: 'Avoid loud graphics for temple/pooja'
+                };
+            }
         }
 
         return { allowed: true };
     }
 
-    // --- INTERNAL HELPERS ---
+    /**
+     * Regional climate and style preferences
+     */
+    private static checkRegionalRules(
+        garment: GarmentMeta,
+        context: ContextSpec
+    ): { allowed: boolean; reason?: string } {
+        // Note: Would need location data for full implementation
+        // For now, use weather as proxy
 
-    private static requiresModesty(context: ContextSpec): boolean {
-        const conservativeEvents = ['cultural_religious', 'family_gathering', 'funeral'];
-        return conservativeEvents.includes(context.eventType);
-    }
+        const temp = context.weather.tempC;
+        const isHumid = context.weather.rainProb > 0.3;
 
-    private static isModestyCompliant(garment: GarmentMeta, userModestyLevel: number): boolean {
-        // Strict mapping for temples
-        const forbiddenTypes = [OutfitSlot.OnePiece]; // e.g. short dresses (unless maxidress - needs better subtype check)
-
-        if (garment.type === OutfitSlot.Bottom) {
-            // Basic heuristic: Short lengths are bad for high modesty contexts
-            // In a real system, 'fitMeta.length' would be checked
-            if (garment.subtype.includes('short') || garment.subtype.includes('mini')) {
-                return false;
+        // South India / Coastal: Light, breathable fabrics in hot+humid
+        if (temp > 30 && isHumid) {
+            const heavyFabrics = ['wool', 'velvet', 'heavy_cotton', 'denim'];
+            if (heavyFabrics.includes(garment.fabric.toLowerCase()) && garment.weight === 'heavy') {
+                return {
+                    allowed: false,
+                    reason: 'Too heavy for hot & humid climate'
+                };
             }
         }
 
-        if (garment.type === OutfitSlot.Top) {
-            // Sleeveless check would go here
-            if (garment.subtype.includes('tank') || garment.subtype.includes('crop')) {
-                return false;
+        // North India / Winter: Layering is common and expected
+        if (temp < 15) {
+            // This is informational, not a veto
+            // Could boost score for layerable items
+        }
+
+        return { allowed: true };
+    }
+
+    /**
+     * Modesty level validation
+     */
+    private static checkModestyRules(
+        garment: GarmentMeta,
+        user: UserProfileMeta
+    ): { allowed: boolean; reason?: string } {
+        const modestyLevel = user.modestyLevel || 5; // Default moderate
+
+        if (modestyLevel >= INDIA_PACK.MODESTY.HIGH) {
+            // High modesty: Avoid revealing items
+            const revealingSubtypes = ['crop_top', 'tube_top', 'shorts', 'mini_skirt'];
+            if (revealingSubtypes.includes(garment.subtype.toLowerCase())) {
+                return {
+                    allowed: false,
+                    reason: 'Item doesn\'t meet modesty preference'
+                };
             }
         }
 
-        return true;
+        if (modestyLevel >= INDIA_PACK.MODESTY.VERY_HIGH) {
+            // Very high modesty: Prefer traditional cuts
+            // Suggest dupatta/stole for tops
+            // This would be a "suggestion" rather than hard veto
+        }
+
+        return { allowed: true };
     }
 
-    private static isWeatherAppropriate(garment: GarmentMeta, context: ContextSpec): boolean {
-        const { rainProb, tempC } = context.weather;
-        const isMonsoon = rainProb > 0.4;
-        const isHot = tempC > 30;
+    /**
+     * Fabric formality tier validation
+     */
+    private static checkFabricFormality(
+        garment: GarmentMeta,
+        context: ContextSpec
+    ): { allowed: boolean; reason?: string } {
+        const fabric = garment.fabric.toLowerCase();
+        const targetFormality = context.formalityTarget;
 
-        // Monsoon Rules
-        if (isMonsoon) {
-            if (garment.fabric === 'suede') return false;
-            if (garment.fabric === 'silk') return false; // Water stains
-            if (garment.type === OutfitSlot.OnePiece && garment.subtype.includes('maxi')) return false; // Drags on wet ground
-            if (garment.primaryColorHex === '#FFFFFF') return false; // Transparent when wet / mud stains
+        // Define fabric formality tiers
+        const casualFabrics = ['cotton', 'denim', 'jersey', 'fleece'];
+        const smartCasualFabrics = ['linen', 'chambray', 'poplin', 'khaki'];
+        const formalFabrics = ['silk', 'brocade', 'velvet', 'satin', 'wool_blend'];
+
+        // Very formal events (8-10): Need formal fabrics
+        if (targetFormality >= 8) {
+            if (casualFabrics.includes(fabric)) {
+                return {
+                    allowed: false,
+                    reason: 'Fabric too casual for very formal event'
+                };
+            }
         }
 
-        // Heat Rules
-        if (isHot) {
-            if (garment.weight === 'heavy') return false;
-            if (garment.fabric === 'leather') return false;
-            if (garment.fabric === 'polyester') return false; // Breathability check
+        // Formal events (6-7): At least smart-casual fabrics
+        if (targetFormality >= 6) {
+            if (fabric === 'denim' || fabric === 'fleece' || fabric === 'jersey') {
+                return {
+                    allowed: false,
+                    reason: 'Fabric too casual for formal event'
+                };
+            }
         }
 
-        return true;
+        // Casual events (1-3): Formal fabrics might be overkill
+        // But this is a style preference, not a veto
+
+        return { allowed: true };
     }
 
-    private static isCultureAppropriate(garment: GarmentMeta, context: ContextSpec): boolean {
-        // Wedding Guest Rules
-        if (context.eventType === 'wedding_guest') {
-            // Avoid Red (Bride's color - loosely applied)
-            // Avoid White/Black (Inauspicious in some cultures - safer to avoid for generic 'India' pack)
-            const redColors = ['#FF0000', '#D32F2F', '#C62828'];
-            if (redColors.includes(garment.primaryColorHex)) return false;
+    /**
+     * Get dupatta/stole/layer suggestions based on context
+     */
+    static getStylingTips(
+        outfit: GarmentMeta[],
+        context: ContextSpec,
+        user: UserProfileMeta
+    ): string[] {
+        const tips: string[] = [];
 
-            // Allow black/white for 'reception' but maybe not 'ceremony'
-            // Keeping it simple: Allow for now unless strictly flagged
+        // High modesty + formal event = suggest dupatta
+        if (user.modestyLevel >= INDIA_PACK.MODESTY.HIGH && context.formalityTarget >= 6) {
+            const hasDupatta = outfit.some(item =>
+                item.subtype.toLowerCase().includes('dupatta') ||
+                item.subtype.toLowerCase().includes('stole')
+            );
+
+            if (!hasDupatta) {
+                tips.push('💡 Consider adding a dupatta or stole for elegant coverage');
+            }
         }
 
-        return true;
+        // Festival suggestions
+        if (context.eventType.toLowerCase().includes('diwali')) {
+            tips.push('✨ Diwali tip: Gold/silver accents add festive sparkle');
+        }
+
+        if (context.eventType.toLowerCase().includes('holi')) {
+            tips.push('🎨 Holi tip: Wear clothes you don\'t mind staining');
+        }
+
+        return tips;
     }
 }

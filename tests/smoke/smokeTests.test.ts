@@ -261,7 +261,7 @@ describe('APK Smoke Tests', () => {
             // Add a garment
             const testGarment: Piece = {
                 id: 'stats_test_001' as PieceID,
-                category: 'Accessories',
+                category: 'Accessory',
                 color: '#FFFF00',
                 status: 'Clean',
                 currentUses: 0,

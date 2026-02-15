@@ -1,5 +1,5 @@
 
-import { MOCK_PIECES } from '../../assets/mock-data/mockPieces.temp';
+import { MOCK_PIECES } from '../../assets/mock-data/mockPieces';
 import { generateOutfitSuggestions } from '../../engine/outfit';
 import { checkInvariants } from './invariants';
 import { ReliabilityReporter } from './report';

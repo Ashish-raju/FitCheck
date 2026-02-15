@@ -1,5 +1,5 @@
-import { InventoryGraph } from "./inventoryGraph.ts";
-import { CONSTRAINTS } from "../../truth/constraints.ts";
+import { InventoryGraph } from "./inventoryGraph";
+import { CONSTRAINTS } from "../../truth/constraints";
 
 export class GraphValidator {
     public static validate(graph: InventoryGraph): boolean {

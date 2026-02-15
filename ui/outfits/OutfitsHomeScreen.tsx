@@ -13,8 +13,8 @@ import { TYPOGRAPHY } from '../tokens';
 import { SPACING } from '../tokens/spacing.tokens';
 import { OutfitsRepo, Outfit } from '../../data/repos';
 import { OutfitDraftStore } from '../../state/outfits/OutfitDraftStore';
+import { OutfitStore } from '../../state/outfits/OutfitStore';
 import { FIREBASE_AUTH } from '../../system/firebase/firebaseConfig';
-import { t } from '../../../src/copy';
 import { OutfitCard } from './components/OutfitCard';
 
 // Navigation Hook Placeholder (Replace with actual if needed)
@@ -42,18 +42,23 @@ export const OutfitsHomeScreen: React.FC = () => {
     const loadOutfits = useCallback(async () => {
         setIsLoading(true);
         try {
-            // Initialize OutfitsRepo
-            await OutfitsRepo.initialize(userId);
+            // Refresh Store (Load all outfits)
+            await OutfitStore.getInstance().refresh();
 
-            // Load outfits with filtering based on active tab
-            const allOutfits = await OutfitsRepo.listOutfits(userId, {
-                occasion: activeTab !== 'All' && activeTab !== 'Favorites' ? activeTab : undefined,
-                isFavorite: activeTab === 'Favorites' ? true : undefined
-            });
+            // Get all outfits from Store
+            let allOutfits = OutfitStore.getInstance().getOutfits();
+
+            // Filter
+            if (activeTab === 'Favorites') {
+                allOutfits = allOutfits.filter(o => o.isFavorite);
+            } else if (activeTab !== 'All') {
+                allOutfits = allOutfits.filter(o => o.occasion === activeTab);
+            }
 
             // Load dynamic occasions
-            const occasions = await OutfitsRepo.getOccasions(userId);
-            setTabs(['All', 'Favorites', ...occasions]);
+            // const occasions = await OutfitsRepo.getOccasions(userId);
+            // setTabs(['All', 'Favorites', ...occasions]);
+            setTabs(['All', 'Favorites', 'Work', 'Casual', 'Date', 'Event']); // Static fallback
 
             setOutfits(allOutfits);
         } catch (error) {

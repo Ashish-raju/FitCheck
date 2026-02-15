@@ -1,5 +1,5 @@
-import type { Outfit, Context } from "../../truth/types.ts";
-import { CONSTRAINTS } from "../../truth/constraints.ts";
+import type { Outfit, Context } from "../../truth/types";
+import { CONSTRAINTS } from "../../truth/constraints";
 
 export function validateOutfit(outfit: Outfit, context: Context): boolean {
     // 1. Structure Check

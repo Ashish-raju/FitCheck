@@ -238,10 +238,7 @@ export const OutfitDetailScreen: React.FC = () => {
                             <Text style={styles.actionBtnText}>Edit</Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.actionBtn}>
-                            <Ionicons name="calendar-outline" size={20} color="#FFF" />
-                            <Text style={styles.actionBtnText}>Plan</Text>
-                        </TouchableOpacity>
+
                         <TouchableOpacity style={styles.actionBtn}>
                             <Ionicons name="share-social-outline" size={20} color="#FFF" />
                             <Text style={styles.actionBtnText}>Share</Text>

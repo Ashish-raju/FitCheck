@@ -29,6 +29,7 @@ export type RootStackParamList = {
         onCancel: () => void
     };
     OutfitDetail: { outfitId: string };
+    StylingCanvas: undefined;
 };
 
 // Helper for type-safe useNavigation

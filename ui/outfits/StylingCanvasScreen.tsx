@@ -171,7 +171,8 @@ export const StylingCanvasScreen: React.FC = () => {
                     if (draftStore.state.mode === 'edit') {
                         console.log('[StylingCanvas] navigating to OutfitDetail');
                         // Go back to Details to show the updated outfit
-                        navigation.navigate('OutfitDetail' as never, { outfitId: finalId } as never);
+                        // @ts-ignore
+                        navigation.navigate('OutfitDetail', { outfitId: finalId });
                     } else {
                         console.log('[StylingCanvas] navigating to Outfits (Home)');
                         // New creation -> Home

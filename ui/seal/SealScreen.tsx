@@ -14,7 +14,8 @@ import { MOTION } from '../tokens/motion.tokens';
 
 export const SealScreen: React.FC = () => {
     const { lockedOutfitId, candidateOutfits } = useRitualState();
-    const outfit = candidateOutfits.find(o => o.id === lockedOutfitId);
+    // Fallback to first if lockedId is missing (should not happen in this state)
+    const outfit = candidateOutfits.find(o => o.id === lockedOutfitId) || candidateOutfits[0];
 
     const opacityAnim = useRef(new Animated.Value(0)).current;
     const flickerAnim = useRef(new Animated.Value(1)).current;
@@ -24,7 +25,7 @@ export const SealScreen: React.FC = () => {
         const runFinality = async () => {
             Animated.timing(opacityAnim, {
                 toValue: 1,
-                duration: MOTION.DURATIONS.SEAL_FINALITY,
+                duration: MOTION.DURATIONS.LONG,
                 useNativeDriver: true,
             }).start();
 
@@ -56,7 +57,7 @@ export const SealScreen: React.FC = () => {
                     <Text style={styles.stateWhisper}>SEALED</Text>
 
                     <View style={styles.stageWrapper}>
-                        <CandidateStage outfit={outfit} />
+                        <CandidateStage outfit={outfit} userId="user_id_placeholder" />
                     </View>
 
                     <View style={styles.explanationSection}>

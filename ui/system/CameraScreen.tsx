@@ -31,6 +31,7 @@ export const CameraScreen: React.FC = () => {
     const [permission, requestPermission] = useCameraPermissions();
     const [isProcessing, setIsProcessing] = useState(false);
     const [processingState, setProcessingState] = useState<ProcessingState>('idle');
+    const [error, setError] = useState<string | null>(null);
     const scanAnim = React.useRef(new Animated.Value(0)).current;
     const shutterFlash = React.useRef(new Animated.Value(0)).current;
     const cameraRef = React.useRef<CameraView>(null);
@@ -46,6 +47,17 @@ export const CameraScreen: React.FC = () => {
             isMounted.current = false;
         };
     }, []);
+
+    // Request permissions when screen is focused
+    React.useEffect(() => {
+        if (isFocused && permission && !permission.granted && permission.canAskAgain) {
+            console.log('[CameraScreen] Requesting camera permissions...');
+            requestPermission().catch((err) => {
+                console.error('[CameraScreen] Permission request failed:', err);
+                setError('Failed to request camera permissions');
+            });
+        }
+    }, [isFocused, permission]);
 
     React.useEffect(() => {
         let hapticInterval: any;
@@ -190,8 +202,26 @@ export const CameraScreen: React.FC = () => {
         }
     };
 
-    // If we don't have permission info yet, render empty
-    if (!permission) return <View style={styles.container} />;
+    // If we don't have permission info yet, show loading
+    if (!permission) {
+        return (
+            <View style={styles.container}>
+                <Text style={styles.permissionText}>Loading camera...</Text>
+            </View>
+        );
+    }
+
+    // Show error state if there was an error
+    if (error) {
+        return (
+            <View style={styles.container}>
+                <Text style={styles.permissionText}>{error}</Text>
+                <TouchableOpacity onPress={() => ritualMachine.toWardrobe()} style={{ marginTop: 20 }}>
+                    <Text style={[styles.closeText, { fontSize: 16 }]}>Go Back</Text>
+                </TouchableOpacity>
+            </View>
+        );
+    }
 
     // STRICT Permission Gate
     if (!permission.granted) {
