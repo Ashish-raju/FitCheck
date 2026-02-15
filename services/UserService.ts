@@ -1,53 +1,11 @@
 import { FIREBASE_DB, FIREBASE_AUTH } from '../system/firebase/firebaseConfig';
 import { UserProfileMeta } from '../engine/types';
+import { UserProfile, DerivedStats } from '../truth/types';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';
 
-export interface UserProfile {
-    uid: string;
-    email: string;
-    displayName: string;
-    photoURL?: string;
-    createdAt: any;
-    updatedAt: any;
-    preferences?: {
-        maxUses?: number;
-        stylePreferences?: string[];
-        // New preferences
-        comfortPrefs?: string[];
-        fitPrefs?: string[];
-        problemAreas?: string[];
-    };
-    // Profile Fields
-    gender?: string;
-    city?: string;
-    height?: number; // in cm
-    weight?: number; // in kg
-    bodyType?: string;
-    bodyConfidence?: number; // 0-10
-
-    // Body Intelligence
-    skinTone?: {
-        undertone: string; // 'cool', 'warm', 'neutral'
-        depth: string; // 'fair', 'medium', 'dark'
-        contrast: string; // 'high', 'low'
-    };
-    palette?: {
-        best: string[];
-        avoid: string[];
-    };
-    /**
-     * STYLIST ENGINE METADATA (New Engine)
-     */
-    stylistMeta?: UserProfileMeta;
-}
-
-export interface DerivedStats {
-    wardrobeCount: number;
-    outfitsSavedCount: number;
-    streakCount: number;
-    mostWornColor: string;
-}
+// Removed local interfaces to use truth/types versions
+export { UserProfile, DerivedStats } from '../truth/types';
 
 export class UserService {
     private static instance: UserService;
@@ -71,8 +29,8 @@ export class UserService {
                 email: data.email || '',
                 displayName: data.displayName || '',
                 photoURL: data.photoURL,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                createdAt: firebase.firestore.FieldValue.serverTimestamp() as any,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp() as any,
                 preferences: data.preferences || {},
             };
 

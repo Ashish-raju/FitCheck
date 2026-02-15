@@ -138,28 +138,49 @@ export const StylingCanvasScreen: React.FC = () => {
     };
 
     const handleSave = async () => {
+        console.log('[StylingCanvas] handleSave called');
         try {
-            if (!viewShotRef.current) return;
+            if (!viewShotRef.current) {
+                console.error('[StylingCanvas] viewShotRef is null');
+                Alert.alert("Error", "Canvas not ready. Please try again.");
+                return;
+            }
             setActiveItemId(null); // Remove selection borders
+            console.log('[StylingCanvas] waiting 100ms for UI update...');
 
             // Delay capture for UI update
             setTimeout(async () => {
-                const uri = await viewShotRef.current?.capture();
-                console.log("Captured URI:", uri);
+                try {
+                    console.log('[StylingCanvas] capturing view...');
+                    const uri = await viewShotRef.current?.capture();
+                    console.log("[StylingCanvas] Captured URI:", uri);
 
-                // Commit via DraftStore - AND SAVE STATE
-                // We pass the current 'canvasItems' as the second arg to save positions
-                const finalId = await draftStore.commit(uri, canvasItems);
+                    if (!uri) {
+                        throw new Error("Failed to capture image URI");
+                    }
 
-                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                    // Commit via DraftStore - AND SAVE STATE
+                    console.log('[StylingCanvas] committing to DraftStore...');
+                    // We pass the current 'canvasItems' as the second arg to save positions
+                    const finalId = await draftStore.commit(uri, canvasItems);
+                    console.log('[StylingCanvas] committed via DraftStore, ID:', finalId);
 
-                // Return Logic - ALWAYS Home for safety, or Detail for update
-                if (draftStore.state.mode === 'edit') {
-                    // Go back to Details to show the updated outfit
-                    navigation.navigate('OutfitDetail' as never, { outfitId: finalId } as never);
-                } else {
-                    // New creation -> Home
-                    navigation.navigate('Outfits' as never);
+                    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+                    // Return Logic - ALWAYS Home for safety, or Detail for update
+                    if (draftStore.state.mode === 'edit') {
+                        console.log('[StylingCanvas] navigating to OutfitDetail');
+                        // Go back to Details to show the updated outfit
+                        navigation.navigate('OutfitDetail' as never, { outfitId: finalId } as never);
+                    } else {
+                        console.log('[StylingCanvas] navigating to Outfits (Home)');
+                        // New creation -> Home
+                        // @ts-ignore
+                        navigation.navigate('Outfits');
+                    }
+                } catch (innerErr) {
+                    console.error('[StylingCanvas] Inner error in save:', innerErr);
+                    Alert.alert("Error", "Failed during save process.");
                 }
             }, 100);
 

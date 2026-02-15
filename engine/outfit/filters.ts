@@ -95,13 +95,17 @@ export class HardFilter {
      * Section 4 Pairwise Rule: "double-loud pattern (top + bottom both non-solid)"
      * This must be applied during assembly.
      */
-    static isCombinationValid(g1: Garment, g2: Garment): boolean {
+    static isCombinationValid(g1: Garment, g2: Garment, user?: any): boolean {
         // Check Double Loud
         // "top + bottom both non-solid"
-        // Assuming "non-solid" means "not solid". 
-        // Spec says: "pattern in { solid, stripe, checks, graphic, floral, other }"
 
-        // Only apply if one is Top and other is Bottom (or Layer) covering user
+        // Relax rule if user is Creative or Bold
+        // Note: user type is 'any' here to avoid circular dep if UserProfile is not imported, 
+        // but ideally we import UserProfile. 
+        if (user && (user.stylePrefs?.includes('creative') || user.stylePrefs?.includes('bold'))) {
+            return true; // Allow chaos for the fashionistas
+        }
+
         const shapes = [g1.type, g2.type];
         const hasTop = shapes.includes("top");
         const hasBottom = shapes.includes("bottom");

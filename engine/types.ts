@@ -133,6 +133,7 @@ export interface OutfitCandidate {
     isComplete: boolean;
     missingSlots: OutfitSlot[];
     warnings: string[];
+    badges?: string[];
 }
 
 export interface OutfitResult {

@@ -20,6 +20,7 @@ import { Outfit } from '../../truth/types';
 import { SwipeCard } from './SwipeCard';
 import { ritualMachine } from '../state/ritualMachine';
 import { useBackgroundMotion } from '../system/background/BackgroundContext';
+import { VetoFeedback } from './VetoFeedback';
 
 const { width, height } = Dimensions.get('window');
 const SWIPE_THRESHOLD = width * 0.30;
@@ -37,6 +38,7 @@ export const SwipeDeck = ({ data, onIndexChange }: SwipeDeckProps) => {
     // --- 1. STATE & POINTERS ---
     const [topIndex, setTopIndex] = useState(0);
     const { panX: globalPanX } = useBackgroundMotion(); // Hook into background lights
+    const [vetoFeedbackVisible, setVetoFeedbackVisible] = useState(false);
 
     // Performance logs
     const releaseTimeRef = useRef<number>(0);
@@ -101,8 +103,10 @@ export const SwipeDeck = ({ data, onIndexChange }: SwipeDeckProps) => {
                 Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
                 ritualMachine.sealRitual(currentItem.id);
             } else {
-                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); // Softer "Skip" feel
                 ritualMachine.vetoRitual(currentItem.id);
+                setVetoFeedbackVisible(true);
+                setTimeout(() => setVetoFeedbackVisible(false), 1500);
             }
         }
 
@@ -305,7 +309,8 @@ export const SwipeDeck = ({ data, onIndexChange }: SwipeDeckProps) => {
 
     return (
         <View style={styles.container}>
-            {/* 
+            <VetoFeedback visible={vetoFeedbackVisible} />
+            {/*  
                 Render Order: 
                 We want top card LAST in DOM so it's on top of Z-stack naturally if zIndex doesn't work, 
                 but we are using absolute position + zIndex. 

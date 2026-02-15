@@ -6,7 +6,8 @@ import Animated, {
     withSpring,
     withTiming
 } from 'react-native-reanimated';
-import { Image } from 'expo-image';
+// import { Image } from 'expo-image';
+import { SmartImage } from '../primitives/SmartImage';
 import { GlassCard } from '../primitives/GlassCard';
 import { ShiningBorder } from '../primitives/ShiningBorder';
 import { TYPOGRAPHY } from '../tokens';
@@ -56,7 +57,7 @@ export const WardrobeItemCard: React.FC<WardrobeItemCardProps> = memo(({
                 <View style={styles.content}>
                     <View style={styles.imageWrapper}>
                         {item.imageUri ? (
-                            <Image
+                            <SmartImage
                                 source={typeof item.imageUri === 'string' ? { uri: item.imageUri } : item.imageUri}
                                 style={styles.image}
                                 contentFit="contain"
@@ -72,7 +73,7 @@ export const WardrobeItemCard: React.FC<WardrobeItemCardProps> = memo(({
                             {item.name}
                         </Text>
                         <Text style={styles.subtitle}>
-                            {item.category} • {item.wornCount ?? 0} worn
+                            {item.subtype ? item.subtype.toUpperCase() : item.category} • {item.wornCount ?? 0} worn
                         </Text>
                     </View>
                 </View>

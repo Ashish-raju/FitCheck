@@ -29,37 +29,18 @@ export class WardrobeSource {
 
             items[id] = {
                 id,
-                type: type as any,
-                subtype: subtype,
-                gender: 'unisex',
-                colors: [{
-                    hex: pick(['#000', '#FFF', '#F00', '#0F0', '#00F', '#FF0', '#0FF', '#F0F']),
-                    hue: 0, saturation: 0, value: 0, undetone: 'neutral', dictColorId: 0
-                }],
-                primaryColorHex: '#000',
-                processingStatus: 'processed',
-
-                // Random Attributes
-                fabric: pick(['cotton', 'silk', 'polyester', 'wool', 'denim', 'leather']),
-                weight: pick(['light', 'medium', 'heavy']),
+                category: type === 'top' ? 'Top' : type === 'bottom' ? 'Bottom' : type === 'shoes' ? 'Shoes' : 'Other',
+                subcategory: subtype,
+                color: pick(['#000', '#FFF', '#F00', '#0F0', '#00F', '#FF0', '#0FF', '#F0F']),
+                material: pick(['cotton', 'silk', 'polyester', 'wool', 'denim', 'leather']),
                 pattern: pick(['solid', 'striped', 'floral', 'dot', 'check']),
-                fitType: pick(['tight', 'regular', 'loose']),
-
-                // Scores
-                formalityRange: [nextInt(1, 5), nextInt(6, 10)], // potentially invalid range [8, 4]?
-                seasonScores: {
-                    summer: next(),
-                    winter: next(),
-                    monsoon: next(),
-                    transitional: next()
-                },
-                versatility: next(),
-
-                status: 'active',
-                lastWornTimestamp: 0,
-                wornCount: 0,
-                costPerWear: 0
-            } as any as GarmentMeta; // loose casting for robustness
+                fit: pick(['tight', 'regular', 'loose']),
+                status: 'Clean',
+                brand: 'Generic',
+                cost: 0,
+                purchaseDate: new Date().toISOString(),
+                stylistMeta: undefined // Force re-analysis or mapping
+            } as any as GarmentMeta;
 
             // Inject Adversarial Traits
             if (next() < 0.05) {

@@ -1,8 +1,7 @@
-import { Worklets } from 'react-native-worklets-core';
 import type { Piece, Context, CalibrationStage, Outfit } from '../../truth/types';
 
 // ============================================================================
-// TYPES & CONSTANTS (Mirrored to ensure availability in Worklet Context)
+// TYPES & CONSTANTS
 // ============================================================================
 
 interface ScoreBreakdown {
@@ -26,11 +25,10 @@ interface OutfitWithBreakdown extends Outfit {
 }
 
 // ============================================================================
-// PURE LOGIC (Copied from FilterGateway & AestheticRules to ensure closure safety)
+// PURE LOGIC (No dependencies)
 // ============================================================================
 
 function filterPiece(piece: Piece, context: Context): boolean {
-    'worklet';
     if (piece.status !== 'Clean') return false;
     if (context.temperature < CONSTRAINTS.CONTEXT.COLD_THRESHOLD) {
         if (piece.warmth < 2) return false;
@@ -44,7 +42,6 @@ function scoreOutfit(
     context: Context,
     stage: CalibrationStage
 ): { score: number; breakdown: ScoreBreakdown } {
-    'worklet';
     const breakdown: ScoreBreakdown = {
         colorHarmony: 0,
         formalityAlignment: 0,
@@ -112,7 +109,6 @@ function scoreOutfit(
     }
 
     // 4. SEASON SUITABILITY (Approximated)
-    // In Worklet, new Date() works.
     const currentMonth = new Date().getMonth() + 1;
     let currentSeason: "spring" | "summer" | "fall" | "winter";
     if (currentMonth >= 3 && currentMonth <= 5) currentSeason = "spring";
@@ -189,20 +185,14 @@ function scoreOutfit(
 }
 
 // ============================================================================
-// WORKLET ENTRY POINT
+// GENERATION LOGIC
 // ============================================================================
 
-/**
- * The heavy computation function that runs in the background thread.
- * It takes primitive arrays/objects and returns the sorted outfit list.
- */
 function outfitGenerationWorklet(
     allPieces: Piece[],
     context: Context,
     stage: CalibrationStage
 ): OutfitWithBreakdown[] {
-    'worklet';
-
     // 1. Indexing
     const tops = allPieces.filter(p => p.category === 'Top');
     const bottoms = allPieces.filter(p => p.category === 'Bottom');
@@ -210,15 +200,12 @@ function outfitGenerationWorklet(
 
     const validOutfits: OutfitWithBreakdown[] = [];
 
-    // 2. Generation Loop (Caps at ~50k iterations implicit by wardrobe size)
-    // Note: We don't have the uuid generator here, so we use a simple random string
-    // or we can generate a deterministic ID based on piece IDs which is BETTER.
-
+    // 2. Generation Loop
     for (const top of tops) {
         for (const bottom of bottoms) {
             for (const shoe of shoes) {
 
-                // Filter Individual Pieces against context (Early Exit)
+                // Filter Individual Pieces
                 if (!filterPiece(top, context)) continue;
                 if (!filterPiece(bottom, context)) continue;
                 if (!filterPiece(shoe, context)) continue;
@@ -250,41 +237,39 @@ function outfitGenerationWorklet(
     // 3. Sort (Descending Score)
     validOutfits.sort((a, b) => b.score - a.score);
 
-    // 4. Cap results to top 100 to save serialization bridge cost
+    // 4. Cap results to top 100
     return validOutfits.slice(0, 100);
 }
 
 // ============================================================================
-// PUBLIC API
+// PUBLIC API (JS THREAD Fallback)
 // ============================================================================
 
 /**
- * Runs the outfit generation pipeline in a background thread.
- * Non-blocking.
+ * Runs the outfit generation pipeline.
+ * NOW RUNNING ON JS THREAD due to native module instability.
  */
 export async function runScoringPipeline(
     inventoryPieces: Piece[],
     context: Context,
     stage: CalibrationStage
 ): Promise<OutfitWithBreakdown[]> {
-    console.log('[BackgroundWorker] Spawning worker...');
+    console.log('[BackgroundWorker] Running pipeline (JS Thread Fallback)...');
     const start = performance.now();
 
     try {
-        // Create the worklet function
-        // defaultContext is the background thread provided by react-native-worklets-core
-        const worklet = Worklets.createRunInContextFn(outfitGenerationWorklet, Worklets.defaultContext);
+        // Yield to UI first to prevent freeze
+        await new Promise(resolve => setTimeout(resolve, 0));
 
-        // Execute
-        const results = await worklet(inventoryPieces, context, stage);
+        // Execute logic directly
+        const results = outfitGenerationWorklet(inventoryPieces, context, stage);
 
         const duration = performance.now() - start;
-        console.log(`[BackgroundWorker] Complete. Generated ${results.length} outfits in ${duration.toFixed(0)}ms (Async)`);
+        console.log(`[BackgroundWorker] Complete. Generated ${results.length} outfits in ${duration.toFixed(0)}ms (JS Thread)`);
 
         return results;
     } catch (e) {
-        console.error('[BackgroundWorker] Worker Failed:', e);
-        // Fallback: If worker fails, return empty or throw
+        console.error('[BackgroundWorker] Calculation Failed:', e);
         return [];
     }
 }

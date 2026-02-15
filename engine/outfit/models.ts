@@ -1,4 +1,4 @@
-export type GarmentType = "top" | "bottom" | "layer" | "footwear" | "accessory" | "one_piece";
+export type GarmentType = "top" | "bottom" | "layer" | "footwear" | "accessory" | "one_piece" | "bag";
 export type Gender = "men" | "women" | "unisex";
 export type Pattern = "solid" | "stripe" | "checks" | "graphic" | "floral" | "other";
 export type Fit = "slim" | "regular" | "oversized" | "relaxed";

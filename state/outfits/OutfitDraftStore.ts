@@ -125,18 +125,23 @@ export class OutfitDraftStore {
             finalId = `styled_${Date.now()}`;
         }
 
-        await OutfitStore.getInstance().saveOutfit({
-            id: finalId,
-            items: itemIds,
-            occasion: this.state.occasion as any,
-            score: existingOutfit ? existingOutfit.score : 0,
-            source: 'manual',
-            isFavorite: existingOutfit ? existingOutfit.isFavorite : false,
-            name: existingOutfit ? existingOutfit.name : `${this.state.occasion} Style`,
-            createdAt: existingOutfit ? existingOutfit.createdAt : Date.now(),
-            imageUri: imageUri,
-            canvasState: canvasState // Save positions!
-        });
+        try {
+            await OutfitStore.getInstance().saveOutfit({
+                id: finalId,
+                items: itemIds,
+                occasion: this.state.occasion as any,
+                score: existingOutfit ? existingOutfit.score : 0,
+                source: 'manual',
+                isFavorite: existingOutfit ? existingOutfit.isFavorite : false,
+                name: existingOutfit ? existingOutfit.name : `${this.state.occasion} Style`,
+                createdAt: existingOutfit ? existingOutfit.createdAt : Date.now(),
+                imageUri: imageUri,
+                canvasState: canvasState // Save positions!
+            });
+        } catch (err) {
+            console.error('[DraftStore] Error calling OutfitStore.saveOutfit:', err);
+            throw err;
+        }
 
         console.log(`[DraftStore] Committed draft to ${finalId}`);
         return finalId;

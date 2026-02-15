@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { COLORS, MATERIAL } from '../tokens/color.tokens';
 import { TYPOGRAPHY } from '../tokens';
-import { RootStackParamList } from '../navigation/AppNavigator';
+import { RootStackParamList } from '../navigation/types';
 
 interface PersistentNavProps {
     activeRouteName: string;

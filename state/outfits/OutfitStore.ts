@@ -1,31 +1,14 @@
 import { Piece, PieceID } from '../../truth/types';
 import { InventoryStore } from '../inventory/inventoryStore';
-import { outfitRepository, type Outfit as DBOutfit } from '../../database/repositories/OutfitRepository';
+import { OutfitsRepo, Outfit as RepoOutfit, Occasion } from '../../data/repos/outfitsRepo';
+import { FIREBASE_AUTH } from '../../system/firebase/firebaseConfig';
 
-export type Occasion = 'Office' | 'Formal' | 'Party' | 'Traditional' | 'Sportswear' | 'Swimwear' | 'Casual' | 'Date' | 'Travel';
-
+export { Occasion };
 export const OUTFIT_OCCASIONS: Occasion[] = ['Office', 'Formal', 'Party', 'Traditional', 'Sportswear', 'Swimwear', 'Casual', 'Date', 'Travel'];
 
-export interface Outfit {
-    id: string;
-    items: PieceID[]; // References to pieces in InventoryStore
-    occasion: Occasion;
-    score: number;
-    scoreBreakdown?: {
-        harmony: number;
-        silhouette: number;
-        layering: number;
-        occasion: number;
-        novelty: number;
-    };
-    source: 'sealed' | 'manual';
-    isFavorite: boolean;
-    name: string;
-    createdAt: number;
-    lastWorn?: number;
-    timesWorn?: number;
-    imageUri?: string; // Captured canvas image
-    canvasState?: any; // Saved position/scale/rotation of items
+export interface Outfit extends RepoOutfit {
+    // Retaining compatibility with existing OutfitStore interface if needed,
+    // but RepoOutfit covers all fields used in the app.
 }
 
 export class OutfitStore {
@@ -42,13 +25,22 @@ export class OutfitStore {
         return OutfitStore.instance;
     }
 
+    private getUserId(): string | null {
+        return FIREBASE_AUTH.currentUser?.uid || null;
+    }
+
     public async initialize(): Promise<void> {
         if (this.isInitialized) return;
 
+        const userId = this.getUserId() || 'guest';
+        if (!userId) {
+            console.log('[OutfitStore] No user, skipping load.');
+            return;
+        }
+
         try {
-            console.log('[OutfitStore] Loading outfits from SQLite...');
-            await this.loadOutfits();
-            console.log('[OutfitStore] Loaded:', Object.keys(this.outfits).length, 'outfits');
+            console.log('[OutfitStore] Loading outfits from OutfitsRepo (Firestore/Local)...');
+            await this.loadOutfits(userId);
         } catch (e) {
             console.error('[OutfitStore] Failed to load outfits:', e);
             this.outfits = {};
@@ -58,67 +50,25 @@ export class OutfitStore {
     }
 
     /**
-     * Load all outfits from SQLite
+     * Load all outfits from Repo
      */
-    private async loadOutfits(): Promise<void> {
-        const dbOutfits = await outfitRepository.getAll();
+    private async loadOutfits(userId: string): Promise<void> {
+        const repoOutfits = await OutfitsRepo.listOutfits(userId);
         this.outfits = {};
-        dbOutfits.forEach(dbOutfit => {
-            this.outfits[dbOutfit.id] = this.fromDBOutfit(dbOutfit);
+        repoOutfits.forEach(outfit => {
+            this.outfits[outfit.id] = outfit;
         });
+        console.log('[OutfitStore] Loaded:', Object.keys(this.outfits).length, 'outfits');
     }
 
     /**
      * Refresh from database
      */
     public async refresh(): Promise<void> {
-        await this.loadOutfits();
-    }
-
-    /**
-     * Convert DB outfit to app outfit
-     */
-    private fromDBOutfit(dbOutfit: DBOutfit): Outfit {
-        return {
-            id: dbOutfit.id,
-            items: dbOutfit.garmentIds as PieceID[],
-            occasion: (dbOutfit.eventType as Occasion) || 'Casual',
-            score: dbOutfit.overallScore || 0,
-            scoreBreakdown: dbOutfit.harmonyScore ? {
-                harmony: dbOutfit.harmonyScore,
-                silhouette: dbOutfit.contextScore || 0,
-                layering: 0,
-                occasion: dbOutfit.styleScore || 0,
-                novelty: 0,
-            } : undefined,
-            source: 'sealed',
-            isFavorite: dbOutfit.isFavorite || false,
-            name: dbOutfit.name || 'Untitled Outfit',
-            createdAt: dbOutfit.createdAt,
-            lastWorn: dbOutfit.lastWorn,
-            timesWorn: dbOutfit.wearCount,
-        };
-    }
-
-    /**
-     * Convert app outfit to DB outfit
-     */
-    private toDBOutfit(outfit: Outfit): DBOutfit {
-        return {
-            id: outfit.id,
-            name: outfit.name,
-            garmentIds: outfit.items,
-            eventType: outfit.occasion,
-            overallScore: outfit.score,
-            harmonyScore: outfit.scoreBreakdown?.harmony,
-            contextScore: outfit.scoreBreakdown?.silhouette,
-            styleScore: outfit.scoreBreakdown?.occasion,
-            isFavorite: outfit.isFavorite,
-            wearCount: outfit.timesWorn || 0,
-            lastWorn: outfit.lastWorn,
-            createdAt: outfit.createdAt,
-            updatedAt: Date.now(),
-        };
+        const userId = this.getUserId();
+        if (userId) {
+            await this.loadOutfits(userId);
+        }
     }
 
     public getOutfits(): Outfit[] {
@@ -129,19 +79,46 @@ export class OutfitStore {
         return this.outfits[id];
     }
 
-    public async saveOutfit(outfit: Outfit): Promise<void> {
-        // Save to SQLite
-        const dbOutfit = this.toDBOutfit(outfit);
-        await outfitRepository.save(dbOutfit);
+    public async saveOutfit(outfitData: Omit<Outfit, 'userId'> & { userId?: string }): Promise<void> {
+        const userId = this.getUserId() || 'guest';
+        // if (!userId) throw new Error('User not authenticated');
 
-        // Update in-memory
+        // Ensure userId is strictly set from Auth
+        const outfit: Outfit = { ...outfitData, userId };
+
+        console.log('[OutfitStore] Saving outfit via OutfitsRepo:', outfit.id);
+
+        if (this.outfits[outfit.id]) {
+            // Update
+            await OutfitsRepo.updateOutfit(userId, outfit.id, outfit);
+        } else {
+            // Create
+            await OutfitsRepo.createOutfit(userId, {
+                id: outfit.id,
+                name: outfit.name,
+                items: outfit.items,
+                occasion: outfit.occasion,
+                score: outfit.score,
+                scoreBreakdown: outfit.scoreBreakdown,
+                source: outfit.source,
+                imageUri: outfit.imageUri,
+                canvasState: outfit.canvasState
+            });
+        }
+
+        // Update in-memory to reflect changes immediately
         this.outfits[outfit.id] = outfit;
     }
 
     public async deleteOutfit(id: string): Promise<void> {
+        const userId = this.getUserId();
+        if (!userId) return;
+
+        console.log('[OutfitStore] Deleting outfit:', id);
+
         if (this.outfits[id]) {
-            // Delete from SQLite
-            await outfitRepository.delete(id);
+            // Delete from Repo
+            await OutfitsRepo.deleteOutfit(userId, id);
 
             // Delete from in-memory
             delete this.outfits[id];
@@ -149,30 +126,31 @@ export class OutfitStore {
     }
 
     public async toggleFavorite(id: string): Promise<void> {
+        const userId = this.getUserId();
+        if (!userId) return;
+
         const outfit = this.outfits[id];
         if (outfit) {
+            // Optimistic update
             outfit.isFavorite = !outfit.isFavorite;
 
-            // Update in SQLite
-            await outfitRepository.toggleFavorite(id);
+            // Update in Repo
+            await OutfitsRepo.toggleFavorite(userId, id);
         }
     }
 
     public async logWorn(id: string): Promise<void> {
+        const userId = this.getUserId();
+        if (!userId) return;
+
         const outfit = this.outfits[id];
         if (outfit) {
+            // Optimistic update
             outfit.timesWorn = (outfit.timesWorn || 0) + 1;
             outfit.lastWorn = Date.now();
 
-            // Update in SQLite
-            await outfitRepository.markAsWorn(id);
-
-            // Mark individual items as worn
-            const inventory = InventoryStore.getInstance();
-            for (const itemId of outfit.items) {
-                await inventory.markAsWorn(itemId);
-            }
+            // Update in Repo (also updates inventory wear counts)
+            await OutfitsRepo.logWorn(userId, id);
         }
     }
 }
-

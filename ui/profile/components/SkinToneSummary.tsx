@@ -69,7 +69,7 @@ export const SkinToneSummary: React.FC<SkinToneSummaryProps> = ({ skinTone, pale
     return (
         <View style={styles.container}>
             <LinearGradient
-                colors={getGradientColors()}
+                colors={getGradientColors() as any}
                 style={styles.visualHeader}
             >
                 <FaceSilhouette undertone={skinTone.undertone} />

@@ -11,6 +11,7 @@ import { ritualMachine } from '../state/ritualMachine';
 import { useRitualState } from '../state/ritualProvider';
 import { WardrobeRepo, CategorySummary } from '../../data/repos';
 import { FIREBASE_AUTH } from '../../system/firebase/firebaseConfig';
+import { useAuth } from '../../context/auth/AuthProvider';
 import { WardrobeDetailModal } from './WardrobeDetailModal';
 import { Image } from 'expo-image';
 import { WardrobeItemCard } from '../components/WardrobeItemCard';
@@ -91,8 +92,9 @@ export const WardrobeScreen: React.FC = () => {
     const [direction, setDirection] = React.useState<'left' | 'right'>('right');
     const prevTabRef = React.useRef(activeWardrobeTab);
 
-    // Get current user ID
-    const userId = FIREBASE_AUTH.currentUser?.uid || 'guest';
+    // Get current user ID via Auth Context (supports Demo users)
+    const { user } = useAuth();
+    const userId = user?.uid || 'guest';
 
     // Load wardrobe data from WardrobeRepo
     const loadWardrobe = useCallback(async () => {
@@ -107,6 +109,13 @@ export const WardrobeScreen: React.FC = () => {
             ]);
             setPieces(garments);
             setCategories(cats);
+            if (garments.length > 0) {
+                console.log('[WardrobeScreen] Loaded pieces. Sample:', {
+                    id: garments[0].id,
+                    imageUri: garments[0].imageUri,
+                    uriType: typeof garments[0].imageUri
+                });
+            }
         } catch (error) {
             console.error('[WardrobeScreen] Failed to load wardrobe:', error);
         } finally {

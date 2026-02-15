@@ -19,7 +19,17 @@ export const RefinedBodySnapshot = React.memo<BodySnapshotProps>(({ currentBodyT
             <IllustrationFrame height={220}>
                 {/* Silhouette */}
                 <View style={styles.svg}>
-                    <TorsoSilhouette bodyType={currentBodyType} gender={gender || 'Male'} height={180} width={140} />
+                    <View style={styles.comparisonContainer}>
+                        {/* Comparison View */}
+                        <View style={styles.compCol}>
+                            <Text style={styles.compLabel}>Male</Text>
+                            <TorsoSilhouette bodyType={currentBodyType} gender="Male" height={180} width={120} />
+                        </View>
+                        <View style={styles.compCol}>
+                            <Text style={styles.compLabel}>Female</Text>
+                            <TorsoSilhouette bodyType={currentBodyType} gender="Female" height={180} width={120} />
+                        </View>
+                    </View>
 
                     {/* Confidence Indicator (Ring) */}
                     {confidence && (
@@ -103,5 +113,20 @@ const styles = StyleSheet.create({
         color: COLORS.RITUAL_WHITE,
         fontSize: 12,
         fontWeight: '600'
+    },
+    comparisonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        width: '100%',
+        paddingHorizontal: 10
+    },
+    compCol: {
+        alignItems: 'center'
+    },
+    compLabel: {
+        color: COLORS.ASH_GRAY,
+        marginBottom: 8,
+        fontSize: 12,
+        textTransform: 'uppercase'
     }
 });

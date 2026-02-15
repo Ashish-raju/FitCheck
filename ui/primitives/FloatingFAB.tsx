@@ -21,8 +21,8 @@ export const FloatingFAB: React.FC<FloatingFABProps> = ({ onPress, icon = "+", l
     const handlePress = () => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
         scale.value = withSequence(
-            withSpring(0.9, MOTION.SPRINGS.SNAPPY),
-            withSpring(1, MOTION.SPRINGS.BUTTERY)
+            withSpring(0.9, MOTION.PHYSICS.SPRING_SNAPPY),
+            withSpring(1, MOTION.PHYSICS.SPRING_BOUNCY)
         );
         onPress();
     };

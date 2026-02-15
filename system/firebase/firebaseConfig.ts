@@ -4,8 +4,25 @@ import 'firebase/compat/firestore';
 import 'firebase/compat/storage';
 import Constants from 'expo-constants';
 
-// Get Firebase config from app.config.ts extra field
-const firebaseConfig = Constants.expoConfig?.extra?.firebase || {
+// Get Firebase config from App Config (env vars)
+const appConfig = Constants.expoConfig?.extra?.firebase;
+
+const isValidConfig =
+    appConfig &&
+    appConfig.apiKey && appConfig.apiKey.length > 0 &&
+    appConfig.authDomain && appConfig.authDomain.length > 0 &&
+    appConfig.projectId && appConfig.projectId.length > 0 &&
+    appConfig.appId && appConfig.appId.length > 0;
+
+if (isValidConfig) {
+    console.log('[FirebaseConfig] 🟢 Using Environment Configuration');
+    console.log(`[FirebaseConfig] Project: ${appConfig.projectId}`);
+} else {
+    console.log('[FirebaseConfig] 🟡 Environment Config Invalid or Missing - Using Fallback');
+}
+
+// Fallback Configuration (Known Good)
+const fallbackConfig = {
     apiKey: "AIzaSyBPondZnMTKKSB-ynrDkw9EJYWSmcjN1PM",
     authDomain: "invisible-wardrobe.firebaseapp.com",
     projectId: "invisible-wardrobe",
@@ -15,36 +32,40 @@ const firebaseConfig = Constants.expoConfig?.extra?.firebase || {
     measurementId: "G-BGJ7R8WJ7W"
 };
 
-// Development mode check
-const __DEV__ = process.env.NODE_ENV === 'development';
-const USE_EMULATORS = __DEV__ && false; // Set to true to use local emulators
+// Use explicit configuration
+const firebaseConfig = isValidConfig ? appConfig : fallbackConfig;
 
 // Initialize Firebase App
-const app = firebase.apps.length === 0 ? firebase.initializeApp(firebaseConfig) : firebase.app();
+let app: firebase.app.App;
+
+if (firebase.apps.length > 0) {
+    app = firebase.app(); // Use default
+    console.log('[FirebaseConfig] ♻️  Reusing existing Firebase App instance');
+} else {
+    app = firebase.initializeApp(firebaseConfig);
+    console.log('[FirebaseConfig] 🚀 Initialized new Firebase App instance');
+}
 
 // Get services
-const auth = firebase.auth(app);
-const db = firebase.firestore(app);
-const storage = firebase.storage(app);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const storage = firebase.storage();
 
-// Enable persistence for auth (automatic with compat SDK)
-auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+// Emulators
+const __DEV__ = process.env.NODE_ENV === 'development';
+const USE_EMULATORS = __DEV__ && false; // Set true to enable
 
-// Connect to emulators in development (if enabled)
 if (USE_EMULATORS) {
-    const EMULATOR_HOST = 'localhost'; // Change to your machine IP for physical device testing
-
+    const EMULATOR_HOST = 'localhost';
     try {
         auth.useEmulator(`http://${EMULATOR_HOST}:9099`);
         db.useEmulator(EMULATOR_HOST, 8080);
         storage.useEmulator(EMULATOR_HOST, 9199);
-        console.log('[Firebase] Connected to emulators');
+        console.log('[FirebaseConfig] Connected to emulators');
     } catch (e) {
-        console.warn('[Firebase] Emulator connection failed:', e);
+        console.warn('[FirebaseConfig] Emulator connection failed:', e);
     }
 }
-
-console.log('[Firebase] Initialized with project:', firebaseConfig.projectId);
 
 export const FIREBASE_APP = app;
 export const FIREBASE_AUTH = auth;

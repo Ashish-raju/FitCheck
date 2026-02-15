@@ -1,7 +1,12 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FIREBASE_DB } from '../../system/firebase/firebaseConfig';
 import { WardrobeRepo } from './wardrobeRepo';
 import { OutfitsRepo } from './outfitsRepo';
 import { Piece } from '../../truth/types';
+
+// Re-export types for backward compatibility
+import { UserProfile, UserPreferences, SkinTone, ColorPalette, DerivedStats, WardrobeInsights } from '../../truth/types';
+export { UserProfile, UserPreferences, SkinTone, ColorPalette, DerivedStats, WardrobeInsights };
 
 /**
  * ProfileRepo - Single source of truth for user profile data and computed stats
@@ -12,60 +17,6 @@ import { Piece } from '../../truth/types';
  * - Wardrobe insights and analytics
  * - Body data and color palette management
  */
-
-export interface UserProfile {
-    uid: string;
-    email: string;
-    displayName: string;
-    photoURL?: string;
-    city?: string;
-    gender?: 'Male' | 'Female' | 'Other';
-    bodyType?: 'Ectomorph' | 'Mesomorph' | 'Endomorph' | 'Athletic' | 'Curvy' | 'Rectangular';
-    bodyConfidence?: number;
-    createdAt: Date;
-    updatedAt: Date;
-    preferences?: UserPreferences;
-    skinTone?: SkinTone;
-    palette?: ColorPalette;
-}
-
-export interface UserPreferences {
-    stylePreferences?: string[];
-    fitPrefs?: string[];
-    comfortPrefs?: string[];
-    problemAreas?: string[];
-}
-
-export interface SkinTone {
-    undertone: 'warm' | 'cool' | 'neutral';
-    depth: 'light' | 'medium' | 'dark';
-    contrast: 'low' | 'medium' | 'high';
-}
-
-export interface ColorPalette {
-    best: string[]; // Hex colors
-    avoid: string[]; // Hex colors
-}
-
-export interface DerivedStats {
-    wardrobeCount: number;
-    outfitsSavedCount: number;
-    streakCount: number;
-    mostWornColor?: string;
-    lastSealedAt?: number;
-}
-
-export interface WardrobeInsights {
-    underusedItems: Piece[];
-    versatileItems: Piece[];
-    colorDistribution: { color: string; count: number }[];
-    healthScore: number;
-    healthBreakdown?: {
-        coverage: number;
-        diversity: number;
-        freshness: number;
-    };
-}
 
 interface CachedData<T> {
     data: T;
@@ -81,15 +32,25 @@ export class ProfileRepo {
      * Get user profile
      */
     static async getProfile(userId: string): Promise<UserProfile | null> {
-        const cacheKey = `profile_${userId}`;
-        const cached = this.getFromCache<UserProfile>(cacheKey);
-
-        if (cached) {
-            console.log('[ProfileRepo] Cache hit for getProfile');
-            return cached;
-        }
-
         try {
+            const cacheKey = `profile_${userId}`;
+            const cached = this.getFromCache<UserProfile>(cacheKey);
+
+            if (cached) {
+                console.log('[ProfileRepo] Cache hit for getProfile');
+                return cached;
+            }
+
+            if (userId.startsWith('demo_')) {
+                const localProfile = await AsyncStorage.getItem(`profile_blob_${userId}`);
+                if (localProfile) {
+                    const profile = JSON.parse(localProfile);
+                    this.setCache(cacheKey, profile);
+                    return profile;
+                }
+                return null;
+            }
+
             const doc = await FIREBASE_DB
                 .collection('users')
                 .doc(userId)
@@ -116,6 +77,15 @@ export class ProfileRepo {
      */
     static async updateProfile(userId: string, patch: Partial<UserProfile>): Promise<void> {
         try {
+            if (userId.startsWith('demo_')) {
+                const existing = await this.getProfile(userId) || {};
+                const updated = { ...existing, ...patch, updatedAt: new Date() };
+                await AsyncStorage.setItem(`profile_blob_${userId}`, JSON.stringify(updated));
+                this.invalidateCache(userId);
+                console.log('[ProfileRepo] Profile updated locally for:', userId);
+                return;
+            }
+
             await FIREBASE_DB
                 .collection('users')
                 .doc(userId)
@@ -297,6 +267,8 @@ export class ProfileRepo {
      * Compute streak from seal history
      */
     private static async computeStreak(userId: string): Promise<number> {
+        if (userId.startsWith('demo_')) return 5; // Fake streak for demo
+
         try {
             // Query seal history from Firestore
             const snapshot = await FIREBASE_DB
@@ -372,6 +344,8 @@ export class ProfileRepo {
      * Get last sealed timestamp
      */
     private static async getLastSealedTimestamp(userId: string): Promise<number | undefined> {
+        if (userId.startsWith('demo_')) return Date.now() - 86400000; // Yesterday
+
         try {
             const snapshot = await FIREBASE_DB
                 .collection('users')

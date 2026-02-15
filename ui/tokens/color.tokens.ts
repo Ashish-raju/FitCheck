@@ -19,6 +19,13 @@ export const COLORS = {
     RITUAL_WHITE: '#FFFFFF',   // Pure White
     KINETIC_SILVER: '#E0E0E0', // Metallic Accent
 
+    // Luxe / Femme Palette (Audit Addition)
+    CREAM: '#F9F9F7',          // Soft Background
+    LATTE: '#E8DCCA',          // Warm Neutral
+    SOFT_GOLD: '#D4AF37',      // Elegant Accent
+    ROSE_DUST: '#E8C4C4',      // Soft Pink
+    SILK_SAGE: '#A0BCAC',      // Soft Green
+
     // Neutral Scale
     VOID_BLACK: '#000000',
     ASH_GRAY: '#8E9199',
@@ -54,6 +61,10 @@ export const COLORS = {
     EMERALD_DUSK: '#005C4B',
     SURFACE_GLASS_HIGHLIGHT: 'rgba(255, 255, 255, 0.15)',
     RITUAL_BLACK: '#050508',
+
+    // Luxe Aliases
+    ACCENT_WARM: '#D4AF37',    // Soft Gold
+    ACCENT_SOFT: '#E8C4C4',    // Rose Dust
 } as const;
 
 export const MATERIAL = {

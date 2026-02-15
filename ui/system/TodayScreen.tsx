@@ -8,18 +8,15 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
-import { RootStackParamList } from '../navigation/AppNavigator';
+import { RootStackParamList } from '../navigation/types';
 import { SmartImage } from '../primitives/SmartImage';
-import { PieceID, OutfitID } from '../../truth/types';
 import { t } from '../../src/copy';
 
 import { ritualMachine } from '../state/ritualMachine';
 import { useRitualState } from '../state/ritualProvider';
-import { Outfit } from '../../truth/types';
 import { ProfileRepo, DerivedStats, UserProfile } from '../../data/repos';
-import { FIREBASE_AUTH } from '../../system/firebase/firebaseConfig';
-
-// MOCK_OUTFITS removed - show proper error states instead
+import { Seeder } from '../../data/seeder/Seeder';
+import { useAuth } from '../../context/auth/AuthProvider';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
@@ -29,19 +26,27 @@ export const TodayScreen: React.FC = () => {
     const { candidateOutfits } = useRitualState();
     const navigation = useNavigation<NavigationProp>();
 
-    // Get current user
-    const userId = FIREBASE_AUTH.currentUser?.uid || 'guest';
+    // Use reactive auth state
+    const { user, loading: authLoading } = useAuth();
+    const userId = user?.uid;
 
     // State
     const [isGenerating, setIsGenerating] = React.useState(false);
     const [profile, setProfile] = React.useState<UserProfile | null>(null);
     const [stats, setStats] = React.useState<DerivedStats | null>(null);
     const [generationError, setGenerationError] = React.useState<string | null>(null);
+    const [isSeeding, setIsSeeding] = React.useState(false);
 
     // Load user profile and stats
     React.useEffect(() => {
+        if (authLoading || !userId) return;
+
         const loadUserData = async () => {
             try {
+                // Check and seed dummy data if needed (Temporary Demo Mode)
+                await Seeder.seedIfEmpty(userId);
+
+                // Refresh data
                 const [userProfile, userStats] = await Promise.all([
                     ProfileRepo.getProfile(userId),
                     ProfileRepo.getStats(userId)
@@ -53,7 +58,28 @@ export const TodayScreen: React.FC = () => {
             }
         };
         loadUserData();
-    }, [userId]);
+    }, [userId, authLoading]);
+
+    // Manual Seed Trigger (Debug)
+    const handleForceSeed = async () => {
+        if (!userId) return;
+        setIsSeeding(true);
+        try {
+            await Seeder.seedAll(userId);
+            // Reload
+            const [userProfile, userStats] = await Promise.all([
+                ProfileRepo.getProfile(userId),
+                ProfileRepo.getStats(userId)
+            ]);
+            setProfile(userProfile);
+            setStats(userStats);
+            alert('Seeding Complete! Please reload.');
+        } catch (e) {
+            alert('Seeding Failed');
+        } finally {
+            setIsSeeding(false);
+        }
+    };
 
     // Button Animation
     const buttonScale = useSharedValue(1);
@@ -138,6 +164,22 @@ export const TodayScreen: React.FC = () => {
                     <Text style={styles.subGreeting}>{vibe}</Text>
                 </View>
 
+                {/* Demo Mode Indicator */}
+                {userId?.startsWith('demo_') && (
+                    <View style={{
+                        position: 'absolute',
+                        top: 10,
+                        right: 0,
+                        backgroundColor: '#FFD700',
+                        paddingHorizontal: 8,
+                        paddingVertical: 4,
+                        borderRadius: 4,
+                        zIndex: 100
+                    }}>
+                        <Text style={{ color: '#000', fontSize: 10, fontWeight: 'bold' }}>DEMO MODE</Text>
+                    </View>
+                )}
+
                 {/* 1) MINIMAL LUXE STACKED CARD UI */}
                 <TouchableOpacity
                     activeOpacity={0.9}
@@ -180,7 +222,7 @@ export const TodayScreen: React.FC = () => {
                 {/* 2) IDENTITY SECTION */}
                 <View style={styles.identityContainer}>
                     <Text style={styles.identityLabel}>{t('home.identitySecure')}</Text>
-                    <Text style={styles.identityId}>{t('home.userAuth', { userId: 'ASHISH_RAMA' })}</Text>
+                    <Text style={styles.identityId}>{t('home.userAuth', { userId: userId || 'GUEST' })}</Text>
                 </View>
 
                 {/* 3) REVEAL ACTION SECTION */}
@@ -235,6 +277,22 @@ export const TodayScreen: React.FC = () => {
                         </Text>
                     </View>
                 </View>
+
+                {/* DEBUG: Force Seed (Temporary) */}
+                {(!stats || stats.wardrobeCount === 0) && userId && (
+                    <View style={[styles.errorCard, { marginBottom: 40 }]}>
+                        <Text style={styles.errorText}>Debug Mode: No wardrobe data found.</Text>
+                        <TouchableOpacity
+                            style={[styles.errorButton, { backgroundColor: 'rgba(52, 199, 89, 0.2)' }]}
+                            onPress={handleForceSeed}
+                            disabled={isSeeding}
+                        >
+                            <Text style={[styles.errorButtonText, { color: '#34C759' }]}>
+                                {isSeeding ? 'Seeding...' : '🌱 Force Seed Demo Data'}
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
 
             </ScrollView>
         </View>

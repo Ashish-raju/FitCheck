@@ -1,20 +1,20 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { COLORS } from '../foundation/colors';
-import { TEXT } from '../foundation/typography';
-import { SPACE, LAYOUT } from '../foundation/spacing';
+import { COLORS } from '../tokens/color.tokens';
+import { TYPOGRAPHY } from '../tokens';
+import { SPACING } from '../tokens/spacing.tokens';
 
 export const InsightStrip: React.FC = () => {
     return (
         <View style={styles.container}>
             <View style={styles.content}>
-                <Text style={[TEXT.body, styles.insightText]}>
-                    Your wardrobe is strongest in <Text style={{ color: COLORS.electric_blue }}>dark neutrals</Text>.
+                <Text style={[styles.body, styles.insightText]}>
+                    Your wardrobe is strongest in <Text style={{ color: COLORS.ELECTRIC_BLUE }}>dark neutrals</Text>.
                 </Text>
             </View>
 
             <TouchableOpacity>
-                <Text style={[TEXT.micro, styles.linkText]}>VIEW BREAKDOWN →</Text>
+                <Text style={[styles.micro, styles.linkText]}>VIEW BREAKDOWN →</Text>
             </TouchableOpacity>
         </View>
     );
@@ -22,23 +22,33 @@ export const InsightStrip: React.FC = () => {
 
 const styles = StyleSheet.create({
     container: {
-        width: LAYOUT.cardWidth,
+        width: '90%',
         alignSelf: 'center',
-        marginTop: SPACE.lg,
-        paddingHorizontal: SPACE.xs,
+        marginTop: SPACING.STACK.LARGE,
+        paddingHorizontal: SPACING.STACK.TIGHT,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
     },
     content: {
         flex: 1,
-        marginRight: SPACE.md,
+        marginRight: SPACING.STACK.NORMAL,
+    },
+    body: {
+        fontFamily: TYPOGRAPHY.STACKS.PRIMARY,
+        fontSize: 14,
+        color: COLORS.ASH_GRAY,
+    },
+    micro: {
+        fontFamily: TYPOGRAPHY.STACKS.PRIMARY,
+        fontSize: 10,
+        fontWeight: 'bold',
     },
     insightText: {
-        color: COLORS.secondary,
+        color: COLORS.ASH_GRAY,
     },
     linkText: {
-        color: COLORS.tertiary,
+        color: COLORS.ELECTRIC_VIOLET,
         letterSpacing: 1,
     }
 });

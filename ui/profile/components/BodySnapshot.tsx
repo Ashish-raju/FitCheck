@@ -25,7 +25,7 @@ export const BodySnapshot: React.FC<BodySnapshotProps> = React.memo(({ currentBo
         if (uid) {
             try {
                 await UserService.getInstance().updateProfile(uid, {
-                    bodyType: selectedType
+                    bodyType: selectedType as any
                 });
                 setIsEditing(false);
             } catch (e) {
@@ -53,7 +53,7 @@ export const BodySnapshot: React.FC<BodySnapshotProps> = React.memo(({ currentBo
                             key={type}
                             style={[
                                 styles.optionBtn,
-                                selectedType === type && styles.optionBtnActive
+                                (selectedType as any) === type && styles.optionBtnActive
                             ]}
                             onPress={() => setSelectedType(type)}
                         >

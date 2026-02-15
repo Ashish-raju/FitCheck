@@ -29,7 +29,7 @@ function log(msg: string, ...args: any[]) {
 import { WardrobeItemCard } from '../components/WardrobeItemCard';
 import { ScrollView } from 'react-native';
 
-const CATEGORIES = ['All', 'Favourites', 'Top', 'Bottom', 'Shoes', 'Outerwear'] as const;
+const CATEGORIES = ['All', 'Favourites', 'Top', 'Bottom', 'Dresses', 'Shoes', 'Bags', 'Jewelry', 'Outerwear'] as const;
 
 // Memoized Category Tab (Copied from WardrobeScreen for parity)
 const CategoryTab = React.memo(({ category, isActive, onPress }: { category: string; isActive: boolean; onPress: () => void }) => (
@@ -412,6 +412,7 @@ export const CreateOutfitScreen: React.FC = () => {
                                     id: item.id,
                                     name: item.name || 'Untitled',
                                     category: item.category.toUpperCase(),
+                                    subtype: item.subcategory ? item.subcategory.replace('_', ' ') : undefined,
                                     imageUri: item.imageUri,
                                     color: item.color,
                                     brand: item.brand,

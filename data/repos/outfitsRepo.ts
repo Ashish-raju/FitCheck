@@ -76,12 +76,20 @@ export class OutfitsRepo {
                 console.log('[OutfitsRepo] Loaded from local cache:', Object.keys(this.localCache).length);
             }
 
-            // Then sync with Firestore (background)
-            await this.syncFromFirestore(userId);
-
+            // Mark initialized so subsequent calls don't block
             this.isInitialized = true;
+
+            // Then sync with Firestore (background)
+            this.syncFromFirestore(userId).then(() => {
+                console.log('[OutfitsRepo] Background sync complete');
+            }).catch(err => {
+                console.error('[OutfitsRepo] Background sync failed:', err);
+            });
+
         } catch (error) {
             console.error('[OutfitsRepo] Initialize failed:', error);
+            // Ensure we don't get stuck in uninitialized state
+            this.isInitialized = true;
         }
     }
 
@@ -89,6 +97,8 @@ export class OutfitsRepo {
      * Sync from Firestore to local cache
      */
     private static async syncFromFirestore(userId: string): Promise<void> {
+        if (userId.startsWith('demo_') || userId === 'guest') return; // SKIP FOR DEMO/GUEST
+
         try {
             const snapshot = await FIREBASE_DB
                 .collection('users')
@@ -167,10 +177,10 @@ export class OutfitsRepo {
     /**
      * Create a new outfit
      */
-    static async createOutfit(userId: string, payload: CreateOutfitPayload): Promise<Outfit> {
+    static async createOutfit(userId: string, payload: CreateOutfitPayload & { id?: string }): Promise<Outfit> {
         await this.initialize(userId);
 
-        const outfitId = `outfit_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const outfitId = payload.id || `outfit_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
         const outfit: Outfit = {
             id: outfitId,
@@ -314,7 +324,9 @@ export class OutfitsRepo {
     /**
      * Sync a single outfit to Firestore
      */
-    private static async syncToFirestore(userId: string, outfit: Outfit): Promise<void> {
+    static async syncToFirestore(userId: string, outfit: Outfit): Promise<void> {
+        if (userId.startsWith('demo_') || userId === 'guest') return; // SKIP FIRESTORE FOR DEMO/GUEST
+
         try {
             await FIREBASE_DB
                 .collection('users')

@@ -83,14 +83,14 @@ export const FitPreferences: React.FC<FitPreferencesProps> = React.memo(({ fitPr
                 { scaleX },
                 { scaleY }
             ]
-        };
+        } as any;
     });
 
     return (
         <View style={styles.container}>
             {/* Visual Garment Preview */}
             <View style={styles.previewContainer}>
-                <Animated.View style={[styles.garmentWrapper, garmentStyle]}>
+                <Animated.View style={[styles.garmentWrapper, garmentStyle as any]}>
                     <Svg width="120" height="120" viewBox="0 0 100 100">
                         {/* Abstract T-Shirt Path */}
                         <Path

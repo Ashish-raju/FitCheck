@@ -1,9 +1,9 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import Svg, { Path, Defs, LinearGradient, Stop } from 'react-native-svg';
-import Animated, { useSharedValue, useAnimatedProps, withSpring } from 'react-native-reanimated';
 import { COLORS } from '../../../tokens/color.tokens';
 
-const AnimatedPath = Animated.createAnimatedComponent(Path);
+// VISUAL_ID: MANNEQUIN_V3_CROQUIS
+// Refined to match standard fashion croquis proportions for "Perfect" look.
 
 interface TorsoSilhouetteProps {
     bodyType?: string;
@@ -15,373 +15,103 @@ interface TorsoSilhouetteProps {
 export const TorsoSilhouette: React.FC<TorsoSilhouetteProps> = ({ bodyType = 'mesomorph', gender = 'Male', width = 160, height = 300 }) => {
     const isFemale = (gender || '').toLowerCase() === 'female';
 
-    // -------------------------------------------------------------
-    // MALE TARGETS
-    // -------------------------------------------------------------
-    // s=shoulder, w=waist, h=hips, mus=muscularity
-    let targetM = { s: 24, w: 16, h: 19, mus: 0 };
+    // ------------------------------------------------------------------
+    // FEMALE MANNEQUIN PATH (High Precision)
+    // ------------------------------------------------------------------
+    const getFemalePath = () => {
+        // Head: 50,15 r=10
+        // Neck: 45,28 to 55,28
+        // Shoulders: 30,35 to 70,35
+        // Armpits: 32,50 to 68,50
+        // Waist: 40,75 to 60,75
+        // Hips: 32,105 to 68,105
+        // Knees: 38,155 to 62,155
+        // Ankles: 42,205 to 58,205
+        // Feet: 40,215 to 60,215
 
-    // -------------------------------------------------------------
-    // FEMALE TARGETS
-    // -------------------------------------------------------------
-    // Female base: s=20 (narrower), w=14 (smaller), h=22 (wider hips), mus=0 (soft)
-    let targetF = { s: 20, w: 14, h: 22, mus: 0 };
-
-    const type = (bodyType || '').toLowerCase();
-
-    if (isFemale) {
-        // FEMALE MORPHS
-        if (type.includes('ecto') || type.includes('slim') || type.includes('rect')) {
-            targetF = { s: 19, w: 17, h: 19, mus: 0.1 }; // "Straight/Banana"
-        } else if (type.includes('endo') || type.includes('pear') || type.includes('tri')) {
-            targetF = { s: 19, w: 16, h: 25, mus: 0.2 }; // "Pear/Spoon" (Wide hips)
-        } else if (type.includes('meso') || type.includes('hour')) {
-            targetF = { s: 21, w: 13, h: 23, mus: 0.3 }; // "Hourglass"
-        } else if (type.includes('inv') || type.includes('cone')) {
-            targetF = { s: 23, w: 16, h: 19, mus: 0.4 }; // "Inverted Triangle"
-        } else if (type.includes('apple') || type.includes('oval')) {
-            targetF = { s: 21, w: 20, h: 20, mus: 0.1 }; // "Apple" (Rounder core)
-        }
-    } else {
-        // MALE MORPHS
-        if (type.includes('ecto') || type.includes('slim')) {
-            targetM = { s: 21, w: 17, h: 18, mus: 0 };
-        } else if (type.includes('endo') || type.includes('oval')) {
-            targetM = { s: 23, w: 22, h: 21, mus: 0.5 };
-        } else if (type.includes('meso') || type.includes('athle')) {
-            targetM = { s: 26, w: 15, h: 18, mus: 1.0 };
-        } else if (type.includes('trap')) {
-            targetM = { s: 24, w: 18, h: 19, mus: 0.5 };
-        } else if (type.includes('inv')) {
-            targetM = { s: 28, w: 16, h: 17, mus: 0.8 };
-        }
-    }
-
-    // Shared animated values (we just feed them different targets)
-    const activeTarget = isFemale ? targetF : targetM;
-
-    const shoulder = useSharedValue(activeTarget.s);
-    const waist = useSharedValue(activeTarget.w);
-    const hips = useSharedValue(activeTarget.h);
-    const muscle = useSharedValue(activeTarget.mus);
-
-    useEffect(() => {
-        shoulder.value = withSpring(activeTarget.s);
-        waist.value = withSpring(activeTarget.w);
-        hips.value = withSpring(activeTarget.h);
-        muscle.value = withSpring(activeTarget.mus);
-    }, [bodyType, isFemale]);
-
-    const bodyProps = useAnimatedProps(() => {
-        const s = shoulder.value;
-        const w = waist.value;
-        const h = hips.value;
-        const m = muscle.value;
-
-        // COMMON HEAD
-        const headPath = `
-            M 50,2
-            C 56,2 60,8 60,18
-            C 60,24 55,28 50,28
-            C 45,28 40,24 40,18
-            C 40,8 44,2 50,2
+        return `
+            M 50,4 
+            C 55,4 58,10 58,18 C 58,26 55,30 50,30 C 45,30 42,26 42,18 C 42,10 45,4 50,4 Z
+            M 55,28 L 56,32 L 68,34 
+            C 72,35 72,40 71,45 L 70,75 L 72,95 L 70,95 L 68,75 L 65,48 L 65,50 
+            C 65,55 60,70 60,75 
+            C 60,85 68,95 68,105 
+            C 68,125 58,145 56,155 
+            C 55,170 56,180 56,205 L 58,210 L 52,210 L 51,200 L 51,165 
+            L 50,120 
+            L 49,165 L 49,200 L 48,210 L 42,210 L 44,205 
+            C 44,180 45,170 44,155 
+            C 42,145 32,125 32,105 
+            C 32,95 40,85 40,75 
+            C 40,70 35,55 35,50 L 35,48 L 32,75 L 30,95 L 28,95 L 30,75 L 29,45 
+            C 28,40 28,35 32,34 L 44,32 L 45,28 Z
         `;
+    };
 
+    // ------------------------------------------------------------------
+    // MALE MANNEQUIN PATH (High Precision)
+    // ------------------------------------------------------------------
+    const getMalePath = () => {
+        // Broad shoulders, V-taper
+        return `
+            M 50,4 C 55,4 59,9 59,18 C 59,25 55,30 50,30 C 45,30 41,25 41,18 C 41,9 45,4 50,4 Z
+            M 56,30 L 58,34 L 74,36
+            C 78,37 78,42 77,50 L 75,78 L 77,100 L 73,100 L 71,78 L 68,52 L 68,54
+            C 68,65 60,78 58,85 
+            C 58,95 60,105 60,110
+            C 60,130 58,150 58,160
+            C 58,175 58,190 58,210 L 59,215 L 53,215 L 53,170 
+            L 50,130
+            L 47,170 L 47,215 L 41,215 L 42,210
+            C 42,190 42,175 42,160
+            C 42,150 40,130 40,110
+            C 40,105 42,95 42,85
+            C 40,78 32,65 32,54 L 32,52 L 29,78 L 27,100 L 23,100 L 25,78 L 23,50
+            C 22,42 22,37 26,36 L 42,34 L 44,30 Z
+        `;
+    };
+
+    const d = isFemale ? getFemalePath() : getMalePath();
+
+    // ------------------------------------------------------------------
+    // OVERLAYS (Matches Body Points)
+    // ------------------------------------------------------------------
+    const getOverlay = () => {
         if (isFemale) {
-            // ============================================
-            // FEMALE PATH CONSTRUCTION
-            // ============================================
-            // Softer shoulders, defined bust, distinct waist curve, wider hip sweep
-
-            const neckWidth = 5;
-            const xNeckR = 50 + neckWidth;
-            const xNeckL = 50 - neckWidth;
-            const yNeckBase = 32;
-
-            const xS_R = 50 + s;
-            const xS_L = 50 - s;
-            const yShoulderTop = 34;
-
-            // Bust
-            const yBust = 55;
-            const bustOut = 2 + (m * 2); // Slight projection
-
-            // Waist (Higher than male)
-            const yWaist = 75;
-            const xW_R = 50 + w;
-            const xW_L = 50 - w;
-
-            // Hips
-            const yHips = 105;
-            const xH_R = 50 + h;
-
-            // Arms
-            const armW = 5;
-            const xHandR = xS_R + 2;
-            const xHandL = xS_L - 2;
-            const yElbow = 75;
-            const yWrist = 100;
-
-            // Legs
-            const yKnee = 155;
-            const kneeW = 6;
-            const ankleW = 4;
-            const yFeet = 210;
-
-            // --- RIGHT SIDE ---
-            const pShoulderR = `L ${xS_R},${yShoulderTop}`;
-            const pArmOuterR = `Q ${xS_R + 3},45 ${xS_R + 2},${yElbow} L ${xHandR},${yWrist}`;
-
-            // Arm Inner -> Armpit -> Bust -> Waist -> Hip
-            // Female armpit curve is softer
-            const xArmpitR = xS_R - 3;
-            const pArmInnerR = `L ${xHandR - armW},${yWrist} L ${xS_R - 2},${yElbow} L ${xArmpitR},48`;
-
-            // Torso Contour
-            const pTorsoR = `
-                C ${xArmpitR + 1},55 ${xW_R + bustOut},55 ${xW_R},${yWaist} 
-                C ${xW_R},85 ${xH_R},90 ${xH_R},${yHips}
-            `;
-
-            // Leg Right (Thigh -> Knee -> Calf -> Ankle)
-            const pLegOuterR = `
-                C ${xH_R},125 ${50 + h * 0.5},135 ${50 + kneeW + 4},${yKnee}
-                C ${50 + kneeW + 3},170 ${50 + ankleW + 5},180 ${50 + ankleW + 2},${yFeet - 5}
-                L ${50 + ankleW + 2},${yFeet}
-            `;
-
-            const pLegInnerR = `
-                L ${50 + ankleW - 1},${yFeet}
-                L ${50 + ankleW - 1},190
-                C ${50 + ankleW - 1},175 ${50 + kneeW},${yKnee + 10} ${50 + kneeW - 1},${yKnee}
-                L ${50 + 2},120 L 50,115
-            `;
-
-            // --- LEFT SIDE (Mirror) ---
-            const pLegInnerL = `
-                L 50,115 L ${50 - 2},120
-                L ${50 - (kneeW - 1)},${yKnee}
-                C ${50 - kneeW},${yKnee + 10} ${50 - (ankleW - 1)},175 ${50 - (ankleW - 1)},190
-                L ${50 - (ankleW - 1)},${yFeet}
-            `;
-
-            const pLegOuterL = `
-                L ${50 - (ankleW + 2)},${yFeet}
-                L ${50 - (ankleW + 2)},${yFeet - 5}
-                C ${50 - (ankleW + 5)},180 ${50 - (kneeW + 3)},170 ${50 - (kneeW + 4)},${yKnee}
-                C ${50 - h * 0.5},135 ${50 - h},125 ${50 - h},${yHips}
-            `;
-
-            const xArmpitL = 50 - s + 3;
-
-            const pTorsoL = `
-                C ${50 - h},90 ${xW_L},85 ${xW_L},${yWaist}
-                C ${xW_L - bustOut},55 ${xArmpitL - 1},55 ${xArmpitL},48
-            `;
-
-            const xS_L_explicit = 50 - s;
-            const xHandL_explicit = xS_L_explicit - 2;
-
-            const pArmInnerL = `L ${xS_L_explicit + 2},${yElbow} L ${xHandL_explicit + armW},${yWrist}`;
-            const pArmOuterL = `L ${xHandL_explicit},${yWrist} Q ${xS_L_explicit - 2},${yElbow} ${xS_L_explicit - 3},45 L ${xS_L_explicit},${yShoulderTop}`;
-
-            const d = `
-                ${headPath}
-                M ${xNeckR},${yNeckBase}
-                ${pShoulderR}
-                ${pArmOuterR}
-                ${pArmInnerR}
-                ${pTorsoR}
-                ${pLegOuterR}
-                ${pLegInnerR}
-                ${pLegInnerL}
-                ${pLegOuterL}
-                ${pTorsoL}
-                ${pArmInnerL}
-                ${pArmOuterL}
-                L ${xNeckL},${yNeckBase}
-                Z
-            `;
-            return { d };
-
+            // Hourglass Poly
+            return "M 32,34 L 68,34 L 60,75 L 68,105 L 32,105 L 40,75 Z";
         } else {
-            // ============================================
-            // MALE PATH CONSTRUCTION (Existing Graphic Style)
-            // ============================================
-            const sVal = s; // Rename to avoid confusion
-
-            const trapRise = 30 - (m * 2);
-            const neckWidth = 6 + (m * 1);
-            const xNeckR = 50 + neckWidth;
-            const xNeckL = 50 - neckWidth;
-            const yNeckBase = 34;
-
-            const xS_R = 50 + sVal;
-            const xS_L = 50 - sVal;
-            const yShoulderTop = 36;
-            const yDeltoidBot = 52;
-
-            const armW = 5 + (m * 1.5);
-            const yElbow = 80;
-            const yWrist = 105;
-            const xHandR = xS_R + 3;
-
-            const xArmpitR = xS_R - 4;
-            const xW_R = 50 + w;
-            const xH_R = 50 + h;
-
-            const yKnee = 160;
-            const thighW = h * 0.5;
-            const kneeW = 6;
-            const calfBulge = 7 + (m * 1);
-            const ankleW = 4;
-
-            // Shoulder to Arm Outer
-            const pDeltoidR = `C ${xS_R + 2},${yShoulderTop} ${xS_R + 5},${yDeltoidBot - 10} ${xS_R + 4},${yDeltoidBot}`;
-            const pArmOuterR = `L ${xS_R + 3},${yElbow} L ${xHandR},${yWrist}`;
-
-            const pArmInnerR = `L ${xHandR - armW},${yWrist} L ${xS_R - 1},${yElbow} L ${xArmpitR},${50}`;
-
-            const latCtrl = m > 0.5 ? xArmpitR + 3 : xArmpitR;
-            const pTorsoR = `C ${latCtrl},65 ${xW_R},70 ${xW_R},80 C ${xW_R},90 ${xH_R},95 ${xH_R},105`;
-
-            const pLegOuterR = `
-                C ${xH_R},120 ${50 + thighW + 2},140 ${50 + kneeW + 3},${yKnee}
-                C ${50 + kneeW + 2},170 ${50 + calfBulge},175 ${50 + ankleW + 2},200
-            `;
-
-            const pLegInnerR = `
-                L ${50 + ankleW},200
-                C ${50 + ankleW - 1},175 ${50 + calfBulge - 4},170 ${50 + kneeW - 1},${yKnee}
-                C ${50 + kneeW - 1},140 ${50 + 2},125 50,115
-            `;
-
-            const pLegInnerL = `
-                L 50,115
-                C ${50 - 2},125 ${50 - (kneeW - 1)},140 ${50 - (kneeW - 1)},${yKnee}
-                C ${50 - (calfBulge - 4)},170 ${50 - (ankleW - 1)},175 ${50 - ankleW},200
-            `;
-
-            const pLegOuterL = `
-                L ${50 - (ankleW + 2)},200
-                C ${50 - calfBulge},175 ${50 - (kneeW + 2)},170 ${50 - (kneeW + 3)},${yKnee}
-                C ${50 - (thighW + 2)},140 ${50 - h},120 ${50 - h},105
-            `;
-
-            const xW_L = 50 - w;
-            const xArmpitL = 50 - sVal + 4;
-            const latCtrlL = m > 0.5 ? xArmpitL - 3 : xArmpitL;
-
-            const pTorsoL = `
-                C ${50 - h},95 ${xW_L},90 ${xW_L},80
-                C ${xW_L},70 ${latCtrlL},65 ${xArmpitL},50
-            `;
-
-            const xS_L_explicit = 50 - sVal;
-            const xHandL_explicit = xS_L - 3;
-
-            const pArmInnerL = `L ${xS_L_explicit + 1},${yElbow} L ${xHandL_explicit + armW},${yWrist}`;
-            const pArmOuterL = `L ${xHandL_explicit},${yWrist} L ${xS_L_explicit - 3},${yElbow}`;
-
-            const pDeltoidL = `
-                 L ${xS_L_explicit - 4},${yDeltoidBot}
-                 C ${xS_L_explicit - 5},${yDeltoidBot - 10} ${xS_L_explicit - 2},${yShoulderTop} ${xNeckL},${yNeckBase}
-            `;
-
-            const d = `
-                ${headPath}
-                M ${xNeckR},${yNeckBase}
-                L ${xS_R},${yShoulderTop}
-                ${pDeltoidR}
-                ${pArmOuterR}
-                ${pArmInnerR}
-                ${pTorsoR}
-                ${pLegOuterR}
-                ${pLegInnerR}
-                ${pLegInnerL}
-                ${pLegOuterL}
-                ${pTorsoL}
-                ${pArmInnerL}
-                ${pArmOuterL}
-                ${pDeltoidL}
-                L ${xNeckL},${yNeckBase}
-                Z
-            `;
-            return { d };
+            // Trapezoid Poly
+            return "M 26,36 L 74,36 L 60,110 L 40,110 Z";
         }
-    });
-
-    const overlayProps = useAnimatedProps(() => {
-        const s = shoulder.value;
-        const w = waist.value;
-        const h = hips.value;
-
-        // MALE OVERLAY
-        if (!isFemale) {
-            const yTop = 60;
-            const yBot = 105;
-
-            const xS_R = 50 + s - 3;
-            const xS_L = 50 - s + 3;
-            const xH_R = 50 + h - 2;
-            const xH_L = 50 - h + 2;
-            const xW_R = 50 + w - 2;
-            const xW_L = 50 - w + 2;
-
-            const isHourglass = (w < s * 0.9) && (w < h * 0.9);
-
-            if (isHourglass) {
-                return {
-                    d: `M ${xS_L},${yTop} L ${xS_R},${yTop} L ${xW_R},80 L ${xH_R},${yBot} L ${xH_L},${yBot} L ${xW_L},80 Z`
-                }
-            }
-            return {
-                d: `M ${xS_L},${yTop} L ${xS_R},${yTop} L ${xH_R},${yBot} L ${xH_L},${yBot} Z`
-            };
-        } else {
-            // FEMALE OVERLAY (Follows curves more)
-            const yTop = 55;
-            const yWaist = 75;
-            const yBot = 105;
-
-            const xS_R = 50 + s - 2;
-            const xS_L = 50 - s + 2;
-            const xH_R = 50 + h - 1;
-            const xH_L = 50 - h + 1;
-            const xW_R = 50 + w - 1;
-            const xW_L = 50 - w + 1;
-
-            // Allow more points for female shape to show Hourglass/Pear distinctly
-            return {
-                d: `M ${xS_L},${yTop} L ${xS_R},${yTop} L ${xW_R},${yWaist} L ${xH_R},${yBot} L ${xH_L},${yBot} L ${xW_L},${yWaist} Z`
-            };
-        }
-    });
+    };
 
     return (
         <Svg width={width} height={height} viewBox="0 0 100 220">
             <Defs>
-                <LinearGradient id="skinGrad" x1="0" y1="0" x2="1" y2="0">
-                    <Stop offset="0" stopColor="#A0A0A0" />
-                    <Stop offset="0.5" stopColor="#E0E0E0" />
+                <LinearGradient id="skinGrad" x1="0" y1="0.2" x2="1" y2="0.2">
+                    <Stop offset="0" stopColor="#B0B0B0" />
+                    <Stop offset="0.3" stopColor="#F5F5F5" />
+                    <Stop offset="0.6" stopColor="#E0E0E0" />
                     <Stop offset="1" stopColor="#A0A0A0" />
                 </LinearGradient>
             </Defs>
 
-            {/* 1. Body */}
-            <AnimatedPath
-                animatedProps={bodyProps}
+            {/* Body */}
+            <Path
+                d={d}
                 fill="url(#skinGrad)"
                 stroke="none"
             />
 
-            {/* 2. Geometric Overlay */}
-            <AnimatedPath
-                animatedProps={overlayProps}
-                fill="rgba(50, 50, 255, 0.1)"
+            {/* Overlay */}
+            <Path
+                d={getOverlay()}
+                fill="rgba(80, 80, 255, 0.08)"
                 stroke={COLORS.ELECTRIC_VIOLET}
-                strokeWidth="2"
+                strokeWidth="1.5"
                 strokeLinejoin="round"
+                strokeDasharray="4, 2"
             />
         </Svg>
     );

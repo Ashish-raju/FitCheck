@@ -38,7 +38,7 @@ export const EditProfileSheet: React.FC<EditProfileSheetProps> = ({ visible, onC
             await UserService.getInstance().updateProfile(uid, {
                 displayName: name,
                 city,
-                gender,
+                gender: gender as any,
                 height: height ? parseFloat(height) : undefined,
                 weight: weight ? parseFloat(weight) : undefined,
             });

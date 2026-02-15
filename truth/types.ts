@@ -1,4 +1,4 @@
-import { GarmentMeta } from '../engine/types';
+import { GarmentMeta, UserProfileMeta } from '../engine/types';
 
 export type BrandString<K, T> = K & { __brand: T };
 
@@ -93,3 +93,63 @@ export type Inventory = {
     pieces: Record<PieceID, Piece>;
     outfits?: Record<OutfitID, Outfit>; // Optional - allows empty initial state
 };
+
+export interface UserPreferences {
+    stylePreferences?: string[];
+    fitPrefs?: string[];
+    comfortPrefs?: string[];
+    problemAreas?: string[];
+}
+
+export interface SkinTone {
+    undertone: 'warm' | 'cool' | 'neutral';
+    depth: 'light' | 'medium' | 'dark';
+    contrast: 'low' | 'medium' | 'high';
+}
+
+export interface ColorPalette {
+    best: string[]; // Hex colors
+    avoid: string[]; // Hex colors
+}
+
+export interface UserProfile {
+    uid: string;
+    email: string;
+    displayName: string;
+    photoURL?: string;
+    city?: string;
+    gender?: 'Male' | 'Female' | 'Other';
+    height?: number; // cm
+    weight?: number; // kg
+    bodyType?: 'Ectomorph' | 'Mesomorph' | 'Endomorph' | 'Athletic' | 'Curvy' | 'Rectangular';
+    bodyConfidence?: number;
+    createdAt?: Date; // Optional for mocks
+    updatedAt?: Date;
+    preferences?: UserPreferences;
+    skinTone?: SkinTone;
+    palette?: ColorPalette;
+    onboardingCompleted?: boolean;
+    stylistMeta?: UserProfileMeta;
+}
+
+export interface DerivedStats {
+    wardrobeCount: number;
+    outfitsSavedCount: number;
+    streakCount: number;
+    mostWornColor?: string;
+    topBrands?: string[];
+    totalValue?: number;
+    lastSealedAt?: number;
+}
+
+export interface WardrobeInsights {
+    underusedItems: Piece[];
+    versatileItems: Piece[];
+    colorDistribution: { color: string; count: number }[];
+    healthScore: number;
+    healthBreakdown?: {
+        coverage: number;
+        diversity: number;
+        freshness: number;
+    };
+}

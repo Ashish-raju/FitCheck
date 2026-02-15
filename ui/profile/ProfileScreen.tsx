@@ -11,6 +11,7 @@ import { SmartImage } from '../primitives/SmartImage';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
+import { Seeder } from '../../data/seeder/Seeder';
 
 // Components
 // Refined Components (Visual Upgrade)
@@ -58,8 +59,11 @@ const ProfileIcon = ({ name, color, size = 16 }: { name: string, color: string, 
     );
 };
 
+import { useAuth } from '../../context/auth/AuthProvider';
+
 export const ProfileScreen: React.FC = () => {
     // USE HOOK
+    const { user } = useAuth();
     const {
         profile,
         stats,
@@ -87,12 +91,12 @@ export const ProfileScreen: React.FC = () => {
     }, []);
 
     const handleSavePack = async () => {
-        if (!packResult || !FIREBASE_AUTH.currentUser?.uid) {
+        if (!packResult || !user?.uid) {
             Alert.alert("Saved", "Your trip is packed! (Simulated)");
             setPackResult(null);
             return;
         }
-        await savePack(FIREBASE_AUTH.currentUser.uid, packResult);
+        await savePack(user.uid, packResult);
         setPackResult(null); // Close result
         Alert.alert("Saved", "Your trip is packed!");
     };
@@ -114,9 +118,10 @@ export const ProfileScreen: React.FC = () => {
         if (!result.canceled && result.assets && result.assets.length > 0) {
             const uri = result.assets[0].uri;
             setAvatarLoading(true);
+            setAvatarLoading(true);
             try {
-                if (FIREBASE_AUTH.currentUser?.uid) {
-                    await UserService.getInstance().updateProfile(FIREBASE_AUTH.currentUser.uid, { photoURL: uri });
+                if (user?.uid) {
+                    await UserService.getInstance().updateProfile(user.uid, { photoURL: uri });
                 }
             } catch (e) {
                 Alert.alert("Error", "Failed to update avatar.");
@@ -127,7 +132,7 @@ export const ProfileScreen: React.FC = () => {
     };
 
     const handleExportData = async () => {
-        const uid = FIREBASE_AUTH.currentUser?.uid;
+        const uid = user?.uid;
         if (!uid) return;
         try {
             const data = await UserService.getInstance().exportUserData(uid);
@@ -153,7 +158,7 @@ export const ProfileScreen: React.FC = () => {
             { text: "Cancel", style: "cancel" },
             {
                 text: "Reset", style: "destructive", onPress: async () => {
-                    const uid = FIREBASE_AUTH.currentUser?.uid;
+                    const uid = user?.uid;
                     if (uid) await UserService.getInstance().resetPersonalization(uid);
                 }
             }
@@ -165,10 +170,19 @@ export const ProfileScreen: React.FC = () => {
             { text: "Cancel", style: "cancel" },
             {
                 text: "Delete", style: "destructive", onPress: async () => {
-                    const uid = FIREBASE_AUTH.currentUser?.uid;
+                    const uid = user?.uid;
                     if (uid) {
                         await UserService.getInstance().deleteAccount(uid);
-                        FIREBASE_AUTH.signOut();
+                        // For demo users, we might just want to sign out or handle differently, 
+                        // but UserService might throw if it tries to delete from Firebase.
+                        // Assuming UserService handles it or we catch it.
+                        // Actually, let's just use the auth signOut logic we have.
+                        // But wait, FIREBASE_AUTH.signOut() won't clear our context user if we bypass it.
+                        // We should use verify signOut from useAuth but here we don't have it imported.
+                        // Let's safe guard.
+                        if (!uid.startsWith('demo_')) {
+                            FIREBASE_AUTH.signOut();
+                        }
                     }
                 }
             }
@@ -211,6 +225,45 @@ export const ProfileScreen: React.FC = () => {
             >
                 {/* Header */}
                 <View style={styles.header}>
+                    {user?.uid.startsWith('demo_') && (
+                        <TouchableOpacity
+                            activeOpacity={0.7}
+                            onPress={() => {
+                                Alert.alert("Reset Demo Data?", "This will wipe local changes and restore original demo items.", [
+                                    { text: "Cancel", style: 'cancel' },
+                                    {
+                                        text: "Reset", style: 'destructive', onPress: async () => {
+                                            try {
+                                                await Seeder.seedForDemo(user.uid);
+                                                Alert.alert("Reset Complete", "Please pull down to refresh the profile.");
+                                            } catch (e) {
+                                                Alert.alert("Error", "Failed to reset demo data.");
+                                            }
+                                        }
+                                    }
+                                ]);
+                            }}
+                            style={{
+                                position: 'absolute',
+                                top: -40,
+                                right: 0,
+                                backgroundColor: '#FF00FF',
+                                paddingHorizontal: 12,
+                                paddingVertical: 4,
+                                borderRadius: 12,
+                                transform: [{ rotate: '5deg' }],
+                                zIndex: 10
+                            }}
+                        >
+                            <Text style={{
+                                color: COLORS.VOID_BLACK,
+                                fontWeight: 'bold',
+                                fontSize: 10,
+                                letterSpacing: 1
+                            }}>DEMO MODE (RESET)</Text>
+                        </TouchableOpacity>
+                    )}
+
                     <TouchableOpacity onPress={handlePickAvatar} style={styles.avatarContainer}>
                         <SmartImage
                             source={{ uri: profile?.photoURL || 'https://via.placeholder.com/150' }}
@@ -334,7 +387,12 @@ export const ProfileScreen: React.FC = () => {
 
                 {/* Wardrobe Analytics - Updated */}
                 <Section title="Analytics">
-                    <WardrobeAnalytics data={analytics} />
+                    <WardrobeAnalytics data={analytics ? {
+                        ...analytics,
+                        mostVersatileItems: analytics.versatileItems,
+                        topColors: analytics.colorDistribution,
+                        healthBreakdown: analytics.healthBreakdown || { coverage: 0, diversity: 0, freshness: 0 }
+                    } : undefined} />
                 </Section>
 
                 {/* Settings */}

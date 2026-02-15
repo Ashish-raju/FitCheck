@@ -37,6 +37,7 @@ export const SmartImage: React.FC<SmartImageProps> = ({
             cachePolicy="memory-disk"
             priority={priority}
             allowDownscaling={true}
+            onError={(e) => console.log('[SmartImage] Load Error:', { source, error: e.error })}
         />
     );
 };

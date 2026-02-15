@@ -214,6 +214,9 @@ export class EngineService {
                     seasonality: 0,
                     stylistPick: 0
                 },
+                isComplete: true,
+                missingSlots: [],
+                warnings: [],
                 badges: []
             };
 

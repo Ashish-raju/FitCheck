@@ -1,4 +1,5 @@
 import { WardrobeService } from '../../services/WardrobeService';
+import { LocalWardrobeService } from '../../services/LocalWardrobeService';
 import { Piece, PieceID } from '../../truth/types';
 
 /**
@@ -34,6 +35,9 @@ const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 export class WardrobeRepo {
     private static cache = new Map<string, CachedData<any>>();
     private static service = WardrobeService.getInstance();
+    private static localService = LocalWardrobeService.getInstance();
+
+
 
     /**
      * List garments with optional filtering
@@ -48,11 +52,23 @@ export class WardrobeRepo {
         }
 
         try {
-            const { pieces } = await this.service.listPieces({
-                category: options.category,
-                status: options.status,
-                limit: options.limit
-            });
+            let pieces: Piece[] = [];
+
+            if (userId.startsWith('demo_')) {
+                const result = await this.localService.listPieces(userId, {
+                    category: options.category,
+                    status: options.status,
+                    limit: options.limit
+                });
+                pieces = result.pieces;
+            } else {
+                const result = await this.service.listPieces({
+                    category: options.category,
+                    status: options.status,
+                    limit: options.limit
+                });
+                pieces = result.pieces;
+            }
 
             // Client-side filtering for options not supported by service
             let filtered = pieces;
@@ -92,7 +108,13 @@ export class WardrobeRepo {
         }
 
         try {
-            const garment = await this.service.getPiece(garmentId);
+            let garment;
+            if (userId.startsWith('demo_')) {
+                garment = await this.localService.getPiece(userId, garmentId);
+            } else {
+                garment = await this.service.getPiece(garmentId);
+            }
+
             if (garment) {
                 this.setCache(cacheKey, garment);
             }
@@ -151,7 +173,11 @@ export class WardrobeRepo {
      */
     static async createGarment(userId: string, garment: Piece): Promise<Piece> {
         try {
-            await this.service.addPiece(garment);
+            if (userId.startsWith('demo_')) {
+                await this.localService.addPiece(userId, garment);
+            } else {
+                await this.service.addPiece(garment);
+            }
             this.invalidateCache(userId);
             console.log('[WardrobeRepo] Garment created:', garment.id);
             return garment;
@@ -166,7 +192,11 @@ export class WardrobeRepo {
      */
     static async updateGarment(userId: string, garmentId: PieceID, patch: Partial<Piece>): Promise<void> {
         try {
-            await this.service.updatePiece(garmentId, patch);
+            if (userId.startsWith('demo_')) {
+                await this.localService.updatePiece(userId, garmentId, patch);
+            } else {
+                await this.service.updatePiece(garmentId, patch);
+            }
             this.invalidateCache(userId);
             console.log('[WardrobeRepo] Garment updated:', garmentId);
         } catch (error) {
@@ -180,7 +210,11 @@ export class WardrobeRepo {
      */
     static async deleteGarment(userId: string, garmentId: PieceID): Promise<void> {
         try {
-            await this.service.deletePiece(garmentId);
+            if (userId.startsWith('demo_')) {
+                await this.localService.deletePiece(userId, garmentId);
+            } else {
+                await this.service.deletePiece(garmentId);
+            }
             this.invalidateCache(userId);
             console.log('[WardrobeRepo] Garment deleted:', garmentId);
         } catch (error) {

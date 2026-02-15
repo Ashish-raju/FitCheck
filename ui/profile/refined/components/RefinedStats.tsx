@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import Animated, { useSharedValue, useAnimatedProps, withTiming, Easing, runOnJS } from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedProps, withTiming, withDelay, Easing, runOnJS } from 'react-native-reanimated';
 import { COLORS } from '../../../tokens/color.tokens';
 import { TextInput } from 'react-native-gesture-handler'; // Used for animated text trick if needed, or just plain text update
 
@@ -60,8 +60,8 @@ const StatCard: React.FC<{ label: string; value: number; suffix?: string; delay:
     const translateY = useSharedValue(10);
 
     useEffect(() => {
-        opacity.value = withTiming(1, { duration: 600, delay });
-        translateY.value = withTiming(0, { duration: 600, delay });
+        opacity.value = withDelay(delay, withTiming(1, { duration: 600 }));
+        translateY.value = withDelay(delay, withTiming(0, { duration: 600 }));
     }, []);
 
     const style = {

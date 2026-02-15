@@ -146,11 +146,52 @@ export const AuthScreen: React.FC = () => {
                                 : t('auth.hasAccount')}
                         </Text>
                     </TouchableOpacity>
+
+                    {/* DEMO ACCOUNTS LINK */}
+                    <View style={{ marginTop: 32, flexDirection: 'row', gap: 16 }}>
+                        <TouchableOpacity
+                            onPress={() => signIn('@demo_male_user', 'password')}
+                            style={{
+                                paddingVertical: 8,
+                                paddingHorizontal: 16,
+                                backgroundColor: 'rgba(255,255,255,0.05)',
+                                borderRadius: 20,
+                                borderWidth: 1,
+                                borderColor: 'rgba(255,255,255,0.1)'
+                            }}
+                        >
+                            <Text style={{ color: MATERIAL.TEXT_MUTED, fontSize: 10, letterSpacing: 1 }}>
+                                DEMO (MALE)
+                            </Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            onPress={() => signIn('@demo_female_user', 'password')}
+                            style={{
+                                paddingVertical: 8,
+                                paddingHorizontal: 16,
+                                backgroundColor: 'rgba(255,255,255,0.05)',
+                                borderRadius: 20,
+                                borderWidth: 1,
+                                borderColor: 'rgba(255,255,255,0.1)'
+                            }}
+                        >
+                            <Text style={{ color: MATERIAL.TEXT_MUTED, fontSize: 10, letterSpacing: 1 }}>
+                                DEMO (FEMALE)
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
 
                 <View style={styles.footer}>
                     <Text style={styles.footerText}>
                         {t('auth.legal')}
+                    </Text>
+                    {/* DEBUG INFO */}
+                    <Text style={[styles.footerText, { marginTop: 20, color: '#FF3B30' }]}>
+                        Debug: {useAuth().user ? 'Logged In' : 'Logged Out'} |
+                        App: {useAuth().getConfig?.()?.appName || 'Unknown'} |
+                        Proj: {useAuth().getConfig?.()?.projectId || 'Unknown'}
                     </Text>
                 </View>
             </ScrollView>

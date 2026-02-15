@@ -3,6 +3,7 @@ import { View, StyleSheet, Dimensions, FlatList } from 'react-native';
 import { Outfit } from '../../truth/types';
 import { CandidateStage } from './CandidateStage';
 import * as Haptics from 'expo-haptics';
+import { FIREBASE_AUTH } from '../../system/firebase/firebaseConfig';
 
 const { width } = Dimensions.get('window');
 
@@ -27,7 +28,7 @@ export const OutfitCarousel: React.FC<OutfitCarouselProps> = ({ outfits, onIndex
                 }}
                 renderItem={({ item }) => (
                     <View style={styles.card}>
-                        <CandidateStage outfit={item} />
+                        <CandidateStage outfit={item} userId={FIREBASE_AUTH.currentUser?.uid || ''} />
                     </View>
                 )}
             />

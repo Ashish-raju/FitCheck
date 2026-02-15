@@ -26,6 +26,7 @@ export class AuthService {
      */
     public async signIn(email: string, password: string): Promise<AuthUser> {
         try {
+            console.log('[AuthService] Using Compat SDK for Sign In...');
             const userCredential = await FIREBASE_AUTH.signInWithEmailAndPassword(email, password);
             console.log('[AuthService] Sign in successful:', userCredential.user?.uid);
             return this.mapUser(userCredential.user);
@@ -41,6 +42,7 @@ export class AuthService {
      */
     public async signUp(email: string, password: string, displayName: string): Promise<AuthUser> {
         try {
+            console.log('[AuthService] Using Compat SDK for Sign Up...');
             const userCredential = await FIREBASE_AUTH.createUserWithEmailAndPassword(email, password);
             const user = userCredential.user;
 
@@ -53,8 +55,10 @@ export class AuthService {
             await this.createUserProfile(user.uid, {
                 email: user.email || email,
                 displayName,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                // Cast strict type to any to satisfy simplified UserProfile if needed, 
+                // or ensure it matches Date | FieldValue union.
+                createdAt: firebase.firestore.FieldValue.serverTimestamp() as any,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp() as any,
             });
 
             console.log('[AuthService] Sign up successful:', user.uid);
@@ -92,6 +96,13 @@ export class AuthService {
     public getCurrentUser(): AuthUser | null {
         const user = FIREBASE_AUTH.currentUser;
         return user ? this.mapUser(user) : null;
+    }
+
+    /**
+     * DEBUG: Get current app instance
+     */
+    public getCurrentApp(): firebase.app.App {
+        return FIREBASE_AUTH.app;
     }
 
     /**

@@ -8,7 +8,8 @@ const OUTFIT_TEMPLATES: Record<string, string[]> = {
     // Simple fallback templates
     "default": ["top", "bottom", "footwear"],
     "layering": ["top", "bottom", "layer", "footwear"],
-    "one_piece": ["one_piece", "footwear"]
+    "one_piece": ["one_piece", "footwear"],
+    "accessorized": ["top", "bottom", "footwear", "bag", "accessory"]
 };
 
 interface BeamNode {
@@ -37,6 +38,8 @@ export class OutfitAssembler {
         let template = OUTFIT_TEMPLATES["default"];
         if (ctx.season === 'winter' || ctx.temp < 15) {
             template = OUTFIT_TEMPLATES["layering"];
+        } else if (ctx.event === 'date' || ctx.event === 'brunch') {
+            template = OUTFIT_TEMPLATES["accessorized"];
         }
         // Check for women/dress preference?
         // Assuming defaults for now.
@@ -72,7 +75,7 @@ export class OutfitAssembler {
                     // Check against ALL existing items in node
                     let isValid = true;
                     for (const existingItem of node.items) {
-                        if (!HardFilter.isCombinationValid(existingItem, nextGarment)) {
+                        if (!HardFilter.isCombinationValid(existingItem, nextGarment, user)) {
                             isValid = false;
                             break;
                         }
